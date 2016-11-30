@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   # s.homepage    = 'http://rubygems.org/gems/hola'
   # s.license     = 'MIT'
   
+  s.add_dependency 'parser', '~> 2.3.1.0'
   s.add_development_dependency 'bundler', '~> 1.9'
   s.add_development_dependency 'rspec'
   # spec.add_development_dependency 'rake', '~> 10.0'
