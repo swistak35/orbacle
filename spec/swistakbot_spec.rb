@@ -15,7 +15,10 @@ RSpec.describe Swistakbot do
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new("Foo", "bar")
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Klass.new("Foo"),
+        ParseFileMethods::Result::Method.new("bar"),
+      ]),
     ])
   end
 
@@ -30,14 +33,20 @@ END
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new("Foo", "bar"),
-      ParseFileMethods::Result.new("Foo", "baz"),
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Klass.new("Foo"),
+        ParseFileMethods::Result::Method.new("bar"),
+      ]),
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Klass.new("Foo"),
+        ParseFileMethods::Result::Method.new("baz"),
+      ]),
     ])
   end
 
   it do
     file = <<END
-      module Mod
+      module Some
         class Foo
           def bar
           end
@@ -48,8 +57,16 @@ END
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new("Mod::Foo", "bar"),
-      ParseFileMethods::Result.new("Mod::Foo", "baz"),
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Mod.new("Some"),
+        ParseFileMethods::Result::Klass.new("Foo"),
+        ParseFileMethods::Result::Method.new("bar"),
+      ]),
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Mod.new("Some"),
+        ParseFileMethods::Result::Klass.new("Foo"),
+        ParseFileMethods::Result::Method.new("baz"),
+      ]),
     ])
   end
 end
