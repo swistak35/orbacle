@@ -34,4 +34,22 @@ END
       ParseFileMethods::Result.new("Foo", "baz"),
     ])
   end
+
+  it do
+    file = <<END
+      module Mod
+        class Foo
+          def bar
+          end
+
+          def baz
+          end
+        end
+      end
+END
+    expect(parse_file_methods.(file)).to eq([
+      ParseFileMethods::Result.new("Mod::Foo", "bar"),
+      ParseFileMethods::Result.new("Mod::Foo", "baz"),
+    ])
+  end
 end
