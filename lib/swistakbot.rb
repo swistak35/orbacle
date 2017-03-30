@@ -16,21 +16,7 @@ class ParseFileMethods
     ast = Parser::CurrentRuby.parse(file)
 
     if ast.type == :module
-      module_name = ast.children.first.children.last.to_s
-      child = ast.children[1]
-      if child.type == :begin
-        child.children.flat_map do |c|
-          parse_klass(c, module_name).map do |result|
-            result.unshift(Result::Mod.new(module_name))
-          end
-        end
-      elsif child.type == :class
-        parse_klass(child, module_name).map do |result|
-          result.unshift(Result::Mod.new(module_name))
-        end
-      else
-        raise
-      end
+      parse_module(ast)
     else
       module_name = nil
       parse_klass(ast, module_name)
@@ -38,6 +24,24 @@ class ParseFileMethods
   end
 
   private
+
+  def parse_module(ast)
+    module_name = ast.children.first.children.last.to_s
+    child = ast.children[1]
+    if child.type == :begin
+      child.children.flat_map do |c|
+        parse_klass(c, module_name).map do |result|
+          result.unshift(Result::Mod.new(module_name))
+        end
+      end
+    elsif child.type == :class
+      parse_klass(child, module_name).map do |result|
+        result.unshift(Result::Mod.new(module_name))
+      end
+    else
+      raise
+    end
+  end
 
   def parse_klass(ast, module_name)
     raise "Should be a class" if ast.type != :class
