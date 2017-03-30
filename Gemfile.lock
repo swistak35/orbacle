@@ -8,6 +8,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.3.0)
+    byebug (9.0.5)
     diff-lcs (1.2.5)
     parser (2.3.1.4)
       ast (~> 2.2)
@@ -30,8 +31,9 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.9)
+  byebug
   rspec
   swistakbot!
 
 BUNDLED WITH
-   1.12.5
+   1.14.6

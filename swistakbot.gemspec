@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'parser', '~> 2.3.1.0'
   s.add_development_dependency 'bundler', '~> 1.9'
   s.add_development_dependency 'rspec'
+  s.add_development_dependency 'byebug'
   # spec.add_development_dependency 'rake', '~> 10.0'
   # spec.add_development_dependency 'pry'
   # spec.add_development_dependency 'rails', '~> 4.2'
