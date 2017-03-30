@@ -69,4 +69,32 @@ END
       ]),
     ])
   end
+
+  it do
+    file = <<END
+      module Some
+        class Foo
+          def oof
+          end
+        end
+
+        class Bar
+          def rab
+          end
+        end
+      end
+END
+    expect(parse_file_methods.(file)).to eq([
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Mod.new("Some"),
+        ParseFileMethods::Result::Klass.new("Foo"),
+        ParseFileMethods::Result::Method.new("oof"),
+      ]),
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Mod.new("Some"),
+        ParseFileMethods::Result::Klass.new("Bar"),
+        ParseFileMethods::Result::Method.new("rab"),
+      ]),
+    ])
+  end
 end
