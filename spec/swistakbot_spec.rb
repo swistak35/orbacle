@@ -97,4 +97,25 @@ END
       ]),
     ])
   end
+
+  it do
+    file = <<END
+      module Some
+        module Foo
+          class Bar
+            def baz
+            end
+          end
+        end
+      end
+END
+    expect(parse_file_methods.(file)).to eq([
+      ParseFileMethods::Result.new([
+        ParseFileMethods::Result::Mod.new("Some"),
+        ParseFileMethods::Result::Mod.new("Foo"),
+        ParseFileMethods::Result::Klass.new("Bar"),
+        ParseFileMethods::Result::Method.new("baz"),
+      ]),
+    ])
+  end
 end
