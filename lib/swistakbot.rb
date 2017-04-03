@@ -10,14 +10,17 @@ class ParseFileMethods
       list.unshift(e)
       self
     end
+
+    def with(es)
+      Result.new(es + list)
+    end
   end
 
   class Scope < Struct.new(:list)
-    Mod = Struct.new(:name)
+    Element = Struct.new(:list)
 
-    def with(e)
-      list + [e]
-      self
+    def with(es)
+      Scope.new(list + es)
     end
   end
 
@@ -28,37 +31,41 @@ class ParseFileMethods
     if ast.type == :module
       parse_module(ast, scope)
     else
-      module_name = nil
-      parse_klass(ast, module_name)
+      parse_klass(ast, scope)
     end
   end
 
   private
 
+  def constant_to_list(const)
+    return [] if const.nil?
+    constant_to_list(const.children.first) + [const.children.last.to_s]
+  end
+
   def parse_module(ast, scope)
-    module_name = ast.children.first.children.last.to_s
-    new_scope = scope.with(Scope::Mod.new(module_name))
+    current_scope_element = Scope::Element.new(constant_to_list(ast.children.first))
+    new_scope = scope.with([current_scope_element])
     child = ast.children[1]
     if child.type == :begin
       child.children.flat_map do |c|
-        parse_klass(c, module_name).map do |result|
-          result.unshift(Result::Mod.new(module_name))
+        parse_klass(c, new_scope).map do |result|
+          result.with(scope_element_to_result(current_scope_element))
         end
       end
     elsif child.type == :class
-      parse_klass(child, module_name).map do |result|
-        result.unshift(Result::Mod.new(module_name))
+      parse_klass(child, new_scope).map do |result|
+        result.with(scope_element_to_result(current_scope_element))
       end
     elsif child.type == :module
       parse_module(child, new_scope).map do |result|
-        result.unshift(Result::Mod.new(module_name))
+        result.with(scope_element_to_result(current_scope_element))
       end
     else
       raise
     end
   end
 
-  def parse_klass(ast, module_name)
+  def parse_klass(ast, _scope)
     raise "Should be a class" if ast.type != :class
     methods_block = ast.children.last
     klass_name = ast.children.first.children[1].to_s
@@ -74,6 +81,10 @@ class ParseFileMethods
   def parse_method(klass_name, m)
     method_name = m.children.first.to_s
     Result.new([ Result::Klass.new(klass_name), Result::Method.new(method_name) ])
+  end
+
+  def scope_element_to_result(scope_element)
+    scope_element.list.map {|e| Result::Mod.new(e) }
   end
 end
 
