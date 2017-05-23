@@ -16,18 +16,10 @@ class ParseFileMethods
     end
   end
 
-  class Scope < Struct.new(:list)
-    Element = Struct.new(:list)
-
-    def with(es)
-      Scope.new(list + es)
-    end
-  end
-
   def call(file)
     ast = Parser::CurrentRuby.parse(file)
 
-    scope = Scope.new([])
+    scope = []
     if ast.type == :module
       parse_module(ast, scope)
     else
@@ -43,8 +35,8 @@ class ParseFileMethods
   end
 
   def parse_module(ast, scope)
-    current_scope_element = Scope::Element.new(constant_to_list(ast.children.first))
-    new_scope = scope.with([current_scope_element])
+    current_scope_element = constant_to_list(ast.children.first)
+    new_scope = scope + [current_scope_element]
     child = ast.children[1]
     if child.type == :begin
       child.children.flat_map do |c|
@@ -84,7 +76,7 @@ class ParseFileMethods
   end
 
   def scope_element_to_result(scope_element)
-    scope_element.list.map {|e| Result::Mod.new(e) }
+    scope_element.map {|e| Result::Mod.new(e) }
   end
 end
 
