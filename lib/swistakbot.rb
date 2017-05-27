@@ -19,53 +19,54 @@ class ParseFileMethods
   def call(file)
     ast = Parser::CurrentRuby.parse(file)
 
-    scope = []
+    nesting = []
     if ast.type == :module
-      parse_module(ast, scope)
+      parse_module(ast, nesting)
     else
-      parse_klass(ast, scope)
+      parse_klass(ast, nesting)
     end
   end
 
   private
 
-  def constant_to_nesting_list(const)
-    return [] if const.nil?
-    constant_to_nesting_list(const.children.first) + [const.children.last.to_s]
+  def pre_nesting(ast_const)
+    if ast_const.nil?
+      []
+    else
+      pre_nesting(ast_const.children[0]) + [ast_const.children[1].to_s]
+    end
   end
 
-  def constant_to_nesting(const)
-    constant_to_nesting_list(const).join("::")
+  def get_nesting(ast_const)
+    [pre_nesting(ast_const.children[0]), ast_const.children[1].to_s]
   end
 
-  def nesting_to_scope(nesting)
-    nesting.split("::")
-  end
-
-  def parse_module(ast, scope)
-    current_scope_element = constant_to_nesting(ast.children.first)
-    new_scope = scope + [current_scope_element]
+  def parse_module(ast, old_nesting)
+    ast_const = ast.children.first
+    pre_nesting, nesting_name = get_nesting(ast_const)
+    current_nesting_element = [:mod, pre_nesting, nesting_name]
+    new_nesting = old_nesting + [current_nesting_element]
     child = ast.children[1]
     if child.type == :begin
       child.children.flat_map do |c|
-        parse_klass(c, new_scope).map do |result|
-          result.with(scope_element_to_result(nesting_to_scope(current_scope_element)))
+        parse_klass(c, new_nesting).map do |result|
+          result.with(nesting_element_to_result(current_nesting_element))
         end
       end
     elsif child.type == :class
-      parse_klass(child, new_scope).map do |result|
-        result.with(scope_element_to_result(nesting_to_scope(current_scope_element)))
+      parse_klass(child, new_nesting).map do |result|
+        result.with(nesting_element_to_result(current_nesting_element))
       end
     elsif child.type == :module
-      parse_module(child, new_scope).map do |result|
-        result.with(scope_element_to_result(nesting_to_scope(current_scope_element)))
+      parse_module(child, new_nesting).map do |result|
+        result.with(nesting_element_to_result(current_nesting_element))
       end
     else
       raise
     end
   end
 
-  def parse_klass(ast, _scope)
+  def parse_klass(ast, _nesting)
     raise "Should be a class" if ast.type != :class
     methods_block = ast.children.last
     klass_name = ast.children.first.children[1].to_s
@@ -83,8 +84,9 @@ class ParseFileMethods
     Result.new([ Result::Klass.new(klass_name), Result::Method.new(method_name) ])
   end
 
-  def scope_element_to_result(scope_element)
-    scope_element.map {|e| Result::Mod.new(e) }
+  def nesting_element_to_result(current_nesting_element)
+    _, pre_nesting, nesting_name = current_nesting_element
+    (pre_nesting + [nesting_name]).map {|e| Result::Mod.new(e)}
   end
 end
 
