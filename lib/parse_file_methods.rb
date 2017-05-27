@@ -25,29 +25,25 @@ class ParseFileMethods
   end
 
   def parse_module(ast, old_nesting)
-    ast_const = ast.children.first
-    pre_nesting, nesting_name = get_nesting(ast_const)
+    pre_nesting, nesting_name = get_nesting(ast.children[0])
     current_nesting_element = [:mod, pre_nesting, nesting_name]
     new_nesting = old_nesting + [current_nesting_element]
-    child = ast.children[1]
-    parse(child, new_nesting).map do |method_parent, method_name|
+    parse(ast.children[1], new_nesting).map do |method_parent, method_name|
       build_method_result(current_nesting_element, method_parent, method_name)
     end
   end
 
   def parse_klass(ast, old_nesting)
-    ast_const = ast.children.first
-    pre_nesting, nesting_name = get_nesting(ast_const)
+    pre_nesting, nesting_name = get_nesting(ast.children[0])
     current_nesting_element = [:klass, pre_nesting, nesting_name]
     new_nesting = old_nesting + [current_nesting_element]
-    child = ast.children.last
-    parse(child, new_nesting).map do |method_parent, method_name|
+    parse(ast.children[2], new_nesting).map do |method_parent, method_name|
       build_method_result(current_nesting_element, method_parent, method_name)
     end
   end
 
   def parse_def(m, _nesting)
-    method_name = m.children.first.to_s
+    method_name = m.children[0].to_s
     [[nil, method_name]]
   end
 
