@@ -5,25 +5,21 @@ class ParseFileMethods
     ast = Parser::CurrentRuby.parse(file)
 
     nesting = []
-    if ast.type == :module
-      parse_module(ast, nesting)
-    else
-      parse_klass(ast, nesting)
-    end
+    parse(ast, nesting)
   end
 
   private
 
-  def pre_nesting(ast_const)
-    if ast_const.nil?
-      []
-    else
-      pre_nesting(ast_const.children[0]) + [ast_const.children[1].to_s]
+  def parse(ast, nesting)
+    case ast.type
+    when :module
+      parse_module(ast, nesting)
+    when :class
+      parse_klass(ast, nesting)
+    when :begin
+      parse_begin(ast, nesting)
+    else raise
     end
-  end
-
-  def get_nesting(ast_const)
-    [pre_nesting(ast_const.children[0]), ast_const.children[1].to_s]
   end
 
   def parse_module(ast, old_nesting)
@@ -32,22 +28,8 @@ class ParseFileMethods
     current_nesting_element = [:mod, pre_nesting, nesting_name]
     new_nesting = old_nesting + [current_nesting_element]
     child = ast.children[1]
-    if child.type == :begin
-      child.children.flat_map do |c|
-        parse_klass(c, new_nesting).map do |method_parent, method_name|
-          build_method_result(current_nesting_element, method_parent, method_name)
-        end
-      end
-    elsif child.type == :class
-      parse_klass(child, new_nesting).map do |method_parent, method_name|
-        build_method_result(current_nesting_element, method_parent, method_name)
-      end
-    elsif child.type == :module
-      parse_module(child, new_nesting).map do |method_parent, method_name|
-        build_method_result(current_nesting_element, method_parent, method_name)
-      end
-    else
-      raise
+    parse(child, new_nesting).map do |method_parent, method_name|
+      build_method_result(current_nesting_element, method_parent, method_name)
     end
   end
 
@@ -69,9 +51,27 @@ class ParseFileMethods
     [klass_name, method_name]
   end
 
+  def parse_begin(ast, nesting)
+    ast.children.flat_map do |c|
+      parse(c, nesting)
+    end
+  end
+
   def build_method_result(current_nesting_element, method_parent, method_name)
     _, pre_nesting, nesting_name = current_nesting_element
     new_parent = (pre_nesting + [nesting_name, method_parent]).join("::")
     [new_parent, method_name]
+  end
+
+  def pre_nesting(ast_const)
+    if ast_const.nil?
+      []
+    else
+      pre_nesting(ast_const.children[0]) + [ast_const.children[1].to_s]
+    end
+  end
+
+  def get_nesting(ast_const)
+    [pre_nesting(ast_const.children[0]), ast_const.children[1].to_s]
   end
 end
