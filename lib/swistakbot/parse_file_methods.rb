@@ -24,7 +24,8 @@ class Swistakbot::ParseFileMethods < Parser::AST::Processor
     @constants << [
       scope_from_nesting_and_prename(@current_nesting, prename),
       module_name,
-      :mod
+      :mod,
+      { line: ast_name.loc.line },
     ]
 
     current_nesting_element = [:mod, prename, module_name]
@@ -42,7 +43,8 @@ class Swistakbot::ParseFileMethods < Parser::AST::Processor
     @constants << [
       scope_from_nesting_and_prename(@current_nesting, prename),
       klass_name,
-      :klass
+      :klass,
+      { line: ast_name.loc.line },
     ]
 
     current_nesting_element = [:klass, prename, klass_name]
@@ -67,7 +69,8 @@ class Swistakbot::ParseFileMethods < Parser::AST::Processor
     @constants << [
       scope_from_nesting_and_prename(@current_nesting, prename(const_prename)),
       const_name.to_s,
-      :other
+      :other,
+      { line: ast.loc.line }
     ]
 
     super(ast)

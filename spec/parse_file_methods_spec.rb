@@ -13,7 +13,7 @@ END
       ["Foo", "bar"],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass]
+      [nil, "Foo", :klass, { line: 1 }]
     ])
   end
 
@@ -33,7 +33,7 @@ END
       ["Foo", "baz"],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass]
+      [nil, "Foo", :klass, { line: 1 }]
     ])
   end
 
@@ -55,8 +55,8 @@ END
       ["Some::Foo", "baz"],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod],
-      ["Some", "Foo", :klass],
+      [nil, "Some", :mod, { line: 1 }],
+      ["Some", "Foo", :klass, { line: 2 }],
     ])
   end
 
@@ -81,9 +81,9 @@ END
       ["Some::Bar", "rab"],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod],
-      ["Some", "Foo", :klass],
-      ["Some", "Bar", :klass],
+      [nil, "Some", :mod, { line: 1 }],
+      ["Some", "Foo", :klass, { line: 2 }],
+      ["Some", "Bar", :klass, { line: 7 }],
     ])
   end
 
@@ -103,9 +103,9 @@ END
       ["Some::Foo::Bar", "baz"],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod],
-      ["Some", "Foo", :mod],
-      ["Some::Foo", "Bar", :klass],
+      [nil, "Some", :mod, { line: 1 }],
+      ["Some", "Foo", :mod, { line: 2 }],
+      ["Some::Foo", "Bar", :klass, { line: 3 }],
     ])
   end
 
@@ -124,8 +124,8 @@ END
       ["Some::Foo::Bar", "baz"],
     ])
     expect(r[:constants]).to match_array([
-      ["Some", "Foo", :mod],
-      ["Some::Foo", "Bar", :klass],
+      ["Some", "Foo", :mod, { line: 1 }],
+      ["Some::Foo", "Bar", :klass, { line: 2 }],
     ])
   end
 
@@ -144,8 +144,8 @@ END
       ["Some::Foo::Bar::Baz", "xxx"],
     ])
     expect(r[:constants]).to match_array([
-      ["Some::Foo", "Bar", :mod],
-      ["Some::Foo::Bar", "Baz", :klass],
+      ["Some::Foo", "Bar", :mod, { line: 1 }],
+      ["Some::Foo::Bar", "Baz", :klass, { line: 2 }],
     ])
   end
 
@@ -164,8 +164,8 @@ END
       ["Some::Foo::Bar::Baz", "xxx"],
     ])
     expect(r[:constants]).to match_array([
-      ["Some", "Foo", :mod],
-      ["Some::Foo::Bar", "Baz", :klass],
+      ["Some", "Foo", :mod, { line: 1 }],
+      ["Some::Foo::Bar", "Baz", :klass, { line: 2 }],
     ])
   end
 
@@ -196,8 +196,8 @@ END
       ["Foo", "bar"],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass],
-      ["Foo", "Bar", :other],
+      [nil, "Foo", :klass, { line: 1 }],
+      ["Foo", "Bar", :other, { line: 2 }],
     ])
   end
 
@@ -210,8 +210,8 @@ END
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass],
-      ["Foo::Ban::Baz", "Bar", :other],
+      [nil, "Foo", :klass, { line: 1 }],
+      ["Foo::Ban::Baz", "Bar", :other, { line: 2 }],
     ])
   end
 
@@ -224,8 +224,8 @@ END
     # another example would be with ::Bar::Baz because it's different case
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass],
-      [nil, "Bar", :other],
+      [nil, "Foo", :klass, { line: 1 }],
+      [nil, "Bar", :other, { line: 2 }],
     ])
   end
 
