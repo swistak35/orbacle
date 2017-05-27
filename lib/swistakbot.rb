@@ -29,28 +29,36 @@ class ParseFileMethods
 
   private
 
-  def constant_to_list(const)
+  def constant_to_nesting_list(const)
     return [] if const.nil?
-    constant_to_list(const.children.first) + [const.children.last.to_s]
+    constant_to_nesting_list(const.children.first) + [const.children.last.to_s]
+  end
+
+  def constant_to_nesting(const)
+    constant_to_nesting_list(const).join("::")
+  end
+
+  def nesting_to_scope(nesting)
+    nesting.split("::")
   end
 
   def parse_module(ast, scope)
-    current_scope_element = constant_to_list(ast.children.first)
+    current_scope_element = constant_to_nesting(ast.children.first)
     new_scope = scope + [current_scope_element]
     child = ast.children[1]
     if child.type == :begin
       child.children.flat_map do |c|
         parse_klass(c, new_scope).map do |result|
-          result.with(scope_element_to_result(current_scope_element))
+          result.with(scope_element_to_result(nesting_to_scope(current_scope_element)))
         end
       end
     elsif child.type == :class
       parse_klass(child, new_scope).map do |result|
-        result.with(scope_element_to_result(current_scope_element))
+        result.with(scope_element_to_result(nesting_to_scope(current_scope_element)))
       end
     elsif child.type == :module
       parse_module(child, new_scope).map do |result|
-        result.with(scope_element_to_result(current_scope_element))
+        result.with(scope_element_to_result(nesting_to_scope(current_scope_element)))
       end
     else
       raise
