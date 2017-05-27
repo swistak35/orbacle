@@ -32,7 +32,10 @@ class ParseFileMethods
     {
       methods: child_result[:methods].map do |method_parent, method_name|
         build_method_result(current_nesting_element, method_parent, method_name)
-      end
+      end,
+      constants: child_result[:constants].map do |parent, name, type|
+        build_constant_result(current_nesting_element, parent, name, type)
+      end + [ [pre_nesting.empty? ? nil : pre_nesting.join("::"), nesting_name, :mod] ]
     }
   end
 
@@ -45,6 +48,9 @@ class ParseFileMethods
       methods: child_result[:methods].map do |method_parent, method_name|
         build_method_result(current_nesting_element, method_parent, method_name)
       end,
+      constants: child_result[:constants].map do |parent, name, type|
+        build_constant_result(current_nesting_element, parent, name, type)
+      end + [ [pre_nesting.empty? ? nil : pre_nesting.join("::"), nesting_name, :klass] ]
     }
   end
 
@@ -52,13 +58,15 @@ class ParseFileMethods
     method_name = m.children[0].to_s
     {
       methods: [[nil, method_name]],
+      constants: [],
     }
   end
 
   def parse_begin(ast, nesting)
     results = ast.children.map {|c| parse(c, nesting) }
     {
-      methods: results.flat_map {|r| r[:methods] }
+      methods: results.flat_map {|r| r[:methods] },
+      constants: results.flat_map {|r| r[:constants] },
     }
   end
 
@@ -66,6 +74,12 @@ class ParseFileMethods
     _, pre_nesting, nesting_name = current_nesting_element
     new_parent = (pre_nesting + [nesting_name, method_parent]).compact.join("::")
     [new_parent, method_name]
+  end
+
+  def build_constant_result(current_nesting_element, parent, name, type)
+    _, pre_nesting, nesting_name = current_nesting_element
+    new_parent = (pre_nesting + [nesting_name, parent]).compact.join("::")
+    [new_parent, name, type]
   end
 
   def pre_nesting(ast_const)

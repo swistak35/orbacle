@@ -8,8 +8,12 @@ RSpec.describe ParseFileMethods do
         end
       end
 END
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Foo", "bar"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Foo", :klass]
     ])
   end
 
@@ -23,9 +27,13 @@ END
         end
       end
 END
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Foo", "bar"],
       ["Foo", "baz"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Foo", :klass]
     ])
   end
 
@@ -41,9 +49,14 @@ END
         end
       end
 END
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Some::Foo", "bar"],
       ["Some::Foo", "baz"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Some", :mod],
+      ["Some", "Foo", :klass],
     ])
   end
 
@@ -62,9 +75,15 @@ END
       end
 END
 
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Some::Foo", "oof"],
       ["Some::Bar", "rab"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Some", :mod],
+      ["Some", "Foo", :klass],
+      ["Some", "Bar", :klass],
     ])
   end
 
@@ -79,8 +98,14 @@ END
         end
       end
 END
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Some::Foo::Bar", "baz"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Some", :mod],
+      ["Some", "Foo", :mod],
+      ["Some::Foo", "Bar", :klass],
     ])
   end
 
@@ -94,8 +119,13 @@ END
       end
 END
 
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Some::Foo::Bar", "baz"],
+    ])
+    expect(r[:constants]).to match_array([
+      ["Some", "Foo", :mod],
+      ["Some::Foo", "Bar", :klass],
     ])
   end
 
@@ -109,8 +139,13 @@ END
       end
 END
 
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Some::Foo::Bar::Baz", "xxx"],
+    ])
+    expect(r[:constants]).to match_array([
+      ["Some::Foo", "Bar", :mod],
+      ["Some::Foo::Bar", "Baz", :klass],
     ])
   end
 
@@ -124,8 +159,13 @@ END
       end
 END
 
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       ["Some::Foo::Bar::Baz", "xxx"],
+    ])
+    expect(r[:constants]).to match_array([
+      ["Some", "Foo", :mod],
+      ["Some::Foo::Bar", "Baz", :klass],
     ])
   end
 
@@ -135,15 +175,17 @@ END
       end
 END
 
-    expect(parse_file_methods.(file)).to eq([
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
       [nil, "xxx"],
     ])
+    expect(r[:constants]).to match_array([])
   end
 
   def parse_file_methods
     ->(file) {
       service = ParseFileMethods.new
-      service.(file)[:methods]
+      service.(file)
     }
   end
 end
