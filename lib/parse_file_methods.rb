@@ -28,29 +28,38 @@ class ParseFileMethods
     pre_nesting, nesting_name = get_nesting(ast.children[0])
     current_nesting_element = [:mod, pre_nesting, nesting_name]
     new_nesting = old_nesting + [current_nesting_element]
-    parse(ast.children[1], new_nesting).map do |method_parent, method_name|
-      build_method_result(current_nesting_element, method_parent, method_name)
-    end
+    child_result = parse(ast.children[1], new_nesting)
+    {
+      methods: child_result[:methods].map do |method_parent, method_name|
+        build_method_result(current_nesting_element, method_parent, method_name)
+      end
+    }
   end
 
   def parse_klass(ast, old_nesting)
     pre_nesting, nesting_name = get_nesting(ast.children[0])
     current_nesting_element = [:klass, pre_nesting, nesting_name]
     new_nesting = old_nesting + [current_nesting_element]
-    parse(ast.children[2], new_nesting).map do |method_parent, method_name|
-      build_method_result(current_nesting_element, method_parent, method_name)
-    end
+    child_result = parse(ast.children[2], new_nesting)
+    {
+      methods: child_result[:methods].map do |method_parent, method_name|
+        build_method_result(current_nesting_element, method_parent, method_name)
+      end,
+    }
   end
 
   def parse_def(m, _nesting)
     method_name = m.children[0].to_s
-    [[nil, method_name]]
+    {
+      methods: [[nil, method_name]],
+    }
   end
 
   def parse_begin(ast, nesting)
-    ast.children.flat_map do |c|
-      parse(c, nesting)
-    end
+    results = ast.children.map {|c| parse(c, nesting) }
+    {
+      methods: results.flat_map {|r| r[:methods] }
+    }
   end
 
   def build_method_result(current_nesting_element, method_parent, method_name)

@@ -1,8 +1,6 @@
 require 'spec_helper'
 
 RSpec.describe ParseFileMethods do
-  let(:parse_file_methods) { ParseFileMethods.new }
-
   specify do
     file = <<END
       class Foo
@@ -140,5 +138,12 @@ END
     expect(parse_file_methods.(file)).to eq([
       [nil, "xxx"],
     ])
+  end
+
+  def parse_file_methods
+    ->(file) {
+      service = ParseFileMethods.new
+      service.(file)[:methods]
+    }
   end
 end
