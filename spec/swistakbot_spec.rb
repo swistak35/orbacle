@@ -15,10 +15,7 @@ RSpec.describe Swistakbot do
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Klass.new("Foo"),
-        ParseFileMethods::Result::Method.new("bar"),
-      ]),
+      ["Foo", "bar"],
     ])
   end
 
@@ -33,14 +30,8 @@ END
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Klass.new("Foo"),
-        ParseFileMethods::Result::Method.new("bar"),
-      ]),
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Klass.new("Foo"),
-        ParseFileMethods::Result::Method.new("baz"),
-      ]),
+      ["Foo", "bar"],
+      ["Foo", "baz"],
     ])
   end
 
@@ -57,16 +48,8 @@ END
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Klass.new("Foo"),
-        ParseFileMethods::Result::Method.new("bar"),
-      ]),
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Klass.new("Foo"),
-        ParseFileMethods::Result::Method.new("baz"),
-      ]),
+      ["Some::Foo", "bar"],
+      ["Some::Foo", "baz"],
     ])
   end
 
@@ -86,16 +69,8 @@ END
 END
 
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Klass.new("Foo"),
-        ParseFileMethods::Result::Method.new("oof"),
-      ]),
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Klass.new("Bar"),
-        ParseFileMethods::Result::Method.new("rab"),
-      ]),
+      ["Some::Foo", "oof"],
+      ["Some::Bar", "rab"],
     ])
   end
 
@@ -111,12 +86,7 @@ END
       end
 END
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Mod.new("Foo"),
-        ParseFileMethods::Result::Klass.new("Bar"),
-        ParseFileMethods::Result::Method.new("baz"),
-      ]),
+      ["Some::Foo::Bar", "baz"],
     ])
   end
 
@@ -131,12 +101,7 @@ END
 END
 
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Mod.new("Foo"),
-        ParseFileMethods::Result::Klass.new("Bar"),
-        ParseFileMethods::Result::Method.new("baz"),
-      ]),
+      ["Some::Foo::Bar", "baz"],
     ])
   end
 
@@ -151,13 +116,7 @@ END
 END
 
     expect(parse_file_methods.(file)).to eq([
-      ParseFileMethods::Result.new([
-        ParseFileMethods::Result::Mod.new("Some"),
-        ParseFileMethods::Result::Mod.new("Foo"),
-        ParseFileMethods::Result::Mod.new("Bar"),
-        ParseFileMethods::Result::Klass.new("Baz"),
-        ParseFileMethods::Result::Method.new("xxx"),
-      ]),
+      ["Some::Foo::Bar::Baz", "xxx"],
     ])
   end
 end

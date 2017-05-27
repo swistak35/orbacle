@@ -1,21 +1,6 @@
 require 'parser/current'
 
 class ParseFileMethods
-  class Result < Struct.new(:list)
-    Mod = Struct.new(:name)
-    Klass = Struct.new(:name)
-    Method = Struct.new(:name)
-
-    def unshift(e)
-      list.unshift(e)
-      self
-    end
-
-    def with(es)
-      Result.new(es + list)
-    end
-  end
-
   def call(file)
     ast = Parser::CurrentRuby.parse(file)
 
@@ -49,17 +34,17 @@ class ParseFileMethods
     child = ast.children[1]
     if child.type == :begin
       child.children.flat_map do |c|
-        parse_klass(c, new_nesting).map do |result|
-          result.with(nesting_element_to_result(current_nesting_element))
+        parse_klass(c, new_nesting).map do |method_parent, method_name|
+          build_method_result(current_nesting_element, method_parent, method_name)
         end
       end
     elsif child.type == :class
-      parse_klass(child, new_nesting).map do |result|
-        result.with(nesting_element_to_result(current_nesting_element))
+      parse_klass(child, new_nesting).map do |method_parent, method_name|
+        build_method_result(current_nesting_element, method_parent, method_name)
       end
     elsif child.type == :module
-      parse_module(child, new_nesting).map do |result|
-        result.with(nesting_element_to_result(current_nesting_element))
+      parse_module(child, new_nesting).map do |method_parent, method_name|
+        build_method_result(current_nesting_element, method_parent, method_name)
       end
     else
       raise
@@ -81,12 +66,13 @@ class ParseFileMethods
 
   def parse_method(klass_name, m)
     method_name = m.children.first.to_s
-    Result.new([ Result::Klass.new(klass_name), Result::Method.new(method_name) ])
+    [klass_name, method_name]
   end
 
-  def nesting_element_to_result(current_nesting_element)
+  def build_method_result(current_nesting_element, method_parent, method_name)
     _, pre_nesting, nesting_name = current_nesting_element
-    (pre_nesting + [nesting_name]).map {|e| Result::Mod.new(e)}
+    new_parent = (pre_nesting + [nesting_name, method_parent]).join("::")
+    [new_parent, method_name]
   end
 end
 
