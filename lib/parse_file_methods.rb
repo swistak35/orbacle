@@ -11,6 +11,7 @@ class ParseFileMethods
   private
 
   def parse(ast, nesting)
+    # require 'byebug'; byebug
     case ast.type
     when :module
       parse_module(ast, nesting)
@@ -20,6 +21,8 @@ class ParseFileMethods
       parse_begin(ast, nesting)
     when :def
       parse_def(ast, nesting)
+    when :casgn
+      parse_casgn(ast, nesting)
     else raise
     end
   end
@@ -67,6 +70,15 @@ class ParseFileMethods
     {
       methods: results.flat_map {|r| r[:methods] },
       constants: results.flat_map {|r| r[:constants] },
+    }
+  end
+
+  def parse_casgn(ast, nesting)
+    # require 'byebug'; byebug
+    scope, name, _expr = ast.children
+    {
+      methods: [],
+      constants: [[scope.nil? ? nil : pre_nesting(scope).join("::"), name.to_s, :other]]
     }
   end
 

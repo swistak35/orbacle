@@ -182,6 +182,57 @@ END
     expect(r[:constants]).to match_array([])
   end
 
+  specify do
+    file = <<END
+      class Foo
+        Bar = 32
+
+        def bar
+        end
+      end
+END
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
+      ["Foo", "bar"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Foo", :klass],
+      ["Foo", "Bar", :other],
+    ])
+  end
+
+  specify do
+    file = <<END
+      class Foo
+        Ban::Baz::Bar = 32
+      end
+END
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([])
+    expect(r[:constants]).to match_array([
+      [nil, "Foo", :klass],
+      ["Foo::Ban::Baz", "Bar", :other],
+    ])
+  end
+
+  xit do
+    # nasty
+    file = <<END
+      class Foo
+        ::Bar = 32
+      end
+END
+    # r = parse_file_methods.(file)
+    # expect(r[:methods]).to eq([
+    #   ["Foo", "bar"],
+    # ])
+    # expect(r[:constants]).to match_array([
+    #   [nil, "Foo", :klass],
+    #   ["Foo", "Bar", :other],
+    # ])
+  end
+
+
   def parse_file_methods
     ->(file) {
       service = ParseFileMethods.new
