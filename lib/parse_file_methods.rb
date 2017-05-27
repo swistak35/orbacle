@@ -1,97 +1,85 @@
 require 'parser/current'
 
-class ParseFileMethods
-  def call(file)
+class ParseFileMethods < Parser::AST::Processor
+  def initialize
+  end
+
+  def process_file(file)
     ast = Parser::CurrentRuby.parse(file)
 
-    nesting = []
-    parse(ast, nesting)
+    reset_file!
+
+    process(ast)
+
+    {
+      methods: @methods,
+      constants: @constants,
+    }
   end
 
-  private
-
-  def parse(ast, nesting)
-    # require 'byebug'; byebug
-    case ast.type
-    when :module
-      parse_module(ast, nesting)
-    when :class
-      parse_klass(ast, nesting)
-    when :begin
-      parse_begin(ast, nesting)
-    when :def
-      parse_def(ast, nesting)
-    when :casgn
-      parse_casgn(ast, nesting)
-    else raise
-    end
+  def reset_file!
+    @current_nesting = []
+    @methods = []
+    @constants = []
   end
 
-  def parse_module(ast, old_nesting)
+  def on_module(ast)
     pre_nesting, nesting_name = get_nesting(ast.children[0])
     current_nesting_element = [:mod, pre_nesting, nesting_name]
-    new_nesting = old_nesting + [current_nesting_element]
-    child_result = parse(ast.children[1], new_nesting)
-    {
-      methods: child_result[:methods].map do |method_parent, method_name|
-        build_method_result(current_nesting_element, method_parent, method_name)
-      end,
-      constants: child_result[:constants].map do |parent, name, type|
-        build_constant_result(current_nesting_element, parent, name, type)
-      end + [ [pre_nesting.empty? ? nil : pre_nesting.join("::"), nesting_name, :mod] ]
-    }
+
+    @constants << [ join_nesting_to_scope(nesting_to_scope(@current_nesting), pre_nesting), nesting_name, :mod ]
+
+    @current_nesting << current_nesting_element
+
+    super(ast)
+
+    @current_nesting.pop
   end
 
-  def parse_klass(ast, old_nesting)
+  def on_class(ast)
     pre_nesting, nesting_name = get_nesting(ast.children[0])
     current_nesting_element = [:klass, pre_nesting, nesting_name]
-    new_nesting = old_nesting + [current_nesting_element]
-    child_result = parse(ast.children[2], new_nesting)
-    {
-      methods: child_result[:methods].map do |method_parent, method_name|
-        build_method_result(current_nesting_element, method_parent, method_name)
-      end,
-      constants: child_result[:constants].map do |parent, name, type|
-        build_constant_result(current_nesting_element, parent, name, type)
-      end + [ [pre_nesting.empty? ? nil : pre_nesting.join("::"), nesting_name, :klass] ]
-    }
+
+    @constants << [ join_nesting_to_scope(nesting_to_scope(@current_nesting), pre_nesting), nesting_name, :klass ]
+
+    @current_nesting << current_nesting_element
+
+    super(ast)
+
+    @current_nesting.pop
   end
 
-  def parse_def(m, _nesting)
-    method_name = m.children[0].to_s
-    {
-      methods: [[nil, method_name]],
-      constants: [],
-    }
+  def on_def(ast)
+    method_name = ast.children[0].to_s
+
+    @methods << [ nesting_to_scope(@current_nesting), method_name ]
+
+    super(ast)
   end
 
-  def parse_begin(ast, nesting)
-    results = ast.children.map {|c| parse(c, nesting) }
-    {
-      methods: results.flat_map {|r| r[:methods] },
-      constants: results.flat_map {|r| r[:constants] },
-    }
+  def nesting_to_scope(nesting)
+    return nil if nesting.empty?
+
+    nesting.map do |type, pre, name|
+      pre + [name]
+    end.flatten.join("::")
   end
 
-  def parse_casgn(ast, nesting)
-    # require 'byebug'; byebug
+  def join_nesting_to_scope(scope, nesting)
+    result = ([scope] + nesting).compact.join("::")
+    result.empty? ? nil : result
+  end
+
+  def on_casgn(ast)
     scope, name, _expr = ast.children
-    {
-      methods: [],
-      constants: [[scope.nil? ? nil : pre_nesting(scope).join("::"), name.to_s, :other]]
-    }
-  end
 
-  def build_method_result(current_nesting_element, method_parent, method_name)
-    _, pre_nesting, nesting_name = current_nesting_element
-    new_parent = (pre_nesting + [nesting_name, method_parent]).compact.join("::")
-    [new_parent, method_name]
-  end
+    @constants << [
+      join_nesting_to_scope(nesting_to_scope(@current_nesting), pre_nesting(scope)),
+      name.to_s,
+      :other
+    ]
 
-  def build_constant_result(current_nesting_element, parent, name, type)
-    _, pre_nesting, nesting_name = current_nesting_element
-    new_parent = (pre_nesting + [nesting_name, parent]).compact.join("::")
-    [new_parent, name, type]
+    super(ast)
   end
 
   def pre_nesting(ast_const)
@@ -106,3 +94,5 @@ class ParseFileMethods
     [pre_nesting(ast_const.children[0]), ast_const.children[1].to_s]
   end
 end
+
+

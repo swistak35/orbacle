@@ -236,7 +236,7 @@ END
   def parse_file_methods
     ->(file) {
       service = ParseFileMethods.new
-      service.(file)
+      service.process_file(file)
     }
   end
 end
