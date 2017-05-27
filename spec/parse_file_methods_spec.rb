@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe ParseFileMethods do
+RSpec.describe Swistakbot::ParseFileMethods do
   specify do
     file = <<END
       class Foo
@@ -232,7 +232,7 @@ END
 
   def parse_file_methods
     ->(file) {
-      service = ParseFileMethods.new
+      service = Swistakbot::ParseFileMethods.new
       service.process_file(file)
     }
   end

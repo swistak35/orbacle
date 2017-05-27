@@ -1,1 +1,4 @@
-require 'parse_file_methods'
+module Swistakbot
+end
+
+require 'swistakbot/parse_file_methods'

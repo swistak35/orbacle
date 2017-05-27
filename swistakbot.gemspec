@@ -1,22 +1,25 @@
-Gem::Specification.new do |s|
-  s.name        = 'swistakbot'
-  s.version     = '0.0.1'
-  s.date        = '2016-11-30'
-  s.summary     = "Static analysis for Ruby"
-  s.description = "A simple hello world gem"
-  s.authors     = ["Rafał Łasocha"]
-  s.email       = "me@swistak35.com"
-  s.files       = ["lib/swistakbot.rb"]
-  # s.homepage    = 'http://rubygems.org/gems/hola'
-  # s.license     = 'MIT'
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+Gem::Specification.new do |spec|
+  spec.name          = 'swistakbot'
+  spec.version       = '0.0.1'
+  # spec.licenses      = ['MIT']
+  spec.authors       = ['Rafał Łasocha']
+  spec.email         = 'swistakbot@swistak35.com'
+
+  spec.summary       = "Static analysis for Ruby"
+  spec.description   = "A simple hello world gem"
+  # spec.homepage      = ''
+
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.bindir        = 'exe'
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.require_paths = ['lib']
   
-  s.add_dependency 'parser', '~> 2.3.1.0'
-  s.add_development_dependency 'bundler', '~> 1.9'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'byebug'
-  # spec.add_development_dependency 'rake', '~> 10.0'
-  # spec.add_development_dependency 'pry'
-  # spec.add_development_dependency 'rails', '~> 4.2'
-  # spec.add_development_dependency 'sqlite3'
-  # spec.add_development_dependency 'rack-test'
+  spec.add_dependency 'parser', '~> 2.3.1.0'
+  spec.add_development_dependency 'bundler', '~> 1.9'
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'byebug'
 end
