@@ -115,4 +115,30 @@ END
       ["Some::Foo::Bar::Baz", "xxx"],
     ])
   end
+
+  it do
+    file = <<END
+      module Some::Foo
+        class Bar::Baz
+          def xxx
+          end
+        end
+      end
+END
+
+    expect(parse_file_methods.(file)).to eq([
+      ["Some::Foo::Bar::Baz", "xxx"],
+    ])
+  end
+
+  it do
+    file = <<END
+      def xxx
+      end
+END
+
+    expect(parse_file_methods.(file)).to eq([
+      [nil, "xxx"],
+    ])
+  end
 end
