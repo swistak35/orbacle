@@ -3,6 +3,7 @@ PATH
   specs:
     swistakbot (0.0.1)
       parser (~> 2.3.1.0)
+      sqlite3
 
 GEM
   remote: https://rubygems.org/
@@ -25,6 +26,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
+    sqlite3 (1.3.13)
 
 PLATFORMS
   ruby
