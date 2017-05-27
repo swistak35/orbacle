@@ -18,6 +18,8 @@ class ParseFileMethods
       parse_klass(ast, nesting)
     when :begin
       parse_begin(ast, nesting)
+    when :def
+      parse_def(ast, nesting)
     else raise
     end
   end
@@ -33,22 +35,20 @@ class ParseFileMethods
     end
   end
 
-  def parse_klass(ast, _nesting)
-    raise "Should be a class" if ast.type != :class
-    methods_block = ast.children.last
-    klass_name = ast.children.first.children[1].to_s
-    if methods_block.type == :begin
-      return methods_block.children.map {|m| parse_method(klass_name, m) }
-    elsif methods_block.type == :def
-      return [ parse_method(klass_name, methods_block) ]
-    else
-      raise "Not implemented yet"
+  def parse_klass(ast, old_nesting)
+    ast_const = ast.children.first
+    pre_nesting, nesting_name = get_nesting(ast_const)
+    current_nesting_element = [:klass, pre_nesting, nesting_name]
+    new_nesting = old_nesting + [current_nesting_element]
+    child = ast.children.last
+    parse(child, new_nesting).map do |method_parent, method_name|
+      build_method_result(current_nesting_element, method_parent, method_name)
     end
   end
 
-  def parse_method(klass_name, m)
+  def parse_def(m, _nesting)
     method_name = m.children.first.to_s
-    [klass_name, method_name]
+    [[nil, method_name]]
   end
 
   def parse_begin(ast, nesting)
@@ -59,7 +59,7 @@ class ParseFileMethods
 
   def build_method_result(current_nesting_element, method_parent, method_name)
     _, pre_nesting, nesting_name = current_nesting_element
-    new_parent = (pre_nesting + [nesting_name, method_parent]).join("::")
+    new_parent = (pre_nesting + [nesting_name, method_parent]).compact.join("::")
     [new_parent, method_name]
   end
 
