@@ -1,2 +1,8 @@
 database:
   override:
+    - echo "Skipping DB section."
+
+machine:
+  ruby:
+    version: 2.3.4
+
