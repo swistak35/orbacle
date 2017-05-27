@@ -3,6 +3,7 @@
 require 'optparse'
 require 'swistakbot'
 require 'sqlite3'
+require 'jimson'
 
 Dir.chdir(__dir__)
 
@@ -61,6 +62,70 @@ SQL
   end
 end
 
+class MyHandler
+  extend Jimson::Handler
+
+  def call(env)
+    puts env.inspect
+    logger(env.inspect)
+    super(env)
+  end
+
+  def logger(text)
+    File.open("/home/swistak35/jimson.log", "a") {|f| f.puts(text) }
+  end
+
+  def foo(x)
+    puts x
+  end
+end
+
+class IoServer
+  def logger(text)
+    File.open("/home/swistak35/jimson.log", "a") {|f| f.puts(text) }
+  end
+
+  def start
+    loop do
+      headers = {}
+      loop do
+        line = $stdin.gets
+        return if line.nil?
+        break if line.chomp.empty?
+        logger "Received header line: #{line.inspect}"
+        _, hname, hval = line.chomp.match(/(.+):\s*(.*)/).to_a
+        headers[hname] = hval
+      end
+      body = $stdin.gets(headers["Content-Length"].to_i)
+      logger "Received body: #{body.inspect}"
+      json = JSON.parse(body)
+      call_method(json)
+    end
+  end
+
+  def call_method(json)
+    method_name = json["method"]
+    params = json["params"]
+    case method_name
+    when "textDocument/definition"
+      call_definition(params)
+    else logger("Called unhandled method '#{method_name}' with params '#{params}'")
+    end
+  end
+
+  def call_definition(params)
+    logger("Definition called with params #{params}!")
+  end
+end
+
+def server(options)
+  server = IoServer.new
+  server.start
+  # server = Jimson::Server.new(MyHandler.new)
+  # server.start
+end
+
 case ARGV[0]
 when 'index' then index(options)
+when 'server' then server(options)
 end

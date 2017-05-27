@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   
   spec.add_dependency 'parser', '~> 2.3.1.0'
   spec.add_dependency 'sqlite3'
+  spec.add_dependency 'jimson'
   spec.add_development_dependency 'bundler', '~> 1.9'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'byebug'
