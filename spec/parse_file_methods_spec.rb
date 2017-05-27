@@ -1,10 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe Swistakbot do
-  specify do
-    Swistakbot.new
-  end
-
+RSpec.describe ParseFileMethods do
   let(:parse_file_methods) { ParseFileMethods.new }
 
   specify do
