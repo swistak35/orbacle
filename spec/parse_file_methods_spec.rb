@@ -215,21 +215,18 @@ END
     ])
   end
 
-  xit do
-    # nasty
+  xspecify do
     file = <<END
       class Foo
         ::Bar = 32
       end
 END
-    # r = parse_file_methods.(file)
-    # expect(r[:methods]).to eq([
-    #   ["Foo", "bar"],
-    # ])
-    # expect(r[:constants]).to match_array([
-    #   [nil, "Foo", :klass],
-    #   ["Foo", "Bar", :other],
-    # ])
+    # another example would be with ::Bar::Baz because it's different case
+    r = parse_file_methods.(file)
+    expect(r[:constants]).to match_array([
+      [nil, "Foo", :klass],
+      [nil, "Bar", :other],
+    ])
   end
 
 

@@ -11,24 +11,23 @@ class ParseFileMethods < Parser::AST::Processor
 
     process(ast)
 
-    {
+    return {
       methods: @methods,
       constants: @constants,
     }
   end
 
-  def reset_file!
-    @current_nesting = []
-    @methods = []
-    @constants = []
-  end
-
   def on_module(ast)
-    pre_nesting, nesting_name = get_nesting(ast.children[0])
-    current_nesting_element = [:mod, pre_nesting, nesting_name]
+    ast_name, _ = ast.children
+    prename, module_name = get_nesting(ast_name)
 
-    @constants << [ join_nesting_to_scope(nesting_to_scope(@current_nesting), pre_nesting), nesting_name, :mod ]
+    @constants << [
+      scope_from_nesting_and_prename(@current_nesting, prename),
+      module_name,
+      :mod
+    ]
 
+    current_nesting_element = [:mod, prename, module_name]
     @current_nesting << current_nesting_element
 
     super(ast)
@@ -37,11 +36,16 @@ class ParseFileMethods < Parser::AST::Processor
   end
 
   def on_class(ast)
-    pre_nesting, nesting_name = get_nesting(ast.children[0])
-    current_nesting_element = [:klass, pre_nesting, nesting_name]
+    ast_name, _ = ast.children
+    prename, klass_name = get_nesting(ast_name)
 
-    @constants << [ join_nesting_to_scope(nesting_to_scope(@current_nesting), pre_nesting), nesting_name, :klass ]
+    @constants << [
+      scope_from_nesting_and_prename(@current_nesting, prename),
+      klass_name,
+      :klass
+    ]
 
+    current_nesting_element = [:klass, prename, klass_name]
     @current_nesting << current_nesting_element
 
     super(ast)
@@ -50,49 +54,57 @@ class ParseFileMethods < Parser::AST::Processor
   end
 
   def on_def(ast)
-    method_name = ast.children[0].to_s
+    method_name, _ = ast.children
 
-    @methods << [ nesting_to_scope(@current_nesting), method_name ]
+    @methods << [ nesting_to_scope(@current_nesting), method_name.to_s ]
 
     super(ast)
   end
 
-  def nesting_to_scope(nesting)
-    return nil if nesting.empty?
-
-    nesting.map do |type, pre, name|
-      pre + [name]
-    end.flatten.join("::")
-  end
-
-  def join_nesting_to_scope(scope, nesting)
-    result = ([scope] + nesting).compact.join("::")
-    result.empty? ? nil : result
-  end
-
   def on_casgn(ast)
-    scope, name, _expr = ast.children
+    const_prename, const_name, _ = ast.children
 
     @constants << [
-      join_nesting_to_scope(nesting_to_scope(@current_nesting), pre_nesting(scope)),
-      name.to_s,
+      scope_from_nesting_and_prename(@current_nesting, prename(const_prename)),
+      const_name.to_s,
       :other
     ]
 
     super(ast)
   end
 
-  def pre_nesting(ast_const)
+  private
+
+  def reset_file!
+    @current_nesting = []
+    @methods = []
+    @constants = []
+  end
+
+  def nesting_to_scope(nesting)
+    return nil if nesting.empty?
+
+    nesting.map do |_type, pre, name|
+      pre + [name]
+    end.flatten.join("::")
+  end
+
+  def prename(ast_const)
     if ast_const.nil?
       []
     else
-      pre_nesting(ast_const.children[0]) + [ast_const.children[1].to_s]
+      prename(ast_const.children[0]) + [ast_const.children[1].to_s]
     end
   end
 
   def get_nesting(ast_const)
-    [pre_nesting(ast_const.children[0]), ast_const.children[1].to_s]
+    [prename(ast_const.children[0]), ast_const.children[1].to_s]
+  end
+
+  def scope_from_nesting_and_prename(nesting, prename)
+    scope_from_nesting = nesting_to_scope(nesting)
+
+    result = ([scope_from_nesting] + prename).compact.join("::")
+    result.empty? ? nil : result
   end
 end
-
-
