@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'swistakbot'
+require 'orbacle'
 require 'sqlite3'
-require 'jimson'
 
 Dir.chdir(__dir__)
 
 options = {}
 
 OptionParser.new do |opts|
-  opts.banner = 'Usage: ./swistakbot [options]'
+  opts.banner = 'Usage: ./orbacle [options]'
 
   opts.on('-d DIR', '--dir', 'Directory in which project resides') do |dir|
     options[:dir] = dir
@@ -24,7 +23,7 @@ def index(options)
   files  = Dir.glob('**/*.rb')
   output = {}
 
-  parser = Swistakbot::ParseFileMethods.new
+  parser = Orbacle::ParseFileMethods.new
 
   files.each do |input_file|
     begin
@@ -35,8 +34,8 @@ def index(options)
     end
   end
 
-  File.delete(".swistakbot.db") if File.exists?(".swistakbot.db")
-  db = SQLite3::Database.new(".swistakbot.db")
+  File.delete(".orbacle.db") if File.exists?(".orbacle.db")
+  db = SQLite3::Database.new(".orbacle.db")
   tables = db.execute <<-SQL
     create table constants (
       scope varchar(255),
@@ -59,24 +58,6 @@ SQL
         opts.fetch(:line)
       ])
     end
-  end
-end
-
-class MyHandler
-  extend Jimson::Handler
-
-  def call(env)
-    puts env.inspect
-    logger(env.inspect)
-    super(env)
-  end
-
-  def logger(text)
-    File.open("/home/swistak35/jimson.log", "a") {|f| f.puts(text) }
-  end
-
-  def foo(x)
-    puts x
   end
 end
 
@@ -121,8 +102,6 @@ end
 def server(options)
   server = IoServer.new
   server.start
-  # server = Jimson::Server.new(MyHandler.new)
-  # server.start
 end
 
 case ARGV[0]

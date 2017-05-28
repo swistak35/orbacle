@@ -1,6 +1,6 @@
 require 'parser/current'
 
-class Swistakbot::ParseFileMethods < Parser::AST::Processor
+class Orbacle::ParseFileMethods < Parser::AST::Processor
   def initialize
   end
 
