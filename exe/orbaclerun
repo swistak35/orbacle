@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'orbacle'
+
+Dir.chdir(__dir__)
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = 'Usage: ./orbacle [options]'
+
+  opts.on('-d DIR', '--dir', 'Directory in which project resides') do |dir|
+    options[:dir] = dir
+  end
+end.parse!
+
+def index(options)
+  indexer = Orbacle::Indexer.new
+  indexer.index(dir: options.fetch(:dir))
+end
+
+def server(options)
+  server = Orbacle::LangServer.new
+  server.start
+end
+
+case ARGV[0]
+when 'index' then index(options)
+when 'server' then server(options)
+end

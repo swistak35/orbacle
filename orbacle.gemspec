@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.version       = '0.0.1'
   spec.licenses      = ['MIT']
   spec.authors       = ['Rafał Łasocha']
-  spec.email         = 'swistakbot@swistak35.com'
+  spec.email         = 'orbacle@swistak35.com'
 
   spec.summary       = "Static analysis for Ruby"
   spec.description   = "A simple hello world gem"
