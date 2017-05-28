@@ -1,3 +1,5 @@
+require 'json'
+
 module Orbacle
   class LangServer
     def logger(text)
