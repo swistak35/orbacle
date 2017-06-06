@@ -107,7 +107,11 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
   def scope_from_nesting_and_prename(nesting, prename)
     scope_from_nesting = nesting_to_scope(nesting)
 
-    result = ([scope_from_nesting] + prename).compact.join("::")
+    if prename[0] == ""
+      result = prename[1..-1].compact.join("::")
+    else
+      result = ([scope_from_nesting] + prename).compact.join("::")
+    end
     result.empty? ? nil : result
   end
 end
