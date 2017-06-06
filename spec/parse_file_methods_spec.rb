@@ -169,7 +169,7 @@ END
     ])
   end
 
-  xit do
+  it do
     file = <<END
       class Bar
         class ::Foo
@@ -189,7 +189,7 @@ END
     ])
   end
 
-  xit do
+  it do
     file = <<END
       class Bar
         module ::Foo

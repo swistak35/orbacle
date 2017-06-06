@@ -28,8 +28,13 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
       { line: ast_name.loc.line },
     ]
 
-    current_nesting_element = [:mod, prename, module_name]
-    @current_nesting << current_nesting_element
+    if prename[0] == ""
+      current_nesting_element = [:mod, prename[1..-1] || [], module_name]
+      @current_nesting = [current_nesting_element]
+    else
+      current_nesting_element = [:mod, prename, module_name]
+      @current_nesting << current_nesting_element
+    end
 
     super(ast)
 
@@ -47,8 +52,13 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
       { line: ast_name.loc.line },
     ]
 
-    current_nesting_element = [:klass, prename, klass_name]
-    @current_nesting << current_nesting_element
+    if prename[0] == ""
+      current_nesting_element = [:klass, prename[1..-1] || [], klass_name]
+      @current_nesting = [current_nesting_element]
+    else
+      current_nesting_element = [:klass, prename, klass_name]
+      @current_nesting << current_nesting_element
+    end
 
     super(ast)
 
