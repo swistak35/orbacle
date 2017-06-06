@@ -169,6 +169,46 @@ END
     ])
   end
 
+  xit do
+    file = <<END
+      class Bar
+        class ::Foo
+          def xxx
+          end
+        end
+      end
+END
+
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
+      ["Foo", "xxx"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Bar", :klass, { line: 1 }],
+      [nil, "Foo", :klass, { line: 2 }],
+    ])
+  end
+
+  xit do
+    file = <<END
+      class Bar
+        module ::Foo
+          def xxx
+          end
+        end
+      end
+END
+
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
+      ["Foo", "xxx"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Bar", :klass, { line: 1 }],
+      [nil, "Foo", :mod, { line: 2 }],
+    ])
+  end
+
   it do
     file = <<END
       def xxx
