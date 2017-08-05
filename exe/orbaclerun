@@ -21,7 +21,7 @@ def index(options)
 end
 
 def server(options)
-  server = Orbacle::LangServer.new
+  server = Orbacle::LangServer.new(db: SQLDatabaseAdapter.new)
   server.start
 end
 
