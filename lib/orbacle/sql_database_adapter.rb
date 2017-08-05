@@ -1,5 +1,5 @@
 class SQLDatabaseAdapter
-  def initialize(db)
+  def initialize(db:)
     @db = db
   end
 

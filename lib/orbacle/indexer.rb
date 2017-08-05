@@ -12,7 +12,7 @@ module Orbacle
 
       files  = Dir.glob('**/*.rb')
 
-      parser = Orbacle::ParseFileMethods.new
+      parser = ParseFileMethods.new
 
       files.each do |input_file|
         begin

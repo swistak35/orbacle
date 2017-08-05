@@ -21,8 +21,9 @@ def index(options)
 end
 
 def server(options)
-  server = Orbacle::LangServer.new(db: SQLDatabaseAdapter.new)
-  server.start
+  lang_server = Orbacle::LangServer.new(db_adapter: SQLDatabaseAdapter)
+  file_server = Orbacle::LangFileServer.new(lang_server: lang_server)
+  file_server.start
 end
 
 case ARGV[0]
