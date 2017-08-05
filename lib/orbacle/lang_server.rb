@@ -59,7 +59,7 @@ module Orbacle
       file_content = File.read(URI(fileuri).path)
       searched_line = params["position"]["line"]
       searched_character = params["position"]["character"]
-      searched_constant = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
+      searched_constant, found_nesting = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
       result = db.execute("select * from constants where name = ?", [searched_constant])[0]
       return nil if result.nil?
       scope, _name, _type, targetfile, targetline = result

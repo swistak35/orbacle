@@ -10,11 +10,11 @@ RSpec.describe Orbacle::DefinitionProcessor do
       end
     END
 
-    expect(definition_processor(file, 3, 9)).to be_nil
-    expect(definition_processor(file, 3, 10)).to eq("Baz")
-    expect(definition_processor(file, 3, 11)).to eq("Baz")
-    expect(definition_processor(file, 3, 12)).to eq("Baz")
-    expect(definition_processor(file, 3, 13)).to be_nil
+    expect(definition_processor(file, 3, 9)[0]).to be_nil
+    expect(definition_processor(file, 3, 10)[0]).to eq("Baz")
+    expect(definition_processor(file, 3, 11)[0]).to eq("Baz")
+    expect(definition_processor(file, 3, 12)[0]).to eq("Baz")
+    expect(definition_processor(file, 3, 13)[0]).to be_nil
   end
 
   specify do
@@ -26,16 +26,30 @@ RSpec.describe Orbacle::DefinitionProcessor do
       end
     END
 
-    expect(definition_processor(file, 3, 11)).to be_nil
-    expect(definition_processor(file, 3, 12)).to eq("::Bar::Baz")
-    expect(definition_processor(file, 3, 13)).to eq("::Bar::Baz")
-    expect(definition_processor(file, 3, 14)).to eq("::Bar::Baz")
-    expect(definition_processor(file, 3, 15)).to be_nil
-    expect(definition_processor(file, 3, 16)).to be_nil
-    expect(definition_processor(file, 3, 17)).to eq("::Bar::Baz")
-    expect(definition_processor(file, 3, 18)).to eq("::Bar::Baz")
-    expect(definition_processor(file, 3, 19)).to eq("::Bar::Baz")
-    expect(definition_processor(file, 3, 20)).to be_nil
+    expect(definition_processor(file, 3, 11)[0]).to be_nil
+    expect(definition_processor(file, 3, 12)[0]).to eq("::Bar::Baz")
+    expect(definition_processor(file, 3, 13)[0]).to eq("::Bar::Baz")
+    expect(definition_processor(file, 3, 14)[0]).to eq("::Bar::Baz")
+    expect(definition_processor(file, 3, 15)[0]).to be_nil
+    expect(definition_processor(file, 3, 16)[0]).to be_nil
+    expect(definition_processor(file, 3, 17)[0]).to eq("::Bar::Baz")
+    expect(definition_processor(file, 3, 18)[0]).to eq("::Bar::Baz")
+    expect(definition_processor(file, 3, 19)[0]).to eq("::Bar::Baz")
+    expect(definition_processor(file, 3, 20)[0]).to be_nil
+  end
+
+  specify do
+    file = <<-END
+      class Foo
+        def bar
+          Baz.new
+        end
+      end
+    END
+
+    expected_nesting = [[:klass, [], "Foo"]]
+
+    expect(definition_processor(file, 3, 11)[1]).to eq(expected_nesting)
   end
 
   def definition_processor(file, line, column)
