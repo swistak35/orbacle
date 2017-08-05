@@ -2,13 +2,14 @@ require 'spec_helper'
 
 RSpec.describe Orbacle::DefinitionProcessor do
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         def bar
           Baz.new
         end
       end
-END
+    END
+
     expect(definition_processor(file, 3, 9)).to be_nil
     expect(definition_processor(file, 3, 10)).to eq("Baz")
     expect(definition_processor(file, 3, 11)).to eq("Baz")
@@ -17,13 +18,14 @@ END
   end
 
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         def bar
           ::Bar::Baz.new
         end
       end
-END
+    END
+
     expect(definition_processor(file, 3, 11)).to be_nil
     expect(definition_processor(file, 3, 12)).to eq("::Bar::Baz")
     expect(definition_processor(file, 3, 13)).to eq("::Bar::Baz")

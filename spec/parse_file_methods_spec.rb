@@ -2,12 +2,13 @@ require 'spec_helper'
 
 RSpec.describe Orbacle::ParseFileMethods do
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         def bar
         end
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
       ["Foo", "bar"],
@@ -18,7 +19,7 @@ END
   end
 
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         def bar
         end
@@ -26,7 +27,8 @@ END
         def baz
         end
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
       ["Foo", "bar"],
@@ -38,7 +40,7 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       module Some
         class Foo
           def bar
@@ -48,7 +50,8 @@ END
           end
         end
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
       ["Some::Foo", "bar"],
@@ -61,7 +64,7 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       module Some
         class Foo
           def oof
@@ -73,7 +76,7 @@ END
           end
         end
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -88,7 +91,7 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       module Some
         module Foo
           class Bar
@@ -97,7 +100,8 @@ END
           end
         end
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
       ["Some::Foo::Bar", "baz"],
@@ -110,14 +114,14 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       module Some::Foo
         class Bar
           def baz
           end
         end
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -130,14 +134,14 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       module Some::Foo::Bar
         class Baz
           def xxx
           end
         end
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -150,14 +154,14 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       module Some::Foo
         class Bar::Baz
           def xxx
           end
         end
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -170,14 +174,14 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       class Bar
         class ::Foo
           def xxx
           end
         end
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -190,14 +194,14 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       class Bar
         module ::Foo
           def xxx
           end
         end
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -210,10 +214,10 @@ END
   end
 
   it do
-    file = <<END
+    file = <<-END
       def xxx
       end
-END
+    END
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
@@ -223,14 +227,15 @@ END
   end
 
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         Bar = 32
 
         def bar
         end
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
       ["Foo", "bar"],
@@ -242,11 +247,12 @@ END
   end
 
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         Ban::Baz::Bar = 32
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([])
     expect(r[:constants]).to match_array([
@@ -256,11 +262,12 @@ END
   end
 
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         ::Bar = 32
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
@@ -269,11 +276,12 @@ END
   end
 
   specify do
-    file = <<END
+    file = <<-END
       class Foo
         ::Baz::Bar = 32
       end
-END
+    END
+
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
