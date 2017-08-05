@@ -38,8 +38,8 @@ module Orbacle
       logger("Definition called with params #{params}!")
       textDocument = params[:textDocument]
       fileuri = textDocument[:uri]
-      project_path, db_path = find_closest_db(fileuri)
-      db = @db_adapter.open_for_file(fileuri)
+      project_path = find_project_root(fileuri)
+      db = @db_adapter.new(project_root: project_path)
       file_content = File.read(URI(fileuri).path)
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
@@ -62,14 +62,13 @@ module Orbacle
       }
     end
 
-    def find_closest_db(fileuri)
+    def find_project_root(fileuri)
       dirpath = Pathname(URI(fileuri).path)
       while !dirpath.root?
         dirpath = dirpath.split[0]
-        db_path = dirpath.join(".orbacle.db")
-        return [dirpath, db_path] if File.exists?(db_path)
+        return dirpath if File.exists?(dirpath.join(".orbaclerc"))
       end
-      return nil
+      raise "No project root found (.orbaclerc file)"
     end
   end
 end
