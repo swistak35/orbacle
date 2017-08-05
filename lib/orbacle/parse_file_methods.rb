@@ -1,4 +1,5 @@
 require 'parser/current'
+require 'orbacle/nesting_container'
 
 class Orbacle::ParseFileMethods < Parser::AST::Processor
   def initialize
@@ -19,56 +20,44 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
 
   def on_module(ast)
     ast_name, _ = ast.children
-    prename, module_name = get_nesting(ast_name)
+    prename, module_name = @current_nesting.get_nesting(ast_name)
 
     @constants << [
-      scope_from_nesting_and_prename(@current_nesting, prename),
+      scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
       module_name,
       :mod,
       { line: ast_name.loc.line },
     ]
 
-    if prename[0] == ""
-      current_nesting_element = [:mod, prename[1..-1] || [], module_name]
-      @current_nesting = [current_nesting_element]
-    else
-      current_nesting_element = [:mod, prename, module_name]
-      @current_nesting << current_nesting_element
-    end
+    @current_nesting.increase_nesting_mod(ast_name)
 
     super(ast)
 
-    @current_nesting.pop
+    @current_nesting.decrease_nesting
   end
 
   def on_class(ast)
     ast_name, _ = ast.children
-    prename, klass_name = get_nesting(ast_name)
+    prename, klass_name = @current_nesting.get_nesting(ast_name)
 
     @constants << [
-      scope_from_nesting_and_prename(@current_nesting, prename),
+      scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
       klass_name,
       :klass,
       { line: ast_name.loc.line },
     ]
 
-    if prename[0] == ""
-      current_nesting_element = [:klass, prename[1..-1] || [], klass_name]
-      @current_nesting = [current_nesting_element]
-    else
-      current_nesting_element = [:klass, prename, klass_name]
-      @current_nesting << current_nesting_element
-    end
+    @current_nesting.increase_nesting_class(ast_name)
 
     super(ast)
 
-    @current_nesting.pop
+    @current_nesting.decrease_nesting
   end
 
   def on_def(ast)
     method_name, _ = ast.children
 
-    @methods << [ nesting_to_scope(@current_nesting), method_name.to_s ]
+    @methods << [ nesting_to_scope(@current_nesting.get_current_nesting), method_name.to_s ]
 
     super(ast)
   end
@@ -77,7 +66,7 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
     const_prename, const_name, _ = ast.children
 
     @constants << [
-      scope_from_nesting_and_prename(@current_nesting, prename(const_prename)),
+      scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
       const_name.to_s,
       :other,
       { line: ast.loc.line }
@@ -89,7 +78,7 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
   private
 
   def reset_file!
-    @current_nesting = []
+    @current_nesting = Orbacle::NestingContainer.new
     @methods = []
     @constants = []
   end
@@ -100,18 +89,6 @@ class Orbacle::ParseFileMethods < Parser::AST::Processor
     nesting.map do |_type, pre, name|
       pre + [name]
     end.flatten.join("::")
-  end
-
-  def prename(ast_const)
-    if ast_const.nil?
-      []
-    else
-      prename(ast_const.children[0]) + [ast_const.children[1].to_s]
-    end
-  end
-
-  def get_nesting(ast_const)
-    [prename(ast_const.children[0]), ast_const.children[1].to_s]
   end
 
   def scope_from_nesting_and_prename(nesting, prename)
