@@ -3,48 +3,42 @@ require 'sqlite3'
 
 module Orbacle
   class Indexer
-    def index(dir:)
-      Dir.chdir(dir)
+    def initialize(db_adapter:)
+      @db_adapter = db_adapter
+    end
 
-      File.delete(".orbacle.db") if File.exists?(".orbacle.db")
-      db = SQLite3::Database.new(".orbacle.db")
-      create_table_constants(db)
+    def call(project_root:)
+      @db = @db_adapter.new(project_root: project_root)
+      @db.reset
+      @db.create_table_constants
 
-      files  = Dir.glob('**/*.rb')
+      Dir.chdir(project_root) do
+        files = Dir.glob("**/*.rb")
 
-      parser = ParseFileMethods.new
-
-      files.each do |input_file|
-        begin
-          # puts "Processing #{input_file}"
-          result = parser.process_file(File.read(input_file))
-          result[:constants].each do |c|
-            scope, name, type, opts = c
-
-            db.execute("insert into constants values (?, ?, ?, ?, ?)", [
-              scope,
-              name,
-              type.to_s,
-              input_file,
-              opts.fetch(:line)
-            ])
+        files.each do |file_path|
+          begin
+            file_content = File.read(file_path)
+            index_file(path: file_path, content: file_content)
+          rescue Parser::SyntaxError
+            puts "Warning: Skipped #{file_path} because of syntax error"
           end
-        rescue Parser::SyntaxError
-          puts "Warning: Skipped #{input_file} because of syntax error"
         end
       end
     end
 
-    def create_table_constants(db)
-      db.execute <<-SQL
-        create table constants (
-          scope varchar(255),
-          name varchar(255),
-          type varchar(255),
-          file varchar(255),
-          line int
-        );
-      SQL
+    def index_file(path:, content:)
+      parser = ParseFileMethods.new
+      result = parser.process_file(content)
+      result[:constants].each do |c|
+        scope, name, type, opts = c
+
+        @db.add_constant(
+          scope: scope,
+          name: name,
+          type: type.to_s,
+          path: path,
+          line: opts.fetch(:line))
+      end
     end
   end
 end

@@ -2,6 +2,7 @@
 
 require 'optparse'
 require 'orbacle'
+require 'pathname'
 
 Dir.chdir(__dir__)
 
@@ -16,8 +17,9 @@ OptionParser.new do |opts|
 end.parse!
 
 def index(options)
-  indexer = Orbacle::Indexer.new
-  indexer.index(dir: options.fetch(:dir))
+  project_root = Pathname.new(options.fetch(:dir))
+  indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+  indexer.(project_root: project_root)
 end
 
 def server(options)
