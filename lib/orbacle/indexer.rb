@@ -18,7 +18,7 @@ module Orbacle
         files.each do |file_path|
           begin
             file_content = File.read(file_path)
-            index_file(path: file_path, content: file_content)
+            index_file.(path: file_path, content: file_content)
           rescue Parser::SyntaxError
             puts "Warning: Skipped #{file_path} because of syntax error"
           end
@@ -26,19 +26,8 @@ module Orbacle
       end
     end
 
-    def index_file(path:, content:)
-      parser = ParseFileMethods.new
-      result = parser.process_file(content)
-      result[:constants].each do |c|
-        scope, name, type, opts = c
-
-        @db.add_constant(
-          scope: scope,
-          name: name,
-          type: type.to_s,
-          path: path,
-          line: opts.fetch(:line))
-      end
+    def index_file
+      @index_file ||= IndexFile.new(db: @db)
     end
   end
 end
