@@ -6,3 +6,6 @@ machine:
   ruby:
     version: 2.3.4
 
+test:
+  post:
+    - make mutant

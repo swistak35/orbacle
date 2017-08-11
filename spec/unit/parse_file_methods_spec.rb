@@ -289,6 +289,46 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
   end
 
+  specify do
+    file = <<-END
+      class Foo
+        ::Baz::Bam::Bar = 32
+      end
+    END
+
+    r = parse_file_methods.(file)
+    expect(r[:constants]).to match_array([
+      [nil, "Foo", :klass, { line: 1 }],
+      ["Baz::Bam", "Bar", :other, { line: 2 }],
+    ])
+  end
+
+  it do
+    file = <<-END
+      module Some
+        module Foo
+          def oof
+          end
+        end
+
+        module Bar
+          def rab
+          end
+        end
+      end
+    END
+
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
+      ["Some::Foo", "oof"],
+      ["Some::Bar", "rab"],
+    ])
+    expect(r[:constants]).to match_array([
+      [nil, "Some", :mod, { line: 1 }],
+      ["Some", "Foo", :mod, { line: 2 }],
+      ["Some", "Bar", :mod, { line: 7 }],
+    ])
+  end
 
   def parse_file_methods
     ->(file) {
