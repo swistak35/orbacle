@@ -9,8 +9,8 @@ class SQLDatabaseAdapter
     @db = SQLite3::Database.new(@db_path.to_s)
   end
 
-  def find_constants(constants)
-    db.execute("select * from constants where name = ?", constants)
+  def find_constants(name, possible_scopes)
+    db.execute("select * from constants where name = ? AND scope IN (#{possible_scopes.map(&:inspect).join(", ")})", name)
   end
 
   def create_table_constants
@@ -27,7 +27,7 @@ class SQLDatabaseAdapter
 
   def add_constant(scope:, name:, type:, path:, line:)
     @db.execute("insert into constants values (?, ?, ?, ?, ?)", [
-      scope,
+      scope.to_s,
       name,
       type,
       path,

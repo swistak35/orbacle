@@ -17,7 +17,8 @@ module Orbacle
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
       searched_constant, found_nesting = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
-      result = db.find_constants([searched_constant])[0]
+      possible_nestings = generate_nestings(found_nesting)
+      result = db.find_constants(searched_constant, possible_nestings)[0]
       return nil if result.nil?
       scope, _name, _type, targetfile, targetline = result
       return {
@@ -33,6 +34,15 @@ module Orbacle
           }
         }
       }
+    end
+
+    def generate_nestings(found_nesting)
+      results = []
+      found_nesting.each do |_type, _x, nesting_name|
+        results.unshift([nesting_name, results[0]].compact.join("::"))
+      end
+      results << ""
+      return results
     end
   end
 end
