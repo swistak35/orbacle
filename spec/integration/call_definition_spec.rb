@@ -27,6 +27,7 @@ module Orbacle
       })
 
       expect(result).not_to be_nil
+      expect(result[:_count]).to eq(1)
       expect(result[:uri]).to eq("file://#{project.root}/some.rb")
       expect(result[:range][:start][:line]).to eq(0)
     end
@@ -64,8 +65,45 @@ module Orbacle
       })
 
       expect(result).not_to be_nil
+      expect(result[:_count]).to eq(1)
       expect(result[:uri]).to eq("file://#{project.root}/baz.rb")
       expect(result[:range][:start][:line]).to eq(1)
+    end
+
+    specify do
+      project = TestProject.new
+        .add_file(path: "baz.rb",
+          content: <<-END
+            module Baz
+              class Foo
+              end
+            end
+          END
+        ).add_file(path: "bar.rb",
+          content: <<-END
+            class Foo
+            end
+          END
+        ).add_file(path: "some.rb",
+          content: <<-END
+            module Baz
+              def x
+                ::Foo
+              end
+            end
+          END
+        )
+      test_indexer.(project_root: Pathname.new(project.root))
+
+      result = call_definition.({
+        textDocument: { uri: "file://#{project.root}/some.rb" },
+        position: { line: 2, character: 19 },
+      })
+
+      expect(result).not_to be_nil
+      expect(result[:_count]).to eq(1)
+      expect(result[:uri]).to eq("file://#{project.root}/bar.rb")
+      expect(result[:range][:start][:line]).to eq(0)
     end
 
     def test_indexer

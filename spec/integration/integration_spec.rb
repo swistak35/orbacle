@@ -35,7 +35,8 @@ RSpec.describe Orbacle do
             line: 0,
             character: 1,
           }
-        }
+        },
+        _count: 1
       }
     })
   end

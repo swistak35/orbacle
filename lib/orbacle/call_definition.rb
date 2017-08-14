@@ -17,10 +17,12 @@ module Orbacle
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
       searched_constant, found_nesting = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
-      possible_nestings = generate_nestings(found_nesting)
-      result = db.find_constants(searched_constant, possible_nestings)[0]
-      return nil if result.nil?
-      scope, _name, _type, targetfile, targetline = result
+      possible_nestings = searched_constant.start_with?("::") ? [""] : generate_nestings(found_nesting)
+      searched_constant_name = extract_constant_name(searched_constant)
+      results = db.find_constants(searched_constant_name, possible_nestings)
+      best_result = results[0]
+      return nil if best_result.nil?
+      scope, _name, _type, targetfile, targetline = best_result
       return {
         uri: "file://#{project_path}/#{targetfile}",
         range: {
@@ -32,7 +34,8 @@ module Orbacle
             line: targetline - 1,
             character: 1,
           }
-        }
+        },
+        _count: results.size,
       }
     end
 
@@ -43,6 +46,14 @@ module Orbacle
       end
       results << ""
       return results
+    end
+
+    def extract_constant_name(searched_constant)
+      if searched_constant.start_with?("::")
+        searched_constant[2..-1]
+      else
+        searched_constant
+      end
     end
   end
 end
