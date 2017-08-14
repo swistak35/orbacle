@@ -17,8 +17,7 @@ module Orbacle
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
       searched_constant, found_nesting = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
-      possible_nestings = searched_constant.start_with?("::") ? [""] : generate_nestings(found_nesting)
-      searched_constant_name = extract_constant_name(searched_constant)
+      possible_nestings, searched_constant_name = generate_nestings(searched_constant, found_nesting)
       results = db.find_constants(searched_constant_name, possible_nestings)
       best_result = results[0]
       return nil if best_result.nil?
@@ -39,21 +38,21 @@ module Orbacle
       }
     end
 
-    def generate_nestings(found_nesting)
+    def generate_nestings(searched_constant, found_nesting)
       results = []
-      found_nesting.each do |_type, _x, nesting_name|
-        results.unshift([results[0], nesting_name].compact.join("::"))
+      searched_const_ar = searched_constant.split("::")
+      searched_const_ar = searched_const_ar.drop(1) if searched_constant.start_with?("::")
+      constant_name = searched_const_ar.last
+      if !searched_const_ar[0..-2].empty?
+        results.unshift(searched_const_ar[0..-2].join("::"))
+      end
+      if !searched_constant.start_with?("::")
+        found_nesting.reverse.each do |_type, _x, nesting_name|
+          results.unshift([nesting_name, results[0]].compact.join("::"))
+        end
       end
       results << ""
-      return results
-    end
-
-    def extract_constant_name(searched_constant)
-      if searched_constant.start_with?("::")
-        searched_constant[2..-1]
-      else
-        searched_constant
-      end
+      return results, constant_name
     end
   end
 end
