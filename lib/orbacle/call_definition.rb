@@ -42,7 +42,7 @@ module Orbacle
     def generate_nestings(found_nesting)
       results = []
       found_nesting.each do |_type, _x, nesting_name|
-        results.unshift([nesting_name, results[0]].compact.join("::"))
+        results.unshift([results[0], nesting_name].compact.join("::"))
       end
       results << ""
       return results
