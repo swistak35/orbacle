@@ -1,4 +1,6 @@
 class SQLDatabaseAdapter
+  Metod = Struct.new(:name, :file, :line)
+
   def initialize(project_root:)
     @db_path = project_root.join(".orbacle.db")
     @db = SQLite3::Database.new(@db_path.to_s)
@@ -25,12 +27,36 @@ class SQLDatabaseAdapter
     SQL
   end
 
+  def create_table_metods
+    db.execute <<-SQL
+      create table metods (
+        name varchar(255),
+        file varchar(255),
+        line int
+      );
+    SQL
+  end
+
+  def find_metods(name)
+    db.execute("select * from metods where name = ?", name).map do |metod_data|
+      Metod.new(*metod_data)
+    end
+  end
+
   def add_constant(scope:, name:, type:, path:, line:)
     @db.execute("insert into constants values (?, ?, ?, ?, ?)", [
       scope.to_s,
       name,
       type,
       path,
+      line,
+    ])
+  end
+
+  def add_metod(name:, file:, line:)
+    @db.execute("insert into metods values (?, ?, ?)", [
+      name,
+      file,
       line,
     ])
   end
