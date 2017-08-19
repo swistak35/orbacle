@@ -8,12 +8,14 @@ module Orbacle
     end
 
     def call(project_root:)
-      @db = @db_adapter.new(project_root: project_root)
+      project_root_path = Pathname.new(project_root)
+
+      @db = @db_adapter.new(project_root: project_root_path)
       @db.reset
       @db.create_table_constants
       @db.create_table_metods
 
-      Dir.chdir(project_root) do
+      Dir.chdir(project_root_path) do
         files = Dir.glob("**/*.rb")
 
         files.each do |file_path|

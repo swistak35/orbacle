@@ -1,6 +1,8 @@
 module Orbacle
 end
 
+require 'orbacle/command_line_interface'
+
 require 'orbacle/parse_file_methods'
 require 'orbacle/call_definition'
 require 'orbacle/lang_server'
