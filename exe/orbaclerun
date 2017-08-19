@@ -3,6 +3,7 @@
 require 'optparse'
 require 'orbacle'
 require 'pathname'
+require 'logger'
 
 Dir.chdir(__dir__)
 
@@ -23,8 +24,14 @@ def index(options)
 end
 
 def server(options)
-  lang_server = Orbacle::LangServer.new(db_adapter: SQLDatabaseAdapter)
-  file_server = Orbacle::LangFileServer.new(lang_server: lang_server)
+  logger = Logger.new('/tmp/orbacle.log', 'monthly')
+  logger.level = Logger::INFO
+  lang_server = Orbacle::LangServer.new(
+    db_adapter: SQLDatabaseAdapter,
+    logger: logger)
+  file_server = Orbacle::LangFileServer.new(
+    lang_server: lang_server,
+    logger: logger)
   file_server.start
 end
 

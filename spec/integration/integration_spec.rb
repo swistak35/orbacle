@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'logger'
 
 RSpec.describe Orbacle do
   specify do
@@ -7,7 +8,9 @@ RSpec.describe Orbacle do
     indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
     indexer.(project_root: Pathname.new(integration_app_path))
 
-    lang_server = Orbacle::LangServer.new(db_adapter: SQLDatabaseAdapter)
+    lang_server = Orbacle::LangServer.new(
+      db_adapter: SQLDatabaseAdapter,
+      logger: Logger.new(nil))
     result = lang_server.call_method({
       id: 1,
       method: "textDocument/definition",
