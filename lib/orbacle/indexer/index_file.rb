@@ -18,6 +18,14 @@ module Orbacle
             path: path,
             line: opts.fetch(:line))
         end
+        result[:methods].each do |m|
+          _scope, name, opts = m
+
+          @db.add_metod(
+            name: name,
+            file: path,
+            line: opts.fetch(:line))
+        end
       end
     end
   end

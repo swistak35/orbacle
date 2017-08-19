@@ -11,6 +11,7 @@ module Orbacle
       @db = @db_adapter.new(project_root: project_root)
       @db.reset
       @db.create_table_constants
+      @db.create_table_metods
 
       Dir.chdir(project_root) do
         files = Dir.glob("**/*.rb")

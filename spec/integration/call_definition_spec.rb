@@ -142,6 +142,25 @@ module Orbacle
       expect(result[:uri]).to eq("file://#{project.root}/baz.rb")
     end
 
+    specify do
+      project = TestProject.new
+        .add_file(path: "baz.rb",
+                  content: "class Foo; def bar; end; end"
+        ).add_file(path: "some.rb",
+                   content: "class Some; def x; y.bar; end; end")
+      test_indexer.(project_root: Pathname.new(project.root))
+
+      result = call_definition.({
+        textDocument: { uri: "file://#{project.root}/some.rb" },
+        position: { line: 0, character: 22 },
+      })
+
+      expect(result).not_to be_nil
+      expect(result[:_count]).to eq(1)
+      expect(result[:uri]).to eq("file://#{project.root}/baz.rb")
+      expect(result[:range][:start][:line]).to eq(0)
+    end
+
     def test_indexer
       test_indexer = Indexer.new(db_adapter: SQLDatabaseAdapter)
     end

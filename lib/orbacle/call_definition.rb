@@ -17,26 +17,45 @@ module Orbacle
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
       searched_constant, found_nesting, found_type = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
-      return nil if found_type != "constant"
-      possible_nestings, searched_constant_name = generate_nestings(searched_constant, found_nesting)
-      results = db.find_constants(searched_constant_name, possible_nestings)
-      best_result = results[0]
-      return nil if best_result.nil?
-      scope, _name, _type, targetfile, targetline = best_result
-      return {
-        uri: "file://#{project_path}/#{targetfile}",
-        range: {
-          start: {
-            line: targetline - 1,
-            character: 0,
+      if found_type == "constant"
+        possible_nestings, searched_constant_name = generate_nestings(searched_constant, found_nesting)
+        results = db.find_constants(searched_constant_name, possible_nestings)
+        best_result = results[0]
+        return nil if best_result.nil?
+        scope, _name, _type, targetfile, targetline = best_result
+        return {
+          uri: "file://#{project_path}/#{targetfile}",
+          range: {
+            start: {
+              line: targetline - 1,
+              character: 0,
+            },
+            end: {
+              line: targetline - 1,
+              character: 1,
+            }
           },
-          end: {
-            line: targetline - 1,
-            character: 1,
-          }
-        },
-        _count: results.size,
-      }
+          _count: results.size,
+        }
+      elsif found_type == "send"
+        results = db.find_metods(searched_constant)
+        best_result = results[0]
+        return nil if best_result.nil?
+        return {
+          uri: "file://#{project_path}/#{best_result.file}",
+          range: {
+            start: {
+              line: best_result.line - 1,
+              character: 0,
+            },
+            end: {
+              line: best_result.line - 1,
+              character: 1,
+            }
+          },
+          _count: results.size,
+        }
+      end
     end
 
     def generate_nestings(searched_constant, found_nesting)
