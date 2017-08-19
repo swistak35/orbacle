@@ -1,4 +1,4 @@
-require 'parser/current'
+require 'parser/ruby24'
 require 'orbacle/nesting_container'
 
 module Orbacle

@@ -1,4 +1,4 @@
-require 'parser/current'
+require 'parser/ruby24'
 require 'orbacle/nesting_container'
 
 class Orbacle::DefinitionProcessor < Parser::AST::Processor
