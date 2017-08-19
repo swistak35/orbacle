@@ -3,8 +3,6 @@
 require 'optparse'
 require 'orbacle'
 
-Dir.chdir(__dir__)
-
 options = {}
 
 OptionParser.new do |opts|
