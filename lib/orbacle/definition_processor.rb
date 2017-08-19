@@ -11,13 +11,14 @@ class Orbacle::DefinitionProcessor < Parser::AST::Processor
 
     process(ast)
 
-    return [@found_constant, @found_nesting]
+    return [@found_constant, @found_nesting, @found_type]
   end
 
   def on_const(ast)
     name_loc_range = ast.loc.name
     ast_all_ranges = all_ranges(ast)
     if @searched_line == name_loc_range.line && ast_all_ranges.any? {|r| r.include?(@searched_character) }
+      @found_type = "constant"
       @found_constant = const_to_string(ast)
       @found_nesting = @current_nesting.get_current_nesting.dup
     end
@@ -41,6 +42,17 @@ class Orbacle::DefinitionProcessor < Parser::AST::Processor
     super(ast)
 
     @current_nesting.decrease_nesting
+  end
+
+  def on_send(ast)
+    selector_loc = ast.loc.selector
+    if @searched_line == selector_loc.line && selector_loc.column_range.include?(@searched_character)
+      @found_type = "send"
+      @found_constant = ast.children[1].to_s
+      @found_nesting = @current_nesting.get_current_nesting.dup
+    end
+
+    super(ast)
   end
 
   private

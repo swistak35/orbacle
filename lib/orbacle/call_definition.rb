@@ -16,7 +16,8 @@ module Orbacle
       file_content = File.read(URI(fileuri).path)
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
-      searched_constant, found_nesting = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
+      searched_constant, found_nesting, found_type = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
+      return nil if found_type != "constant"
       possible_nestings, searched_constant_name = generate_nestings(searched_constant, found_nesting)
       results = db.find_constants(searched_constant_name, possible_nestings)
       best_result = results[0]
