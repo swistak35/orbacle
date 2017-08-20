@@ -24,7 +24,7 @@ module Orbacle
         return nil if best_result.nil?
         scope, _name, _type, targetfile, targetline = best_result
         return {
-          uri: "file://#{project_path}/#{targetfile}",
+          uri: "file://#{targetfile}",
           range: {
             start: {
               line: targetline - 1,
@@ -42,7 +42,7 @@ module Orbacle
         best_result = results[0]
         return nil if best_result.nil?
         return {
-          uri: "file://#{project_path}/#{best_result.file}",
+          uri: "file://#{best_result.file}",
           range: {
             start: {
               line: best_result.line - 1,
