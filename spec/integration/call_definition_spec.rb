@@ -162,7 +162,9 @@ module Orbacle
     end
 
     def test_indexer
-      test_indexer = Indexer.new(db_adapter: SQLDatabaseAdapter)
+      test_indexer = Indexer.new(
+        db_adapter: SQLDatabaseAdapter,
+        shell_adapter: FakeShellAdapter.new)
     end
 
     def call_definition

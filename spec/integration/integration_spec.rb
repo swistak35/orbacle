@@ -5,7 +5,9 @@ RSpec.describe Orbacle do
   specify do
     integration_app_path = "#{Dir.pwd}/spec/support/integration_app"
 
-    indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+    indexer = Orbacle::Indexer.new(
+      db_adapter: SQLDatabaseAdapter,
+      shell_adapter: Orbacle::FakeShellAdapter.new)
     indexer.(project_root: Pathname.new(integration_app_path))
 
     lang_server = Orbacle::LangServer.new(

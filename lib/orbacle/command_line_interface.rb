@@ -23,7 +23,9 @@ module Orbacle
 
     def index(options)
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+      indexer = Orbacle::Indexer.new(
+        db_adapter: SQLDatabaseAdapter,
+        shell_adapter: RealShellAdapter.new)
       indexer.(project_root: project_root)
     end
 
