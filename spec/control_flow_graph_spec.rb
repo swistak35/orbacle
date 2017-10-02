@@ -38,6 +38,21 @@ module Orbacle
       ])
     end
 
+    specify do
+      snippet = <<-END
+        x = y.bar
+        z = x.foo
+      END
+
+      r = generate_cfg(snippet)
+      expect(r).to eq([
+        { type: :lvasgn, lvar_name: "x",
+          assigned_expr: [:send, :bar, [:send, "y"], []] },
+        { type: :lvasgn, lvar_name: "z",
+          assigned_expr: [:send, :foo, [:lvar, "x"], []] },
+      ])
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_method(snippet)

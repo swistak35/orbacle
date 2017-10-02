@@ -11,7 +11,6 @@ module Orbacle
     end
 
     def on_lvasgn(node)
-      # require 'byebug'; byebug
       lvar_name = node.children[0].to_s
       assigned_expr_ast = node.children[1]
       assigned_expr = case assigned_expr_ast.type
@@ -23,7 +22,10 @@ module Orbacle
               [:constant, object_ast.children[1].to_s]
             when :send
               [:send, object_ast.children[1].to_s]
-            else raise
+            when :lvar
+              [:lvar, object_ast.children[0].to_s]
+            else
+              raise
             end
           if method_name == :new
             [:init, object, []]
