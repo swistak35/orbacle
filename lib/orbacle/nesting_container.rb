@@ -2,6 +2,7 @@ module Orbacle
   class NestingContainer
     def initialize
       @current_nesting = []
+      @is_selfed = false
     end
 
     def get_nesting(ast_const)
@@ -10,6 +11,10 @@ module Orbacle
 
     def get_current_nesting
       @current_nesting
+    end
+
+    def is_selfed?
+      @is_selfed
     end
 
     def increase_nesting_mod(ast_name)
@@ -34,6 +39,14 @@ module Orbacle
         current_nesting_element = [:klass, prename, klass_name]
         @current_nesting << current_nesting_element
       end
+    end
+
+    def make_nesting_selfed
+      @is_selfed = true
+    end
+
+    def make_nesting_not_selfed
+      @is_selfed = false
     end
 
     def prename(ast_const)

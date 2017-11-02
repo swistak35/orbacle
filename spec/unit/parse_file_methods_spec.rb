@@ -19,7 +19,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2 }],
+      ["Foo", "bar", { line: 2, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }]
@@ -42,8 +42,8 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2 }],
-      ["Foo", "baz", { line: 5 }],
+      ["Foo", "bar", { line: 2, target: :instance }],
+      ["Foo", "baz", { line: 5, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }]
@@ -68,8 +68,8 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo", "bar", { line: 3 }],
-      ["Some::Foo", "baz", { line: 6 }],
+      ["Some::Foo", "bar", { line: 3, target: :instance }],
+      ["Some::Foo", "baz", { line: 6, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
@@ -98,8 +98,8 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo", "oof", { line: 3 }],
-      ["Some::Bar", "rab", { line: 8 }],
+      ["Some::Foo", "oof", { line: 3, target: :instance }],
+      ["Some::Bar", "rab", { line: 8, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
@@ -127,7 +127,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar", "baz", { line: 4 }],
+      ["Some::Foo::Bar", "baz", { line: 4, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
@@ -153,7 +153,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar", "baz", { line: 3 }],
+      ["Some::Foo::Bar", "baz", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       ["Some", "Foo", :mod, { line: 1 }],
@@ -177,7 +177,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar::Baz", "xxx", { line: 3 }],
+      ["Some::Foo::Bar::Baz", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       ["Some::Foo", "Bar", :mod, { line: 1 }],
@@ -201,7 +201,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar::Baz", "xxx", { line: 3 }],
+      ["Some::Foo::Bar::Baz", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       ["Some", "Foo", :mod, { line: 1 }],
@@ -225,7 +225,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "xxx", { line: 3 }],
+      ["Foo", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Bar", :klass, { line: 1 }],
@@ -249,7 +249,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "xxx", { line: 3 }],
+      ["Foo", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Bar", :klass, { line: 1 }],
@@ -269,7 +269,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      [nil, "xxx", { line: 1 }],
+      [nil, "xxx", { line: 1, target: :instance }],
     ])
     expect(r[:constants]).to match_array([])
     expect(r[:klasslikes]).to be_empty
@@ -287,7 +287,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 4 }],
+      ["Foo", "bar", { line: 4, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
@@ -384,8 +384,8 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo", "oof", { line: 3 }],
-      ["Some::Bar", "rab", { line: 8 }],
+      ["Some::Foo", "oof", { line: 3, target: :instance }],
+      ["Some::Bar", "rab", { line: 8, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
@@ -493,7 +493,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2 }],
+      ["Foo", "bar", { line: 2, target: :self }],
     ])
   end
 
@@ -509,7 +509,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "foo", { line: 3 }],
+      ["Foo", "foo", { line: 3, target: :self }],
     ])
   end
 

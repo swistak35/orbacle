@@ -96,13 +96,21 @@ module Orbacle
       @current_nesting.decrease_nesting
     end
 
+    def on_sclass(ast)
+      @current_nesting.make_nesting_selfed
+
+      super(ast)
+
+      @current_nesting.make_nesting_not_selfed
+    end
+
     def on_def(ast)
       method_name, _ = ast.children
 
       @methods << [
         nesting_to_scope(@current_nesting.get_current_nesting),
         method_name.to_s,
-        { line: ast.loc.line }
+        { line: ast.loc.line, target: @current_nesting.is_selfed? ? :self : :instance }
       ]
     end
 
@@ -112,7 +120,7 @@ module Orbacle
       @methods << [
         nesting_to_scope(@current_nesting.get_current_nesting),
         method_name.to_s,
-        { line: ast.loc.line },
+        { line: ast.loc.line, target: :self },
       ]
     end
 
