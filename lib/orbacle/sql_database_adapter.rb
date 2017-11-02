@@ -1,5 +1,6 @@
 class SQLDatabaseAdapter
   Metod = Struct.new(:name, :file, :target, :line)
+  Klasslike = Struct.new(:scope, :name, :type, :inheritance)
 
   def initialize(project_root:)
     @db_path = project_root.join(".orbacle.db")
@@ -13,6 +14,12 @@ class SQLDatabaseAdapter
 
   def find_constants(name, possible_scopes)
     db.execute("select * from constants where name = ? AND scope IN (#{possible_scopes.map(&:inspect).join(", ")})", name)
+  end
+
+  def find_all_klasslikes
+    db.execute("select * from klasslikes").map do |klasslike_data|
+      Klasslike.new(*klasslike_data)
+    end
   end
 
   def create_table_constants
@@ -34,6 +41,17 @@ class SQLDatabaseAdapter
         file varchar(255),
         target varchar(255),
         line int
+      );
+    SQL
+  end
+
+  def create_table_klasslikes
+    db.execute <<-SQL
+      create table klasslikes (
+        scope varchar(255),
+        name varchar(255),
+        type varchar(255),
+        inheritance varchar(255)
       );
     SQL
   end
@@ -60,6 +78,15 @@ class SQLDatabaseAdapter
       file,
       target,
       line,
+    ])
+  end
+
+  def add_klasslike(scope:, name:, type:, inheritance:)
+    @db.execute("insert into klasslikes values (?, ?, ?, ?)", [
+      scope,
+      name,
+      type.to_s,
+      inheritance,
     ])
   end
 

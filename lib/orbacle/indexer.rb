@@ -14,6 +14,7 @@ module Orbacle
       @db.reset
       @db.create_table_constants
       @db.create_table_metods
+      @db.create_table_klasslikes
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
 

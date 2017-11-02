@@ -16,5 +16,20 @@ module Orbacle
       expect(results[0].target).to eq("self")
       expect(results[0].line).to eq(34)
     end
+
+    specify do
+      db = SQLDatabaseAdapter.new(project_root: Pathname.new("/tmp"))
+      db.reset
+
+      db.create_table_klasslikes
+
+      db.add_klasslike(scope: "Foo", name: "Bar", type: "klass", inheritance: "Baz")
+      results = db.find_all_klasslikes
+      expect(results.size).to eq(1)
+      expect(results[0].scope).to eq("Foo")
+      expect(results[0].name).to eq("Bar")
+      expect(results[0].type).to eq("klass")
+      expect(results[0].inheritance).to eq("Baz")
+    end
   end
 end

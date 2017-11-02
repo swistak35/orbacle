@@ -27,6 +27,13 @@ module Orbacle
             target: opts.fetch(:target).to_s,
             line: opts.fetch(:line))
         end
+        result[:klasslikes].each do |kl|
+          @db.add_klasslike(
+            scope: kl.scope,
+            name: kl.name,
+            type: kl.type,
+            inheritance: kl.inheritance)
+        end
       end
     end
   end
