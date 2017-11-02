@@ -74,7 +74,7 @@ module Orbacle
     end
 
     def on_class(ast)
-      ast_name, _ = ast.children
+      ast_name, parent_klass_name_ast, _ = ast.children
       prename, klass_name = @current_nesting.get_nesting(ast_name)
 
       @constants << [
@@ -87,7 +87,7 @@ module Orbacle
       @klasslikes << Klasslike.build_klass(
         scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
         name: klass_name,
-        inheritance: nil)
+        inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"))
 
       @current_nesting.increase_nesting_class(ast_name)
 
