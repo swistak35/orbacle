@@ -450,6 +450,28 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
   end
 
+  specify do
+    file = <<-END
+      Foo = Class.new(Bar)
+    END
+
+    r = parse_file_methods.(file)
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo", inheritance: "Bar")
+    ])
+  end
+
+  specify do
+    file = <<-END
+      Foo = Class.new
+    END
+
+    r = parse_file_methods.(file)
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo")
+    ])
+  end
+
   def parse_file_methods
     ->(file) {
       service = Orbacle::ParseFileMethods.new

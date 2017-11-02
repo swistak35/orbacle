@@ -107,7 +107,7 @@ module Orbacle
     end
 
     def on_casgn(ast)
-      const_prename, const_name, _ = ast.children
+      const_prename, const_name, expr = ast.children
 
       @constants << [
         scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
@@ -115,6 +115,14 @@ module Orbacle
         :other,
         { line: ast.loc.line }
       ]
+
+      if expr_is_class_definition?(expr)
+        parent_klass_name_ast = expr.children[2]
+        @klasslikes << Klasslike.build_klass(
+          scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
+          name: const_name.to_s,
+          inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"))
+      end
     end
 
     private
@@ -124,6 +132,12 @@ module Orbacle
       @methods = []
       @constants = []
       @klasslikes = []
+    end
+
+    def expr_is_class_definition?(expr)
+      expr.type == :send &&
+        expr.children[0] == Parser::AST::Node.new(:const, [nil, :Class]) &&
+        expr.children[1] == :new
     end
 
     def nesting_to_scope(nesting)
