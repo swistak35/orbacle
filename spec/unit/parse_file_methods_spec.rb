@@ -483,6 +483,36 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
   end
 
+  specify do
+    file = <<-END
+      class Foo
+        def self.bar
+        end
+      end
+    END
+
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
+      ["Foo", "bar", { line: 2 }],
+    ])
+  end
+
+  specify do
+    file = <<-END
+      class Foo
+        class << self
+          def foo
+          end
+        end
+      end
+    END
+
+    r = parse_file_methods.(file)
+    expect(r[:methods]).to eq([
+      ["Foo", "foo", { line: 3 }],
+    ])
+  end
+
   def parse_file_methods
     ->(file) {
       service = Orbacle::ParseFileMethods.new

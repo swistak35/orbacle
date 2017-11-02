@@ -106,6 +106,16 @@ module Orbacle
       ]
     end
 
+    def on_defs(ast)
+      method_receiver, method_name, _ = ast.children
+
+      @methods << [
+        nesting_to_scope(@current_nesting.get_current_nesting),
+        method_name.to_s,
+        { line: ast.loc.line },
+      ]
+    end
+
     def on_casgn(ast)
       const_prename, const_name, expr = ast.children
 
