@@ -122,6 +122,10 @@ module Orbacle
           scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
           name: const_name.to_s,
           inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"))
+      elsif expr_is_module_definition?(expr)
+        @klasslikes << Klasslike.build_module(
+          scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
+          name: const_name.to_s)
       end
     end
 
@@ -137,6 +141,12 @@ module Orbacle
     def expr_is_class_definition?(expr)
       expr.type == :send &&
         expr.children[0] == Parser::AST::Node.new(:const, [nil, :Class]) &&
+        expr.children[1] == :new
+    end
+
+    def expr_is_module_definition?(expr)
+      expr.type == :send &&
+        expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
         expr.children[1] == :new
     end
 
