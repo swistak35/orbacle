@@ -3,6 +3,40 @@ require 'orbacle/nesting_container'
 
 module Orbacle
   class ParseFileMethods < Parser::AST::Processor
+    class Klasslike
+      def self.build_module(scope:, name:)
+        new(
+          scope: scope,
+          name: name,
+          type: :module,
+          inheritance: nil)
+      end
+
+      def self.build_klass(scope:, name:, inheritance:)
+        new(
+          scope: scope,
+          name: name,
+          type: :klass,
+          inheritance: inheritance)
+      end
+
+      def initialize(scope:, name:, type:, inheritance:)
+        @scope = scope
+        @name = name
+        @type = type
+        @inheritance = inheritance
+      end
+
+      attr_reader :scope, :name, :type, :inheritance
+
+      def ==(other)
+        @scope == other.scope &&
+          @name == other.name &&
+          @type == other.type &&
+          @inheritance == other.inheritance
+      end
+    end
+
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
 
@@ -13,6 +47,7 @@ module Orbacle
       {
         methods: @methods,
         constants: @constants,
+        klasslikes: @klasslikes,
       }
     end
 
@@ -26,6 +61,10 @@ module Orbacle
         :mod,
         { line: ast_name.loc.line },
       ]
+
+      @klasslikes << Klasslike.build_module(
+        scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
+        name: module_name)
 
       @current_nesting.increase_nesting_mod(ast_name)
 
@@ -44,6 +83,11 @@ module Orbacle
         :klass,
         { line: ast_name.loc.line },
       ]
+
+      @klasslikes << Klasslike.build_klass(
+        scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
+        name: klass_name,
+        inheritance: nil)
 
       @current_nesting.increase_nesting_class(ast_name)
 
@@ -79,6 +123,7 @@ module Orbacle
       @current_nesting = NestingContainer.new
       @methods = []
       @constants = []
+      @klasslikes = []
     end
 
     def nesting_to_scope(nesting)

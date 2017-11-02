@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 RSpec.describe Orbacle::ParseFileMethods do
+  def build_klass(scope: nil, name:, inheritance: nil)
+    Orbacle::ParseFileMethods::Klasslike.build_klass(scope: scope, name: name, inheritance: inheritance)
+  end
+
+  def build_module(scope: nil, name:)
+    Orbacle::ParseFileMethods::Klasslike.build_module(scope: scope, name: name)
+  end
+
   specify do
     file = <<-END
       class Foo
@@ -15,6 +23,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }]
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo")
     ])
   end
 
@@ -36,6 +47,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }]
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo")
     ])
   end
 
@@ -60,6 +74,10 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
       ["Some", "Foo", :klass, { line: 2 }],
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(name: "Some"),
+      build_klass(scope: "Some", name: "Foo"),
     ])
   end
 
@@ -88,6 +106,11 @@ RSpec.describe Orbacle::ParseFileMethods do
       ["Some", "Foo", :klass, { line: 2 }],
       ["Some", "Bar", :klass, { line: 7 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(name: "Some"),
+      build_klass(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some", name: "Bar"),
+    ])
   end
 
   it do
@@ -111,6 +134,11 @@ RSpec.describe Orbacle::ParseFileMethods do
       ["Some", "Foo", :mod, { line: 2 }],
       ["Some::Foo", "Bar", :klass, { line: 3 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(name: "Some"),
+      build_module(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some::Foo", name: "Bar"),
+    ])
   end
 
   it do
@@ -130,6 +158,10 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:constants]).to match_array([
       ["Some", "Foo", :mod, { line: 1 }],
       ["Some::Foo", "Bar", :klass, { line: 2 }],
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some::Foo", name: "Bar"),
     ])
   end
 
@@ -151,6 +183,10 @@ RSpec.describe Orbacle::ParseFileMethods do
       ["Some::Foo", "Bar", :mod, { line: 1 }],
       ["Some::Foo::Bar", "Baz", :klass, { line: 2 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(scope: "Some::Foo", name: "Bar"),
+      build_klass(scope: "Some::Foo::Bar", name: "Baz"),
+    ])
   end
 
   it do
@@ -170,6 +206,10 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:constants]).to match_array([
       ["Some", "Foo", :mod, { line: 1 }],
       ["Some::Foo::Bar", "Baz", :klass, { line: 2 }],
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some::Foo::Bar", name: "Baz"),
     ])
   end
 
@@ -191,6 +231,10 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "Bar", :klass, { line: 1 }],
       [nil, "Foo", :klass, { line: 2 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Bar"),
+      build_klass(name: "Foo"),
+    ])
   end
 
   it do
@@ -211,6 +255,10 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "Bar", :klass, { line: 1 }],
       [nil, "Foo", :mod, { line: 2 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Bar"),
+      build_module(name: "Foo"),
+    ])
   end
 
   it do
@@ -224,6 +272,7 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "xxx", { line: 1 }],
     ])
     expect(r[:constants]).to match_array([])
+    expect(r[:klasslikes]).to be_empty
   end
 
   specify do
@@ -244,6 +293,9 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "Foo", :klass, { line: 1 }],
       ["Foo", "Bar", :other, { line: 2 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo"),
+    ])
   end
 
   specify do
@@ -259,6 +311,9 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "Foo", :klass, { line: 1 }],
       ["Foo::Ban::Baz", "Bar", :other, { line: 2 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo"),
+    ])
   end
 
   specify do
@@ -272,6 +327,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
       [nil, "Bar", :other, { line: 2 }],
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo"),
     ])
   end
 
@@ -287,6 +345,9 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "Foo", :klass, { line: 1 }],
       ["Baz", "Bar", :other, { line: 2 }],
     ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo"),
+    ])
   end
 
   specify do
@@ -300,6 +361,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
       ["Baz::Bam", "Bar", :other, { line: 2 }],
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_klass(name: "Foo"),
     ])
   end
 
@@ -327,6 +391,11 @@ RSpec.describe Orbacle::ParseFileMethods do
       [nil, "Some", :mod, { line: 1 }],
       ["Some", "Foo", :mod, { line: 2 }],
       ["Some", "Bar", :mod, { line: 7 }],
+    ])
+    expect(r[:klasslikes]).to match_array([
+      build_module(name: "Some"),
+      build_module(scope: "Some", name: "Foo"),
+      build_module(scope: "Some", name: "Bar"),
     ])
   end
 
