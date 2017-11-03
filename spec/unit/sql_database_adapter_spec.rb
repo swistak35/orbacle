@@ -23,13 +23,14 @@ module Orbacle
 
       db.create_table_klasslikes
 
-      db.add_klasslike(scope: "Foo", name: "Bar", type: "klass", inheritance: "Baz")
+      db.add_klasslike(scope: "Foo", name: "Bar", type: "klass", inheritance: "Baz", nesting: [[:mod, [], "Foo"]])
       results = db.find_all_klasslikes
       expect(results.size).to eq(1)
       expect(results[0].scope).to eq("Foo")
       expect(results[0].name).to eq("Bar")
       expect(results[0].type).to eq("klass")
       expect(results[0].inheritance).to eq("Baz")
+      expect(results[0].nesting).to eq([[:mod, [], "Foo"]])
     end
   end
 end

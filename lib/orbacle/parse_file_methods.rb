@@ -9,31 +9,35 @@ module Orbacle
           scope: scope,
           name: name,
           type: :module,
-          inheritance: nil)
+          inheritance: nil,
+          nesting: nil)
       end
 
-      def self.build_klass(scope:, name:, inheritance:)
+      def self.build_klass(scope:, name:, inheritance:, nesting:)
         new(
           scope: scope,
           name: name,
           type: :klass,
-          inheritance: inheritance)
+          inheritance: inheritance,
+          nesting: nesting)
       end
 
-      def initialize(scope:, name:, type:, inheritance:)
+      def initialize(scope:, name:, type:, inheritance:, nesting:)
         @scope = scope
         @name = name
         @type = type
         @inheritance = inheritance
+        @nesting = nesting
       end
 
-      attr_reader :scope, :name, :type, :inheritance
+      attr_reader :scope, :name, :type, :inheritance, :nesting
 
       def ==(other)
         @scope == other.scope &&
           @name == other.name &&
           @type == other.type &&
-          @inheritance == other.inheritance
+          @inheritance == other.inheritance &&
+          @nesting == other.nesting
       end
     end
 
@@ -87,7 +91,8 @@ module Orbacle
       @klasslikes << Klasslike.build_klass(
         scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
         name: klass_name.to_s,
-        inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"))
+        inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"),
+        nesting: @current_nesting.get_current_nesting.dup)
 
       @current_nesting.increase_nesting_class(ast_name)
 
@@ -139,7 +144,8 @@ module Orbacle
         @klasslikes << Klasslike.build_klass(
           scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
           name: const_name.to_s,
-          inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"))
+          inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"),
+          nesting: @current_nesting.get_current_nesting.dup)
       elsif expr_is_module_definition?(expr)
         @klasslikes << Klasslike.build_module(
           scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),

@@ -32,7 +32,8 @@ module Orbacle
             scope: kl.scope,
             name: kl.name,
             type: kl.type,
-            inheritance: kl.inheritance)
+            inheritance: kl.inheritance,
+            nesting: kl.nesting)
         end
       end
     end

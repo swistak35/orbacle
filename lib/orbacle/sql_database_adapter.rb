@@ -1,6 +1,8 @@
+require 'yaml'
+
 class SQLDatabaseAdapter
   Metod = Struct.new(:name, :file, :target, :line)
-  Klasslike = Struct.new(:scope, :name, :type, :inheritance)
+  Klasslike = Struct.new(:scope, :name, :type, :inheritance, :nesting)
 
   def initialize(project_root:)
     @db_path = project_root.join(".orbacle.db")
@@ -18,7 +20,12 @@ class SQLDatabaseAdapter
 
   def find_all_klasslikes
     db.execute("select * from klasslikes").map do |klasslike_data|
-      Klasslike.new(*klasslike_data)
+      Klasslike.new(
+        klasslike_data[0],
+        klasslike_data[1],
+        klasslike_data[2],
+        klasslike_data[3],
+        YAML.load(klasslike_data[4]))
     end
   end
 
@@ -51,7 +58,8 @@ class SQLDatabaseAdapter
         scope varchar(255),
         name varchar(255),
         type varchar(255),
-        inheritance varchar(255)
+        inheritance varchar(255),
+        nesting text
       );
     SQL
   end
@@ -81,12 +89,13 @@ class SQLDatabaseAdapter
     ])
   end
 
-  def add_klasslike(scope:, name:, type:, inheritance:)
-    @db.execute("insert into klasslikes values (?, ?, ?, ?)", [
+  def add_klasslike(scope:, name:, type:, inheritance:, nesting:)
+    @db.execute("insert into klasslikes values (?, ?, ?, ?, ?)", [
       scope,
       name,
       type.to_s,
       inheritance,
+      YAML.dump(nesting),
     ])
   end
 

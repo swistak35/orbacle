@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 RSpec.describe Orbacle::ParseFileMethods do
-  def build_klass(scope: nil, name:, inheritance: nil)
-    Orbacle::ParseFileMethods::Klasslike.build_klass(scope: scope, name: name, inheritance: inheritance)
+  def build_klass(scope: nil, name:, inheritance: nil, nesting: [])
+    Orbacle::ParseFileMethods::Klasslike.build_klass(scope: scope, name: name, inheritance: inheritance, nesting: nesting)
   end
 
   def build_module(scope: nil, name:)
@@ -77,7 +77,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some", name: "Foo", nesting: [
+        [:mod, [], "Some"]
+      ]),
     ])
   end
 
@@ -108,8 +110,12 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some", name: "Bar"),
+      build_klass(scope: "Some", name: "Foo", nesting: [
+        [:mod, [], "Some"]
+      ]),
+      build_klass(scope: "Some", name: "Bar", nesting: [
+        [:mod, [], "Some"]
+      ]),
     ])
   end
 
@@ -137,7 +143,10 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
       build_module(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some::Foo", name: "Bar"),
+      build_klass(scope: "Some::Foo", name: "Bar", nesting: [
+        [:mod, [], "Some"],
+        [:mod, [], "Foo"],
+      ]),
     ])
   end
 
@@ -161,7 +170,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some::Foo", name: "Bar"),
+      build_klass(scope: "Some::Foo", name: "Bar", nesting: [
+        [:mod, ["Some"], "Foo"]
+      ]),
     ])
   end
 
@@ -185,7 +196,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(scope: "Some::Foo", name: "Bar"),
-      build_klass(scope: "Some::Foo::Bar", name: "Baz"),
+      build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: [
+        [:mod, ["Some", "Foo"], "Bar"]
+      ]),
     ])
   end
 
@@ -209,7 +222,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some::Foo::Bar", name: "Baz"),
+      build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: [
+        [:mod, ["Some"], "Foo"]
+      ]),
     ])
   end
 
@@ -233,7 +248,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_klass(name: "Bar"),
-      build_klass(name: "Foo"),
+      build_klass(name: "Foo", nesting: [
+        [:klass, [], "Bar"]
+      ]),
     ])
   end
 
@@ -446,7 +463,9 @@ RSpec.describe Orbacle::ParseFileMethods do
     r = parse_file_methods.(file)
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "Some", name: "Foo", inheritance: "Bar")
+      build_klass(scope: "Some", name: "Foo", inheritance: "Bar", nesting: [
+        [:mod, [], "Some"]
+      ]),
     ])
   end
 
