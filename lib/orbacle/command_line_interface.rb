@@ -9,6 +9,7 @@ module Orbacle
       when 'init' then init(options)
       when 'index' then index(options)
       when 'file-server' then file_server(options)
+      when 'generate-class-hierarchy' then generate_class_hierarchy(options)
       else no_command
       end
     end
@@ -37,6 +38,13 @@ module Orbacle
         lang_server: lang_server,
         logger: logger)
       file_server.start
+    end
+
+    def generate_class_hierarchy
+      puts "Generating class hierarchy"
+      project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
+      db = SQLDatabaseAdapter.new(project_root: project_root)
+      Orbacle::GenerateClassHierarchy.new(db).()
     end
 
     def no_command
