@@ -44,6 +44,30 @@ module Orbacle
       end
 
       klasslikes
+
+      File.open("output.dot", "w") do |f|
+        f.puts "digraph cha {"
+        f.puts "  Object [shape=record,label=\"Object\"]"
+
+        klasslikes.each do |kl|
+          full_name = [kl[:scope], kl[:name]].compact.join("::")
+          f.puts "  #{full_name.gsub(":","_")} [shape=record,label=\"#{full_name}\"]"
+        end
+
+        klasslikes.each do |kl|
+          full_name = [kl[:scope], kl[:name]].compact.join("::")
+          if kl[:real_inheritance]
+            f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:real_inheritance].gsub(":", "_")}"
+          else
+            f.puts "  #{kl[:inheritance].gsub(":", "_")} [label=\"#{kl[:inheritance]}\"]"
+            f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:inheritance].gsub(":", "_")}"
+            f.puts "  #{kl[:inheritance].gsub(":", "_")} -> Object"
+          end
+        end
+        f.puts "}"
+      end
+
+      klasslikes
     end
 
     def nesting_to_scope(nesting)
