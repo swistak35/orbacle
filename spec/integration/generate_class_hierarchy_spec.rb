@@ -16,6 +16,9 @@ module Orbacle
             class FooBase < Something::NotHere
             end
 
+            class MooBase < ::Something::NotThere
+            end
+
             class Foo < FooBase
               class Bar
               end
@@ -53,16 +56,19 @@ module Orbacle
       })
       expect(ch).to include({
         scope: nil,
-        name: "Foo",
-        inheritance: "FooBase",
-        nesting: [],
-        real_inheritance: "FooBase"
-      })
-      expect(ch).to include({
-        scope: nil,
         name: "FooBase",
         inheritance: "Something::NotHere",
         nesting: [],
+        real_inheritance: "Something::NotHere",
+        inheritance_faked: true,
+      })
+      expect(ch).to include({
+        scope: nil,
+        name: "MooBase",
+        inheritance: "::Something::NotThere",
+        nesting: [],
+        real_inheritance: "Something::NotThere",
+        inheritance_faked: true,
       })
     end
 

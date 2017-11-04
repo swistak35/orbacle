@@ -22,6 +22,15 @@ module Orbacle
           kl[:real_inheritance] = "Object"
         elsif kl[:inheritance].start_with?("::")
           kl[:real_inheritance] = kl[:inheritance][2..-1]
+          scope = kl[:real_inheritance].split("::")[0..-2].join("::")
+          scope = nil if scope == ""
+          name = kl[:real_inheritance].split("::").last
+          result = klasslikes.find do |kkl|
+            kkl[:scope] == scope && kkl[:name] == name
+          end
+          if !result
+            kl[:inheritance_faked] = true
+          end
         else
           possible_parents = kl[:nesting].each_index.map do |i|
             [nesting_to_scope(kl[:nesting][0..i]), kl[:inheritance]].compact.join("::")
@@ -39,6 +48,9 @@ module Orbacle
 
           if chosen_real_inheritance
             kl[:real_inheritance] = [chosen_real_inheritance[:scope], chosen_real_inheritance[:name]].compact.join("::")
+          else
+            kl[:real_inheritance] = kl[:inheritance].dup
+            kl[:inheritance_faked] = true
           end
         end
       end
@@ -56,12 +68,12 @@ module Orbacle
 
         klasslikes.each do |kl|
           full_name = [kl[:scope], kl[:name]].compact.join("::")
-          if kl[:real_inheritance]
+          if kl[:inheritance_faked]
+            f.puts "  #{kl[:real_inheritance].gsub(":", "_")} [label=\"#{kl[:real_inheritance]}\"]"
             f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:real_inheritance].gsub(":", "_")}"
+            f.puts "  #{kl[:real_inheritance].gsub(":", "_")} -> Object"
           else
-            f.puts "  #{kl[:inheritance].gsub(":", "_")} [label=\"#{kl[:inheritance]}\"]"
-            f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:inheritance].gsub(":", "_")}"
-            f.puts "  #{kl[:inheritance].gsub(":", "_")} -> Object"
+            f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:real_inheritance].gsub(":", "_")}"
           end
         end
         f.puts "}"

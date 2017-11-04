@@ -40,7 +40,7 @@ module Orbacle
       file_server.start
     end
 
-    def generate_class_hierarchy
+    def generate_class_hierarchy(options)
       puts "Generating class hierarchy"
       project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
       db = SQLDatabaseAdapter.new(project_root: project_root)
