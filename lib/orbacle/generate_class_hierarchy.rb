@@ -12,62 +12,52 @@ module Orbacle
       klasslikes = @db
         .find_all_klasslikes
         .select {|kl| kl.type == "klass" }
-        .map do |kl|
-          {
-            scope: kl.scope,
-            name: kl.name,
-            inheritance: kl.inheritance,
-            nesting: kl.nesting,
-          }
-        end
 
       klasstree_hash = {}
       klasstree_hash["Object"] = KlassNode.new("Object", false, nil)
 
       klasslikes.each do |kl|
-        if kl[:inheritance].nil?
-          kl[:real_inheritance] = "Object"
-          full_name = [kl[:scope], kl[:name]].compact.join("::")
-          klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
-        elsif kl[:inheritance].start_with?("::")
-          kl[:real_inheritance] = kl[:inheritance][2..-1]
-          full_name = [kl[:scope], kl[:name]].compact.join("::")
-          klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
+        if kl.inheritance.nil?
+          real_inheritance = "Object"
+          full_name = [kl.scope, kl.name].compact.join("::")
+          klasstree_hash[full_name] = KlassNode.new(full_name, true, real_inheritance)
+        elsif kl.inheritance.start_with?("::")
+          real_inheritance = kl.inheritance[2..-1]
+          full_name = [kl.scope, kl.name].compact.join("::")
+          klasstree_hash[full_name] = KlassNode.new(full_name, true, real_inheritance)
 
-          scope = kl[:real_inheritance].split("::")[0..-2].join("::")
+          scope = real_inheritance.split("::")[0..-2].join("::")
           scope = nil if scope == ""
-          name = kl[:real_inheritance].split("::").last
+          name = real_inheritance.split("::").last
           result = klasslikes.find do |kkl|
-            kkl[:scope] == scope && kkl[:name] == name
+            kkl.scope == scope && kkl.name == name
           end
           if !result
-            kl[:inheritance_faked] = true
-            klasstree_hash[kl[:real_inheritance]] = KlassNode.new(kl[:real_inheritance], false, "Object")
+            klasstree_hash[real_inheritance] = KlassNode.new(real_inheritance, false, "Object")
           end
         else
-          possible_parents = kl[:nesting].each_index.map do |i|
-            [nesting_to_scope(kl[:nesting][0..i]), kl[:inheritance]].compact.join("::")
+          possible_parents = kl.nesting.each_index.map do |i|
+            [nesting_to_scope(kl.nesting[0..i]), kl.inheritance].compact.join("::")
           end
-          possible_parents.unshift(kl[:inheritance])
+          possible_parents.unshift(kl.inheritance)
           possible_parents2 = possible_parents.map do |parent|
             scope = parent.split("::")[0..-2].join("::")
             scope = nil if scope == ""
             name = parent.split("::").last
             klasslikes.find do |kkl|
-              kkl[:scope] == scope && kkl[:name] == name
+              kkl.scope == scope && kkl.name == name
             end
           end.compact
           chosen_real_inheritance = possible_parents2.last
 
-          full_name = [kl[:scope], kl[:name]].compact.join("::")
+          full_name = [kl.scope, kl.name].compact.join("::")
           if chosen_real_inheritance
-            kl[:real_inheritance] = [chosen_real_inheritance[:scope], chosen_real_inheritance[:name]].compact.join("::")
-            klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
+            real_inheritance = [chosen_real_inheritance.scope, chosen_real_inheritance.name].compact.join("::")
+            klasstree_hash[full_name] = KlassNode.new(full_name, true, real_inheritance)
           else
-            kl[:real_inheritance] = kl[:inheritance].dup
-            kl[:inheritance_faked] = true
-            klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
-            klasstree_hash[kl[:real_inheritance]] = KlassNode.new(kl[:real_inheritance], false, "Object")
+            real_inheritance = kl.inheritance.dup
+            klasstree_hash[full_name] = KlassNode.new(full_name, true, real_inheritance)
+            klasstree_hash[real_inheritance] = KlassNode.new(real_inheritance, false, "Object")
           end
         end
       end
