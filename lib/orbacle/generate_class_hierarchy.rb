@@ -72,8 +72,8 @@ module Orbacle
         end
       end
 
-      root_node = Tree::TreeNode.new("Object", KlassNode.new("Object"))
-      build_queue = [root_node]
+      tree = Tree::TreeNode.new("Object", KlassNode.new("Object"))
+      build_queue = [tree]
       while !build_queue.empty?
         current_node = build_queue.shift
         klasstree_hash
@@ -85,25 +85,9 @@ module Orbacle
             current_node << tree_node
           end
       end
-      root_node.print_tree
+      tree.print_tree
 
-      File.open("output.dot", "w") do |f|
-        f.puts "digraph cha {"
-
-        root_node.breadth_each do |node|
-          if node.content.real
-            f.puts "  #{node.name.gsub(":", "_")} [shape=record,label=\"#{node.name}\"]"
-          else
-            f.puts "  #{node.name.gsub(":", "_")} [label=\"#{node.name}\"]"
-          end
-
-          if !node.content.inheritance.nil?
-            f.puts "  #{node.name.gsub(":", "_")} -> #{node.parent.name.gsub(":", "_")}"
-          end
-        end
-
-        f.puts "}"
-      end
+      ExportClassHierarchy.new.(tree)
 
       klasslikes
     end
