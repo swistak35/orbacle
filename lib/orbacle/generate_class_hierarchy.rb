@@ -72,7 +72,7 @@ module Orbacle
         end
       end
 
-      tree = Tree::TreeNode.new("Object", KlassNode.new("Object"))
+      tree = Tree::TreeNode.new("Object", klasstree_hash["Object"])
       build_queue = [tree]
       while !build_queue.empty?
         current_node = build_queue.shift
@@ -89,7 +89,7 @@ module Orbacle
 
       ExportClassHierarchy.new.(tree)
 
-      klasslikes
+      tree
     end
 
     def nesting_to_scope(nesting)

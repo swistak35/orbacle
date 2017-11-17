@@ -33,43 +33,26 @@ module Orbacle
       db = SQLDatabaseAdapter.new(project_root: Pathname.new(project.root))
       ch = GenerateClassHierarchy.new(db).()
 
-      expect(ch).to include({
-        scope: nil,
-        name: "Bar",
-        inheritance: nil,
-        nesting: [],
-        real_inheritance: "Object",
-      })
-      expect(ch).to include({
-        scope: "Foo",
-        name: "Baz",
-        inheritance: "::Bar",
-        nesting: [[:klass, [], "Foo"]],
-        real_inheritance: "Bar"
-      })
-      expect(ch).to include({
-        scope: nil,
-        name: "Foo",
-        inheritance: "FooBase",
-        nesting: [],
-        real_inheritance: "FooBase"
-      })
-      expect(ch).to include({
-        scope: nil,
-        name: "FooBase",
-        inheritance: "Something::NotHere",
-        nesting: [],
-        real_inheritance: "Something::NotHere",
-        inheritance_faked: true,
-      })
-      expect(ch).to include({
-        scope: nil,
-        name: "MooBase",
-        inheritance: "::Something::NotThere",
-        nesting: [],
-        real_inheritance: "Something::NotThere",
-        inheritance_faked: true,
-      })
+      expect(ch.content).to eq(GenerateClassHierarchy::KlassNode.new("Object", false, nil))
+
+      expect(ch.children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("Bar", true, "Object"))
+      expect(ch.children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("Foo::Bar", true, "Object"))
+      expect(ch.children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("Something::NotHere", false, "Object"))
+      expect(ch.children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("Something::NotThere", false, "Object"))
+
+      expect(ch["Something::NotHere"].children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("FooBase", true, "Something::NotHere"))
+      expect(ch["Something::NotThere"].children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("MooBase", true, "Something::NotThere"))
+
+      expect(ch["Something::NotHere"]["FooBase"].children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("Foo", true, "FooBase"))
+      expect(ch["Bar"].children.map(&:content)).to include(
+        GenerateClassHierarchy::KlassNode.new("Foo::Baz", true, "Bar"))
     end
 
     def test_indexer
