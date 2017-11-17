@@ -1,5 +1,9 @@
+require 'tree'
+
 module Orbacle
   class GenerateClassHierarchy
+    KlassNode = Struct.new(:name, :real, :inheritance)
+
     def initialize(db)
       @db = db
     end
@@ -17,11 +21,19 @@ module Orbacle
           }
         end
 
+      klasstree_hash = {}
+      klasstree_hash["Object"] = KlassNode.new("Object", false, nil)
+
       klasslikes.each do |kl|
         if kl[:inheritance].nil?
           kl[:real_inheritance] = "Object"
+          full_name = [kl[:scope], kl[:name]].compact.join("::")
+          klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
         elsif kl[:inheritance].start_with?("::")
           kl[:real_inheritance] = kl[:inheritance][2..-1]
+          full_name = [kl[:scope], kl[:name]].compact.join("::")
+          klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
+
           scope = kl[:real_inheritance].split("::")[0..-2].join("::")
           scope = nil if scope == ""
           name = kl[:real_inheritance].split("::").last
@@ -30,6 +42,7 @@ module Orbacle
           end
           if !result
             kl[:inheritance_faked] = true
+            klasstree_hash[kl[:real_inheritance]] = KlassNode.new(kl[:real_inheritance], false, "Object")
           end
         else
           possible_parents = kl[:nesting].each_index.map do |i|
@@ -46,36 +59,49 @@ module Orbacle
           end.compact
           chosen_real_inheritance = possible_parents2.last
 
+          full_name = [kl[:scope], kl[:name]].compact.join("::")
           if chosen_real_inheritance
             kl[:real_inheritance] = [chosen_real_inheritance[:scope], chosen_real_inheritance[:name]].compact.join("::")
+            klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
           else
             kl[:real_inheritance] = kl[:inheritance].dup
             kl[:inheritance_faked] = true
+            klasstree_hash[full_name] = KlassNode.new(full_name, true, kl[:real_inheritance])
+            klasstree_hash[kl[:real_inheritance]] = KlassNode.new(kl[:real_inheritance], false, "Object")
           end
         end
       end
 
-      klasslikes
+      root_node = Tree::TreeNode.new("Object", KlassNode.new("Object"))
+      build_queue = [root_node]
+      while !build_queue.empty?
+        current_node = build_queue.shift
+        klasstree_hash
+          .values
+          .select {|kn| kn.inheritance == current_node.name }
+          .each do |kn|
+            tree_node = Tree::TreeNode.new(kn.name, kn)
+            build_queue << tree_node
+            current_node << tree_node
+          end
+      end
+      root_node.print_tree
 
       File.open("output.dot", "w") do |f|
         f.puts "digraph cha {"
-        f.puts "  Object [shape=record,label=\"Object\"]"
 
-        klasslikes.each do |kl|
-          full_name = [kl[:scope], kl[:name]].compact.join("::")
-          f.puts "  #{full_name.gsub(":","_")} [shape=record,label=\"#{full_name}\"]"
-        end
-
-        klasslikes.each do |kl|
-          full_name = [kl[:scope], kl[:name]].compact.join("::")
-          if kl[:inheritance_faked]
-            f.puts "  #{kl[:real_inheritance].gsub(":", "_")} [label=\"#{kl[:real_inheritance]}\"]"
-            f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:real_inheritance].gsub(":", "_")}"
-            f.puts "  #{kl[:real_inheritance].gsub(":", "_")} -> Object"
+        root_node.breadth_each do |node|
+          if node.content.real
+            f.puts "  #{node.name.gsub(":", "_")} [shape=record,label=\"#{node.name}\"]"
           else
-            f.puts "  #{full_name.gsub(":", "_")} -> #{kl[:real_inheritance].gsub(":", "_")}"
+            f.puts "  #{node.name.gsub(":", "_")} [label=\"#{node.name}\"]"
+          end
+
+          if !node.content.inheritance.nil?
+            f.puts "  #{node.name.gsub(":", "_")} -> #{node.parent.name.gsub(":", "_")}"
           end
         end
+
         f.puts "}"
       end
 
