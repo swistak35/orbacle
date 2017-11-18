@@ -1,89 +1,63 @@
-module Orbacle
-  class ControlFlowGraph < Parser::AST::Processor
-    def process_method(method_declaration)
-      ast = Parser::CurrentRuby.parse(method_declaration)
+require 'rgl/adjacency'
+require 'parser/current'
 
-      @blocks = []
-      @tmpcounter = 0
+module Orbacle
+  class ControlFlowGraph
+    class Node
+      def initialize(type, params)
+        @type = type
+        @params = params
+      end
+
+      attr_reader :type, :params
+
+      def ==(other)
+        @type == other.type && @params == other.params
+      end
+    end
+    def process_file(file)
+      ast = Parser::CurrentRuby.parse(file)
+
+      @graph = RGL::DirectedAdjacencyGraph.new
 
       process(ast)
 
-      @blocks
+      return @graph
     end
 
-    def on_lvasgn(node)
-      lvar_name = node.children[0].to_s
-      assigned_expr_ast = node.children[1]
-      assigned_expr = case assigned_expr_ast.type
-        when :send
-          object_ast = assigned_expr_ast.children[0]
-          method_name = assigned_expr_ast.children[1]
-          object = case object_ast.type
-            when :const
-              [:constant, object_ast.children[1].to_s]
-            when :send
-              if object_ast.children[0].nil?
-                [:send, object_ast.children[1].to_s]
-              else
-                [:tmpvar, make_tmp_var(object_ast)]
-              end
-            when :lvar
-              [:lvar, object_ast.children[0].to_s]
-            else
-              raise
-            end
-          if method_name == :new
-            [:init, object, []]
-          else
-            [:send, method_name, object, []]
-          end
-        else raise
-        end
+    private
 
-      @blocks << {
-        type: :lvasgn,
-        lvar_name: lvar_name,
-        assigned_expr: assigned_expr,
-      }
+    def process(ast)
+      case ast.type
+      when :lvasgn
+        handle_lvasgn(ast)
+      when :int
+        handle_int(ast)
+      else
+        raise ArgumentError.new(ast)
+      end
     end
 
-    def make_tmp_var(ast)
-      tmpvar = @tmpcounter.to_s
-      @tmpcounter += 1
+    def handle_lvasgn(ast)
+      var_name = ast.children[0].to_s
+      expr = ast.children[1]
 
-      assigned_expr = case ast.type
-        when :send
-          object_ast = ast.children[0]
-          method_name = ast.children[1]
-          object = case object_ast.type
-            when :const
-              [:constant, object_ast.children[1].to_s]
-            when :send
-              if object_ast.children[0].nil?
-                [:send, object_ast.children[1].to_s]
-              else
-                [:tmpvar, make_tmp_var(object_ast)]
-              end
-            when :lvar
-              [:lvar, object_ast.children[0].to_s]
-            else
-              raise
-            end
-          if method_name == :new
-            [:init, object, []]
-          else
-            [:send, method_name, object, []]
-          end
-        else raise
-        end
+      n1 = Node.new(:lvasgn, { var_name: var_name })
+      @graph.add_vertex(n1)
 
-      @blocks << {
-        type: :tmpasgn,
-        tmp_name: tmpvar,
-        assigned_expr: assigned_expr,
-      }
+      n2 = process(expr)
 
-      tmpvar
+      @graph.add_edge(n1, n2)
+
+      return n1
+    end
+
+    def handle_int(ast)
+      value = ast.children[0]
+      n = Node.new(:int, { value: value })
+      @graph.add_vertex(n)
+
+      return n
     end
   end
 end
