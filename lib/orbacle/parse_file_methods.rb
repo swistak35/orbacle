@@ -92,7 +92,7 @@ module Orbacle
         scope: @current_nesting.scope_from_nesting_and_prename(prename),
         name: klass_name.to_s,
         inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"),
-        nesting: @current_nesting.get_current_nesting.dup)
+        nesting: @current_nesting.get_output_nesting)
 
       @current_nesting.increase_nesting_class(ast_name)
 
@@ -145,7 +145,7 @@ module Orbacle
           scope: @current_nesting.scope_from_nesting_and_prename(@current_nesting.prename(const_prename)),
           name: const_name.to_s,
           inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"),
-          nesting: @current_nesting.get_current_nesting.dup)
+          nesting: @current_nesting.get_output_nesting)
       elsif expr_is_module_definition?(expr)
         @klasslikes << Klasslike.build_module(
           scope: @current_nesting.scope_from_nesting_and_prename(@current_nesting.prename(const_prename)),

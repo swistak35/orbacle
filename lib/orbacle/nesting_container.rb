@@ -5,12 +5,12 @@ module Orbacle
       @is_selfed = false
     end
 
-    def get_nesting(ast_const)
-      [prename(ast_const.children[0]), ast_const.children[1].to_s]
+    def get_output_nesting
+      @current_nesting.dup
     end
 
-    def get_current_nesting
-      @current_nesting
+    def get_nesting(ast_const)
+      [prename(ast_const.children[0]), ast_const.children[1].to_s]
     end
 
     def is_selfed?

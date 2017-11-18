@@ -20,7 +20,7 @@ class Orbacle::DefinitionProcessor < Parser::AST::Processor
     if @searched_line == name_loc_range.line && ast_all_ranges.any? {|r| r.include?(@searched_character) }
       @found_type = "constant"
       @found_constant = const_to_string(ast)
-      @found_nesting = @current_nesting.get_current_nesting.dup
+      @found_nesting = @current_nesting.get_output_nesting
     end
   end
 
@@ -49,7 +49,7 @@ class Orbacle::DefinitionProcessor < Parser::AST::Processor
     if @searched_line == selector_loc.line && selector_loc.column_range.include?(@searched_character)
       @found_type = "send"
       @found_constant = ast.children[1].to_s
-      @found_nesting = @current_nesting.get_current_nesting.dup
+      @found_nesting = @current_nesting.get_output_nesting
     end
 
     super(ast)
