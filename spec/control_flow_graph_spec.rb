@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'support/graph_matchers'
 
 module Orbacle
   RSpec.describe "ControlFlowGraph" do
@@ -8,10 +9,9 @@ module Orbacle
       END
 
       r = generate_cfg(snippet)
-      expect(r.edges).to include(
-        edge(
-          node(:lvasgn, { var_name: "x" }),
-          node(:int, { value: 42 })))
+      expect(r).to include_edge(
+        node(:lvasgn, { var_name: "x" }),
+        node(:int, { value: 42 }))
     end
 
     def generate_cfg(snippet)
@@ -21,10 +21,6 @@ module Orbacle
 
     def node(type, params)
       Orbacle::ControlFlowGraph::Node.new(type, params)
-    end
-
-    def edge(source, target)
-      RGL::Edge::DirectedEdge.new(source, target)
     end
   end
 end
