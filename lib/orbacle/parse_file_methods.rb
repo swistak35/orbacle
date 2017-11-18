@@ -60,14 +60,14 @@ module Orbacle
       prename, module_name = @current_nesting.get_nesting(ast_name)
 
       @constants << [
-        scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
+        @current_nesting.scope_from_nesting_and_prename(prename),
         module_name,
         :mod,
         { line: ast_name.loc.line },
       ]
 
       @klasslikes << Klasslike.build_module(
-        scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
+        scope: @current_nesting.scope_from_nesting_and_prename(prename),
         name: module_name.to_s)
 
       @current_nesting.increase_nesting_mod(ast_name)
@@ -82,14 +82,14 @@ module Orbacle
       prename, klass_name = @current_nesting.get_nesting(ast_name)
 
       @constants << [
-        scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
+        @current_nesting.scope_from_nesting_and_prename(prename),
         klass_name,
         :klass,
         { line: ast_name.loc.line },
       ]
 
       @klasslikes << Klasslike.build_klass(
-        scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, prename),
+        scope: @current_nesting.scope_from_nesting_and_prename(prename),
         name: klass_name.to_s,
         inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"),
         nesting: @current_nesting.get_current_nesting.dup)
@@ -113,7 +113,7 @@ module Orbacle
       method_name, _ = ast.children
 
       @methods << [
-        nesting_to_scope(@current_nesting.get_current_nesting),
+        @current_nesting.nesting_to_scope,
         method_name.to_s,
         { line: ast.loc.line, target: @current_nesting.is_selfed? ? :self : :instance }
       ]
@@ -123,7 +123,7 @@ module Orbacle
       method_receiver, method_name, _ = ast.children
 
       @methods << [
-        nesting_to_scope(@current_nesting.get_current_nesting),
+        @current_nesting.nesting_to_scope,
         method_name.to_s,
         { line: ast.loc.line, target: :self },
       ]
@@ -133,7 +133,7 @@ module Orbacle
       const_prename, const_name, expr = ast.children
 
       @constants << [
-        scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
+        @current_nesting.scope_from_nesting_and_prename(@current_nesting.prename(const_prename)),
         const_name.to_s,
         :other,
         { line: ast.loc.line }
@@ -142,13 +142,13 @@ module Orbacle
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
         @klasslikes << Klasslike.build_klass(
-          scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
+          scope: @current_nesting.scope_from_nesting_and_prename(@current_nesting.prename(const_prename)),
           name: const_name.to_s,
           inheritance: parent_klass_name_ast.nil? ? nil : @current_nesting.get_nesting(parent_klass_name_ast).flatten.join("::"),
           nesting: @current_nesting.get_current_nesting.dup)
       elsif expr_is_module_definition?(expr)
         @klasslikes << Klasslike.build_module(
-          scope: scope_from_nesting_and_prename(@current_nesting.get_current_nesting, @current_nesting.prename(const_prename)),
+          scope: @current_nesting.scope_from_nesting_and_prename(@current_nesting.prename(const_prename)),
           name: const_name.to_s)
       end
     end
@@ -172,25 +172,6 @@ module Orbacle
       expr.type == :send &&
         expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
         expr.children[1] == :new
-    end
-
-    def nesting_to_scope(nesting)
-      return nil if nesting.empty?
-
-      nesting.map do |_type, pre, name|
-        pre + [name]
-      end.join("::")
-    end
-
-    def scope_from_nesting_and_prename(nesting, prename)
-      scope_from_nesting = nesting_to_scope(nesting)
-
-      if prename.at(0).eql?("")
-        result = prename.drop(1).join("::")
-      else
-        result = ([scope_from_nesting] + prename).compact.join("::")
-      end
-      result if !result.empty?
     end
   end
 end

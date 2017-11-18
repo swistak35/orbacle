@@ -60,5 +60,24 @@ module Orbacle
     def decrease_nesting
       @current_nesting.pop
     end
+
+    def scope_from_nesting_and_prename(prename)
+      scope_from_nesting = nesting_to_scope()
+
+      if prename.at(0).eql?("")
+        result = prename.drop(1).join("::")
+      else
+        result = ([scope_from_nesting] + prename).compact.join("::")
+      end
+      result if !result.empty?
+    end
+
+    def nesting_to_scope
+      return nil if @current_nesting.empty?
+
+      @current_nesting.map do |_type, pre, name|
+        pre + [name]
+      end.join("::")
+    end
   end
 end
