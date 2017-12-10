@@ -54,11 +54,6 @@ module Orbacle
       @levels.pop
     end
 
-    def scope_from_nesting_and_prename(const_ref)
-      scope_from_nesting = Skope.from_nesting(self)
-      scope_from_nesting.increase_by_ref(const_ref)
-    end
-
     def nesting_to_scope
       skope = Skope.from_nesting(self)
       skope.empty? ? nil : skope.absolute_str

@@ -60,14 +60,14 @@ module Orbacle
       module_name_ref = ConstRef.from_ast(module_name_ast)
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(module_name_ref).prefix.absolute_str,
+        Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
         module_name_ref.name,
         :mod,
         { line: module_name_ast.loc.line },
       ]
 
       @klasslikes << Klasslike.build_module(
-        scope: @current_nesting.scope_from_nesting_and_prename(module_name_ref).prefix.absolute_str,
+        scope: Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
         name: module_name_ref.name)
 
       @current_nesting.increase_nesting_const(module_name_ref)
@@ -82,14 +82,14 @@ module Orbacle
       klass_name_ref = ConstRef.from_ast(klass_name_ast)
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(klass_name_ref).prefix.absolute_str,
+        Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
         klass_name_ref.name,
         :klass,
         { line: klass_name_ast.loc.line },
       ]
 
       @klasslikes << Klasslike.build_klass(
-        scope: @current_nesting.scope_from_nesting_and_prename(klass_name_ref).prefix.absolute_str,
+        scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
         name: klass_name_ref.name,
         inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         nesting: @current_nesting.get_output_nesting)
@@ -134,7 +134,7 @@ module Orbacle
       const_name_ref = ConstRef.new(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(const_name_ref).prefix.absolute_str,
+        Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
         const_name_ref.name,
         :other,
         { line: ast.loc.line }
@@ -143,13 +143,13 @@ module Orbacle
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
         @klasslikes << Klasslike.build_klass(
-          scope: @current_nesting.scope_from_nesting_and_prename(const_name_ref).prefix.absolute_str,
+          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
           name: const_name_ref.name,
           inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           nesting: @current_nesting.get_output_nesting)
       elsif expr_is_module_definition?(expr)
         @klasslikes << Klasslike.build_module(
-          scope: @current_nesting.scope_from_nesting_and_prename(const_name_ref).prefix.absolute_str,
+          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
           name: const_name_ref.name)
       end
     end
