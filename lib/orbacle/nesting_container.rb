@@ -1,4 +1,34 @@
 module Orbacle
+  class Skope < Struct.new(:str, :metaklass?)
+    def self.from_nesting(nesting)
+      nesting.levels.inject(Skope.empty) do |skope, nesting_level|
+        if nesting_level.absolute?
+          Skope.new(nesting_level.full_name, nesting_level.metaklass?)
+        else
+          skope.increase_by_ref(nesting_level.const_ref)
+        end
+      end
+    end
+
+    def self.empty
+      new(nil, false)
+    end
+
+    def increase_by_ref(const_ref)
+      Skope.new(
+        [str, const_ref.full_name].compact.join("::"),
+        metaklass?)
+    end
+
+    def empty?
+      str.nil?
+    end
+
+    def absolute_str
+      str.start_with?("::") ? str : "::#{str}"
+    end
+  end
+
   class NestingContainer
     class ConstLevel < Struct.new(:const_ref)
       def full_name
@@ -7,6 +37,10 @@ module Orbacle
 
       def absolute?
         const_ref.absolute?
+      end
+
+      def metaklass?
+        false
       end
     end
 
@@ -18,6 +52,10 @@ module Orbacle
       def absolute?
         true
       end
+
+      def metaklass?
+        true
+      end
     end
 
     def initialize
@@ -26,6 +64,10 @@ module Orbacle
 
     def get_output_nesting
       @current_nesting.map {|level| level.full_name }
+    end
+
+    def levels
+      @current_nesting
     end
 
     def is_selfed?
@@ -56,15 +98,8 @@ module Orbacle
     end
 
     def nesting_to_scope
-      return nil if @current_nesting.empty?
-
-      @current_nesting.inject("") do |skope, nesting_level|
-        if nesting_level.absolute?
-          nesting_level.full_name
-        else
-          [skope, nesting_level.full_name].join("::")
-        end
-      end
+      skope = Skope.from_nesting(self)
+      skope.empty? ? nil : skope.absolute_str
     end
   end
 end
