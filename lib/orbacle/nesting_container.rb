@@ -9,16 +9,12 @@ module Orbacle
       @current_nesting.dup
     end
 
-    def get_nesting(ast_const)
-      [prename(ast_const.children[0]), ast_const.children[1].to_s]
-    end
-
     def is_selfed?
       @is_selfed
     end
 
     def increase_nesting_mod(ast_name)
-      prename, module_name = get_nesting(ast_name)
+      prename, module_name = AstUtils.get_nesting(ast_name)
 
       if prename[0] == ""
         current_nesting_element = [:mod, prename[1..-1] || [], module_name]
@@ -30,7 +26,7 @@ module Orbacle
     end
 
     def increase_nesting_class(ast_name)
-      prename, klass_name = get_nesting(ast_name)
+      prename, klass_name = AstUtils.get_nesting(ast_name)
 
       if prename[0] == ""
         current_nesting_element = [:klass, prename[1..-1] || [], klass_name]
@@ -47,14 +43,6 @@ module Orbacle
 
     def make_nesting_not_selfed
       @is_selfed = false
-    end
-
-    def prename(ast_const)
-      if ast_const.nil?
-        []
-      else
-        prename(ast_const.children[0]) + [ast_const.children[1].to_s]
-      end
     end
 
     def decrease_nesting
