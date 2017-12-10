@@ -56,21 +56,21 @@ module Orbacle
     end
 
     def on_module(ast)
-      ast_name, _ = ast.children
-      prename, module_name = AstUtils.get_nesting(ast_name)
+      module_name_ast, _ = ast.children
+      const_ref = ConstRef.from_ast(module_name_ast)
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(prename),
-        module_name,
+        @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
+        const_ref.name,
         :mod,
-        { line: ast_name.loc.line },
+        { line: module_name_ast.loc.line },
       ]
 
       @klasslikes << Klasslike.build_module(
-        scope: @current_nesting.scope_from_nesting_and_prename(prename),
-        name: module_name.to_s)
+        scope: @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
+        name: const_ref.name)
 
-      @current_nesting.increase_nesting_const(ast_name)
+      @current_nesting.increase_nesting_const(const_ref)
 
       super(ast)
 
@@ -78,23 +78,23 @@ module Orbacle
     end
 
     def on_class(ast)
-      ast_name, parent_klass_name_ast, _ = ast.children
-      prename, klass_name = AstUtils.get_nesting(ast_name)
+      klass_name_ast, parent_klass_name_ast, _ = ast.children
+      const_ref = ConstRef.from_ast(klass_name_ast)
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(prename),
-        klass_name,
+        @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
+        const_ref.name,
         :klass,
-        { line: ast_name.loc.line },
+        { line: klass_name_ast.loc.line },
       ]
 
       @klasslikes << Klasslike.build_klass(
-        scope: @current_nesting.scope_from_nesting_and_prename(prename),
-        name: klass_name.to_s,
+        scope: @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
+        name: const_ref.name,
         inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.get_nesting(parent_klass_name_ast).flatten.join("::"),
         nesting: @current_nesting.get_output_nesting)
 
-      @current_nesting.increase_nesting_const(ast_name)
+      @current_nesting.increase_nesting_const(const_ref)
 
       super(ast)
 
