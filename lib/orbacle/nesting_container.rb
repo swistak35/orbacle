@@ -17,10 +17,10 @@ module Orbacle
       prename, module_name = AstUtils.get_nesting(ast_name)
 
       if prename[0] == ""
-        current_nesting_element = [:mod, prename[1..-1] || [], module_name]
+        current_nesting_element = [prename[1..-1] || [], module_name]
         @current_nesting = [current_nesting_element]
       else
-        current_nesting_element = [:mod, prename, module_name]
+        current_nesting_element = [prename, module_name]
         @current_nesting << current_nesting_element
       end
     end
@@ -29,10 +29,10 @@ module Orbacle
       prename, klass_name = AstUtils.get_nesting(ast_name)
 
       if prename[0] == ""
-        current_nesting_element = [:klass, prename[1..-1] || [], klass_name]
+        current_nesting_element = [prename[1..-1] || [], klass_name]
         @current_nesting = [current_nesting_element]
       else
-        current_nesting_element = [:klass, prename, klass_name]
+        current_nesting_element = [prename, klass_name]
         @current_nesting << current_nesting_element
       end
     end
@@ -63,7 +63,7 @@ module Orbacle
     def nesting_to_scope
       return nil if @current_nesting.empty?
 
-      @current_nesting.map do |_type, pre, name|
+      @current_nesting.map do |pre, name|
         pre + [name]
       end.join("::")
     end

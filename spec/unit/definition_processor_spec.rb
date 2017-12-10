@@ -47,7 +47,7 @@ RSpec.describe Orbacle::DefinitionProcessor do
       end
     END
 
-    expected_nesting = [[:klass, [], "Foo"]]
+    expected_nesting = [[[], "Foo"]]
 
     expect(definition_processor(file, 3, 11)[1]).to eq(expected_nesting)
     expect(definition_processor(file, 3, 11)[2]).to eq("constant")
