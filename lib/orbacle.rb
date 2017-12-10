@@ -4,6 +4,7 @@ end
 require 'orbacle/command_line_interface'
 
 require 'orbacle/const_ref'
+require 'orbacle/skope'
 
 require 'orbacle/parse_file_methods'
 require 'orbacle/call_definition'
