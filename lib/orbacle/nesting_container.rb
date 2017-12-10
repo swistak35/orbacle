@@ -32,12 +32,10 @@ module Orbacle
       @levels = []
     end
 
+    attr_reader :levels
+
     def get_output_nesting
       @levels.map {|level| level.full_name }
-    end
-
-    def levels
-      @levels
     end
 
     def is_selfed?
