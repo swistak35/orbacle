@@ -106,7 +106,7 @@ module Orbacle
 
       super(ast)
 
-      @current_nesting.increase_nesting_self
+      @current_nesting.decrease_nesting
     end
 
     def on_def(ast)
