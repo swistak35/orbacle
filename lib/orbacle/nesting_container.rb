@@ -14,15 +14,9 @@ module Orbacle
     end
 
     def increase_nesting_const(ast_name)
-      prename, module_name = AstUtils.get_nesting(ast_name)
+      prename, klasslike_name = AstUtils.get_nesting(ast_name)
 
-      if prename[0] == ""
-        current_nesting_element = [prename[1..-1] || [], module_name]
-        @current_nesting = [current_nesting_element]
-      else
-        current_nesting_element = [prename, module_name]
-        @current_nesting << current_nesting_element
-      end
+      @current_nesting << (prename + [klasslike_name]).join("::")
     end
 
     def make_nesting_selfed
@@ -41,9 +35,9 @@ module Orbacle
       scope_from_nesting = nesting_to_scope()
 
       if prename.at(0).eql?("")
-        result = prename.drop(1).join("::")
+        result = prename.join("::")
       else
-        result = ([scope_from_nesting] + prename).compact.join("::")
+        result = ([scope_from_nesting] + prename).join("::")
       end
       result if !result.empty?
     end
@@ -51,9 +45,13 @@ module Orbacle
     def nesting_to_scope
       return nil if @current_nesting.empty?
 
-      @current_nesting.map do |pre, name|
-        pre + [name]
-      end.join("::")
+      @current_nesting.inject("") do |skope, nesting_level|
+        if nesting_level.start_with?("::")
+          nesting_level
+        else
+          [skope, nesting_level].join("::")
+        end
+      end
     end
   end
 end

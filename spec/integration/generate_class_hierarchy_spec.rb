@@ -38,7 +38,7 @@ module Orbacle
       expect(ch.children.map(&:content)).to include(
         GenerateClassHierarchy::KlassNode.new("Bar", true, "Object"))
       expect(ch.children.map(&:content)).to include(
-        GenerateClassHierarchy::KlassNode.new("Foo::Bar", true, "Object"))
+        GenerateClassHierarchy::KlassNode.new("::Foo::Bar", true, "Object"))
       expect(ch.children.map(&:content)).to include(
         GenerateClassHierarchy::KlassNode.new("Something::NotHere", false, "Object"))
       expect(ch.children.map(&:content)).to include(
@@ -52,7 +52,7 @@ module Orbacle
       expect(ch["Something::NotHere"]["FooBase"].children.map(&:content)).to include(
         GenerateClassHierarchy::KlassNode.new("Foo", true, "FooBase"))
       expect(ch["Bar"].children.map(&:content)).to include(
-        GenerateClassHierarchy::KlassNode.new("Foo::Baz", true, "Bar"))
+        GenerateClassHierarchy::KlassNode.new("::Foo::Baz", true, "Bar"))
     end
 
     def test_indexer

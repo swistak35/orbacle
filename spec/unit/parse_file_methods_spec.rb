@@ -19,7 +19,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2, target: :instance }],
+      ["::Foo", "bar", { line: 2, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }]
@@ -42,8 +42,8 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2, target: :instance }],
-      ["Foo", "baz", { line: 5, target: :instance }],
+      ["::Foo", "bar", { line: 2, target: :instance }],
+      ["::Foo", "baz", { line: 5, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }]
@@ -68,18 +68,16 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo", "bar", { line: 3, target: :instance }],
-      ["Some::Foo", "baz", { line: 6, target: :instance }],
+      ["::Some::Foo", "bar", { line: 3, target: :instance }],
+      ["::Some::Foo", "baz", { line: 6, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
-      ["Some", "Foo", :klass, { line: 2 }],
+      ["::Some", "Foo", :klass, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "Some", name: "Foo", nesting: [
-        [[], "Some"]
-      ]),
+      build_klass(scope: "::Some", name: "Foo", nesting: ["Some"]),
     ])
   end
 
@@ -100,22 +98,18 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo", "oof", { line: 3, target: :instance }],
-      ["Some::Bar", "rab", { line: 8, target: :instance }],
+      ["::Some::Foo", "oof", { line: 3, target: :instance }],
+      ["::Some::Bar", "rab", { line: 8, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
-      ["Some", "Foo", :klass, { line: 2 }],
-      ["Some", "Bar", :klass, { line: 7 }],
+      ["::Some", "Foo", :klass, { line: 2 }],
+      ["::Some", "Bar", :klass, { line: 7 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "Some", name: "Foo", nesting: [
-        [[], "Some"]
-      ]),
-      build_klass(scope: "Some", name: "Bar", nesting: [
-        [[], "Some"]
-      ]),
+      build_klass(scope: "::Some", name: "Foo", nesting: ["Some"]),
+      build_klass(scope: "::Some", name: "Bar", nesting: ["Some"]),
     ])
   end
 
@@ -133,20 +127,17 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar", "baz", { line: 4, target: :instance }],
+      ["::Some::Foo::Bar", "baz", { line: 4, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
-      ["Some", "Foo", :mod, { line: 2 }],
-      ["Some::Foo", "Bar", :klass, { line: 3 }],
+      ["::Some", "Foo", :mod, { line: 2 }],
+      ["::Some::Foo", "Bar", :klass, { line: 3 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_module(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some::Foo", name: "Bar", nesting: [
-        [[], "Some"],
-        [[], "Foo"],
-      ]),
+      build_module(scope: "::Some", name: "Foo"),
+      build_klass(scope: "::Some::Foo", name: "Bar", nesting: ["Some", "Foo"]),
     ])
   end
 
@@ -162,17 +153,15 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar", "baz", { line: 3, target: :instance }],
+      ["::Some::Foo::Bar", "baz", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
-      ["Some", "Foo", :mod, { line: 1 }],
-      ["Some::Foo", "Bar", :klass, { line: 2 }],
+      ["::Some", "Foo", :mod, { line: 1 }],
+      ["::Some::Foo", "Bar", :klass, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
-      build_module(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some::Foo", name: "Bar", nesting: [
-        [["Some"], "Foo"]
-      ]),
+      build_module(scope: "::Some", name: "Foo"),
+      build_klass(scope: "::Some::Foo", name: "Bar", nesting: ["Some::Foo"]),
     ])
   end
 
@@ -188,17 +177,15 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar::Baz", "xxx", { line: 3, target: :instance }],
+      ["::Some::Foo::Bar::Baz", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
-      ["Some::Foo", "Bar", :mod, { line: 1 }],
-      ["Some::Foo::Bar", "Baz", :klass, { line: 2 }],
+      ["::Some::Foo", "Bar", :mod, { line: 1 }],
+      ["::Some::Foo::Bar", "Baz", :klass, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
-      build_module(scope: "Some::Foo", name: "Bar"),
-      build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: [
-        [["Some", "Foo"], "Bar"]
-      ]),
+      build_module(scope: "::Some::Foo", name: "Bar"),
+      build_klass(scope: "::Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo::Bar"]),
     ])
   end
 
@@ -214,17 +201,15 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo::Bar::Baz", "xxx", { line: 3, target: :instance }],
+      ["::Some::Foo::Bar::Baz", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
-      ["Some", "Foo", :mod, { line: 1 }],
-      ["Some::Foo::Bar", "Baz", :klass, { line: 2 }],
+      ["::Some", "Foo", :mod, { line: 1 }],
+      ["::Some::Foo::Bar", "Baz", :klass, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
-      build_module(scope: "Some", name: "Foo"),
-      build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: [
-        [["Some"], "Foo"]
-      ]),
+      build_module(scope: "::Some", name: "Foo"),
+      build_klass(scope: "::Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo"])
     ])
   end
 
@@ -240,7 +225,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "xxx", { line: 3, target: :instance }],
+      ["::Foo", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Bar", :klass, { line: 1 }],
@@ -248,9 +233,7 @@ RSpec.describe Orbacle::ParseFileMethods do
     ])
     expect(r[:klasslikes]).to match_array([
       build_klass(name: "Bar"),
-      build_klass(name: "Foo", nesting: [
-        [[], "Bar"]
-      ]),
+      build_klass(name: "Foo", nesting: ["Bar"])
     ])
   end
 
@@ -266,7 +249,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "xxx", { line: 3, target: :instance }],
+      ["::Foo", "xxx", { line: 3, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Bar", :klass, { line: 1 }],
@@ -304,11 +287,11 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 4, target: :instance }],
+      ["::Foo", "bar", { line: 4, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
-      ["Foo", "Bar", :other, { line: 2 }],
+      ["::Foo", "Bar", :other, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_klass(name: "Foo"),
@@ -326,7 +309,7 @@ RSpec.describe Orbacle::ParseFileMethods do
     expect(r[:methods]).to eq([])
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
-      ["Foo::Ban::Baz", "Bar", :other, { line: 2 }],
+      ["::Foo::Ban::Baz", "Bar", :other, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_klass(name: "Foo"),
@@ -360,7 +343,7 @@ RSpec.describe Orbacle::ParseFileMethods do
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
-      ["Baz", "Bar", :other, { line: 2 }],
+      ["::Baz", "Bar", :other, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_klass(name: "Foo"),
@@ -377,7 +360,7 @@ RSpec.describe Orbacle::ParseFileMethods do
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
       [nil, "Foo", :klass, { line: 1 }],
-      ["Baz::Bam", "Bar", :other, { line: 2 }],
+      ["::Baz::Bam", "Bar", :other, { line: 2 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_klass(name: "Foo"),
@@ -401,18 +384,18 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Some::Foo", "oof", { line: 3, target: :instance }],
-      ["Some::Bar", "rab", { line: 8, target: :instance }],
+      ["::Some::Foo", "oof", { line: 3, target: :instance }],
+      ["::Some::Bar", "rab", { line: 8, target: :instance }],
     ])
     expect(r[:constants]).to match_array([
       [nil, "Some", :mod, { line: 1 }],
-      ["Some", "Foo", :mod, { line: 2 }],
-      ["Some", "Bar", :mod, { line: 7 }],
+      ["::Some", "Foo", :mod, { line: 2 }],
+      ["::Some", "Bar", :mod, { line: 7 }],
     ])
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_module(scope: "Some", name: "Foo"),
-      build_module(scope: "Some", name: "Bar"),
+      build_module(scope: "::Some", name: "Foo"),
+      build_module(scope: "::Some", name: "Bar"),
     ])
   end
 
@@ -463,9 +446,7 @@ RSpec.describe Orbacle::ParseFileMethods do
     r = parse_file_methods.(file)
     expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "Some", name: "Foo", inheritance: "Bar", nesting: [
-        [[], "Some"]
-      ]),
+      build_klass(scope: "::Some", name: "Foo", inheritance: "Bar", nesting: ["Some"]),
     ])
   end
 
@@ -512,7 +493,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2, target: :self }],
+      ["::Foo", "bar", { line: 2, target: :self }],
     ])
   end
 
@@ -528,7 +509,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Foo", "foo", { line: 3, target: :self }],
+      ["::Foo", "foo", { line: 3, target: :self }],
     ])
   end
 

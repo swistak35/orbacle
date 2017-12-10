@@ -67,10 +67,12 @@ module Orbacle
         results.unshift(searched_const_ar[0..-2].join("::"))
       end
       if !searched_constant.start_with?("::")
-        found_nesting.reverse.each do |_x, nesting_name|
+        found_nesting.reverse.each do |nesting_level|
+          nesting_name = nesting_level.split("::").last
           results.unshift([nesting_name, results[0]].compact.join("::"))
         end
       end
+      results.map! {|r| r.start_with?("::") ? r : "::#{r}" }
       results << ""
       return results, constant_name
     end
