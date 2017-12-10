@@ -47,16 +47,12 @@ module Orbacle
     end
 
     def increase_nesting_self
-      @levels << ClassConstLevel.new(nesting_to_scope())
+      skope = Skope.from_nesting(self)
+      @levels << ClassConstLevel.new(skope.absolute_str)
     end
 
     def decrease_nesting
       @levels.pop
-    end
-
-    def nesting_to_scope
-      skope = Skope.from_nesting(self)
-      skope.empty? ? nil : skope.absolute_str
     end
   end
 end

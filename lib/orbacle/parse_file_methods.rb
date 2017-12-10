@@ -113,7 +113,7 @@ module Orbacle
       method_name, _ = ast.children
 
       @methods << [
-        @current_nesting.nesting_to_scope,
+        Skope.from_nesting(@current_nesting).absolute_str,
         method_name.to_s,
         { line: ast.loc.line, target: @current_nesting.is_selfed? ? :self : :instance }
       ]
@@ -123,7 +123,7 @@ module Orbacle
       method_receiver, method_name, _ = ast.children
 
       @methods << [
-        @current_nesting.nesting_to_scope,
+        Skope.from_nesting(@current_nesting).absolute_str,
         method_name.to_s,
         { line: ast.loc.line, target: :self },
       ]
