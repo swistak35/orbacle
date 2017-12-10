@@ -29,31 +29,31 @@ module Orbacle
     end
 
     def initialize
-      @current_nesting = []
+      @levels = []
     end
 
     def get_output_nesting
-      @current_nesting.map {|level| level.full_name }
+      @levels.map {|level| level.full_name }
     end
 
     def levels
-      @current_nesting
+      @levels
     end
 
     def is_selfed?
-      @current_nesting.last.is_a?(ClassConstLevel)
+      @levels.last.is_a?(ClassConstLevel)
     end
 
     def increase_nesting_const(const_ref)
-      @current_nesting << ConstLevel.new(const_ref)
+      @levels << ConstLevel.new(const_ref)
     end
 
     def increase_nesting_self
-      @current_nesting << ClassConstLevel.new(nesting_to_scope())
+      @levels << ClassConstLevel.new(nesting_to_scope())
     end
 
     def decrease_nesting
-      @current_nesting.pop
+      @levels.pop
     end
 
     def scope_from_nesting_and_prename(prename)
