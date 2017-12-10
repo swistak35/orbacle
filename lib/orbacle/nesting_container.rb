@@ -1,54 +1,43 @@
 module Orbacle
-  class ConstRef
-    def self.from_ast(ast)
-      full_name = AstUtils.const_to_string(ast)
-      new(full_name)
-    end
-
-    def initialize(full_name)
-      @full_name = full_name
-      raise ArgumentError if full_name.empty?
-    end
-
-    attr_reader :full_name
-
-    def name
-      full_name.split("::").last
-    end
-
-    def prename
-      full_name.split("::")[0..-2]
-    end
-
-    def absolute?
-      full_name.start_with?("::")
-    end
-  end
-
   class NestingContainer
+    class ConstLevel < Struct.new(:const_ref)
+      def full_name
+        const_ref.full_name
+      end
+
+      def absolute?
+        const_ref.absolute?
+      end
+    end
+
+    class ClassConstLevel < Struct.new(:skope_string)
+      def full_name
+        skope_string
+      end
+
+      def absolute?
+        true
+      end
+    end
+
     def initialize
       @current_nesting = []
-      @is_selfed = false
     end
 
     def get_output_nesting
-      @current_nesting.map {|const_ref| const_ref.full_name }
+      @current_nesting.map {|level| level.full_name }
     end
 
     def is_selfed?
-      @is_selfed
+      @current_nesting.last.is_a?(ClassConstLevel)
     end
 
     def increase_nesting_const(const_ref)
-      @current_nesting << const_ref
+      @current_nesting << ConstLevel.new(const_ref)
     end
 
-    def make_nesting_selfed
-      @is_selfed = true
-    end
-
-    def make_nesting_not_selfed
-      @is_selfed = false
+    def increase_nesting_self
+      @current_nesting << ClassConstLevel.new(nesting_to_scope())
     end
 
     def decrease_nesting

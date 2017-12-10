@@ -102,11 +102,11 @@ module Orbacle
     end
 
     def on_sclass(ast)
-      @current_nesting.make_nesting_selfed
+      @current_nesting.increase_nesting_self
 
       super(ast)
 
-      @current_nesting.make_nesting_not_selfed
+      @current_nesting.increase_nesting_self
     end
 
     def on_def(ast)
