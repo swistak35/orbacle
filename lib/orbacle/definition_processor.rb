@@ -27,7 +27,7 @@ class Orbacle::DefinitionProcessor < Parser::AST::Processor
   def on_module(ast)
     ast_name, _ = ast.children
 
-    @current_nesting.increase_nesting_mod(ast_name)
+    @current_nesting.increase_nesting_const(ast_name)
 
     super(ast)
 
@@ -37,7 +37,7 @@ class Orbacle::DefinitionProcessor < Parser::AST::Processor
   def on_class(ast)
     ast_name, _ = ast.children
 
-    @current_nesting.increase_nesting_class(ast_name)
+    @current_nesting.increase_nesting_const(ast_name)
 
     super(ast)
 

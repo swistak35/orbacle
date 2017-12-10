@@ -13,7 +13,7 @@ module Orbacle
       @is_selfed
     end
 
-    def increase_nesting_mod(ast_name)
+    def increase_nesting_const(ast_name)
       prename, module_name = AstUtils.get_nesting(ast_name)
 
       if prename[0] == ""
@@ -21,18 +21,6 @@ module Orbacle
         @current_nesting = [current_nesting_element]
       else
         current_nesting_element = [prename, module_name]
-        @current_nesting << current_nesting_element
-      end
-    end
-
-    def increase_nesting_class(ast_name)
-      prename, klass_name = AstUtils.get_nesting(ast_name)
-
-      if prename[0] == ""
-        current_nesting_element = [prename[1..-1] || [], klass_name]
-        @current_nesting = [current_nesting_element]
-      else
-        current_nesting_element = [prename, klass_name]
         @current_nesting << current_nesting_element
       end
     end

@@ -70,7 +70,7 @@ module Orbacle
         scope: @current_nesting.scope_from_nesting_and_prename(prename),
         name: module_name.to_s)
 
-      @current_nesting.increase_nesting_mod(ast_name)
+      @current_nesting.increase_nesting_const(ast_name)
 
       super(ast)
 
@@ -94,7 +94,7 @@ module Orbacle
         inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.get_nesting(parent_klass_name_ast).flatten.join("::"),
         nesting: @current_nesting.get_output_nesting)
 
-      @current_nesting.increase_nesting_class(ast_name)
+      @current_nesting.increase_nesting_const(ast_name)
 
       super(ast)
 
