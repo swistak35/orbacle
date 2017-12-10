@@ -1,8 +1,7 @@
 module Orbacle
   class ConstRef
     def self.from_ast(ast)
-      prename, const_name = AstUtils.get_nesting(ast)
-      full_name = (prename + [const_name]).join("::")
+      full_name = AstUtils.const_to_string(ast)
       new(full_name)
     end
 
