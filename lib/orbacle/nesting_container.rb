@@ -54,15 +54,9 @@ module Orbacle
       @levels.pop
     end
 
-    def scope_from_nesting_and_prename(prename)
-      scope_from_nesting = nesting_to_scope()
-
-      if prename.at(0).eql?("")
-        result = prename.join("::")
-      else
-        result = ([scope_from_nesting] + prename).join("::")
-      end
-      result if !result.empty?
+    def scope_from_nesting_and_prename(const_ref)
+      scope_from_nesting = Skope.from_nesting(self)
+      scope_from_nesting.increase_by_ref(const_ref)
     end
 
     def nesting_to_scope
