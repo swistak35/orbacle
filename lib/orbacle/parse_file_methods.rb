@@ -57,20 +57,20 @@ module Orbacle
 
     def on_module(ast)
       module_name_ast, _ = ast.children
-      const_ref = ConstRef.from_ast(module_name_ast)
+      module_name_ref = ConstRef.from_ast(module_name_ast)
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-        const_ref.name,
+        @current_nesting.scope_from_nesting_and_prename(module_name_ref.prename),
+        module_name_ref.name,
         :mod,
         { line: module_name_ast.loc.line },
       ]
 
       @klasslikes << Klasslike.build_module(
-        scope: @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-        name: const_ref.name)
+        scope: @current_nesting.scope_from_nesting_and_prename(module_name_ref.prename),
+        name: module_name_ref.name)
 
-      @current_nesting.increase_nesting_const(const_ref)
+      @current_nesting.increase_nesting_const(module_name_ref)
 
       super(ast)
 
@@ -79,22 +79,22 @@ module Orbacle
 
     def on_class(ast)
       klass_name_ast, parent_klass_name_ast, _ = ast.children
-      const_ref = ConstRef.from_ast(klass_name_ast)
+      klass_name_ref = ConstRef.from_ast(klass_name_ast)
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-        const_ref.name,
+        @current_nesting.scope_from_nesting_and_prename(klass_name_ref.prename),
+        klass_name_ref.name,
         :klass,
         { line: klass_name_ast.loc.line },
       ]
 
       @klasslikes << Klasslike.build_klass(
-        scope: @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-        name: const_ref.name,
+        scope: @current_nesting.scope_from_nesting_and_prename(klass_name_ref.prename),
+        name: klass_name_ref.name,
         inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         nesting: @current_nesting.get_output_nesting)
 
-      @current_nesting.increase_nesting_const(const_ref)
+      @current_nesting.increase_nesting_const(klass_name_ref)
 
       super(ast)
 
@@ -131,11 +131,11 @@ module Orbacle
 
     def on_casgn(ast)
       const_prename, const_name, expr = ast.children
-      const_ref = ConstRef.new(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
+      const_name_ref = ConstRef.new(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
 
       @constants << [
-        @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-        const_ref.name,
+        @current_nesting.scope_from_nesting_and_prename(const_name_ref.prename),
+        const_name_ref.name,
         :other,
         { line: ast.loc.line }
       ]
@@ -143,14 +143,14 @@ module Orbacle
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
         @klasslikes << Klasslike.build_klass(
-          scope: @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-          name: const_name.to_s,
+          scope: @current_nesting.scope_from_nesting_and_prename(const_name_ref.prename),
+          name: const_name_ref.name,
           inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           nesting: @current_nesting.get_output_nesting)
       elsif expr_is_module_definition?(expr)
         @klasslikes << Klasslike.build_module(
-          scope: @current_nesting.scope_from_nesting_and_prename(const_ref.prename),
-          name: const_ref.name)
+          scope: @current_nesting.scope_from_nesting_and_prename(const_name_ref.prename),
+          name: const_name_ref.name)
       end
     end
 
