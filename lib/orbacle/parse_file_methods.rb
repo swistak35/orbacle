@@ -1,5 +1,5 @@
 require 'parser/current'
-require 'orbacle/nesting_container'
+require 'orbacle/nesting'
 
 module Orbacle
   class ParseFileMethods < Parser::AST::Processor
@@ -157,7 +157,7 @@ module Orbacle
     private
 
     def reset_file!
-      @current_nesting = NestingContainer.new
+      @current_nesting = Nesting.new
       @methods = []
       @constants = []
       @klasslikes = []

@@ -1,12 +1,12 @@
 require 'parser/current'
-require 'orbacle/nesting_container'
+require 'orbacle/nesting'
 
 module Orbacle
   class DefinitionProcessor < Parser::AST::Processor
     def process_file(file, line, character)
       ast = Parser::CurrentRuby.parse(file)
 
-      @current_nesting = Orbacle::NestingContainer.new
+      @current_nesting = Orbacle::Nesting.new
       @searched_line = line
       @searched_character = character
 

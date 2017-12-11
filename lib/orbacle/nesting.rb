@@ -1,5 +1,5 @@
 module Orbacle
-  class NestingContainer
+  class Nesting
     class ConstLevel < Struct.new(:const_ref)
       def full_name
         const_ref.full_name
