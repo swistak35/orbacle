@@ -37,8 +37,14 @@ module Orbacle
     end
 
     def prefix
-      new_str = str.split("::")[0..-2].join("::")
-      Skope.new(new_str == "" ? nil : new_str, metaklass?)
+      raise if metaklass?
+
+      new_elems = str.split("::")[0..-2]
+      if new_elems.empty? || (new_elems.size == 1 && new_elems[0].empty?)
+        Skope.new(nil, false)
+      else
+        Skope.new(new_elems.join("::"), false)
+      end
     end
   end
 end
