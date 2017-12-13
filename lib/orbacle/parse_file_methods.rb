@@ -122,11 +122,15 @@ module Orbacle
     def on_defs(ast)
       method_receiver, method_name, _ = ast.children
 
+      @current_nesting.increase_nesting_self
+
       @methods << [
         Skope.from_nesting(@current_nesting).absolute_str,
         method_name.to_s,
         { line: ast.loc.line, target: :self },
       ]
+
+      @current_nesting.decrease_nesting
     end
 
     def on_casgn(ast)

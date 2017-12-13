@@ -32,7 +32,12 @@ module Orbacle
       if str.nil?
         nil
       else
-        str.start_with?("::") ? str : "::#{str}"
+        name_str = str.start_with?("::") ? str : "::#{str}"
+        if metaklass?
+          "Metaklass(#{name_str})"
+        else
+          name_str
+        end
       end
     end
 

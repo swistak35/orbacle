@@ -493,7 +493,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "bar", { line: 2, target: :self }],
+      ["Metaklass(::Foo)", "bar", { line: 2, target: :self }],
     ])
   end
 
@@ -509,7 +509,7 @@ RSpec.describe Orbacle::ParseFileMethods do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "foo", { line: 3, target: :self }],
+      ["Metaklass(::Foo)", "foo", { line: 3, target: :self }],
     ])
   end
 
