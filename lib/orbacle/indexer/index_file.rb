@@ -24,7 +24,6 @@ module Orbacle
           @db.add_metod(
             name: name,
             file: path,
-            target: opts.fetch(:target).to_s,
             line: opts.fetch(:line))
         end
         result[:klasslikes].each do |kl|

@@ -115,7 +115,7 @@ module Orbacle
       @methods << [
         Skope.from_nesting(@current_nesting).absolute_str,
         method_name.to_s,
-        { line: ast.loc.line, target: @current_nesting.is_selfed? ? :self : :instance }
+        { line: ast.loc.line }
       ]
     end
 
@@ -127,7 +127,7 @@ module Orbacle
       @methods << [
         Skope.from_nesting(@current_nesting).absolute_str,
         method_name.to_s,
-        { line: ast.loc.line, target: :self },
+        { line: ast.loc.line },
       ]
 
       @current_nesting.decrease_nesting

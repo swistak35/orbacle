@@ -1,7 +1,7 @@
 require 'yaml'
 
 class SQLDatabaseAdapter
-  Metod = Struct.new(:name, :file, :target, :line)
+  Metod = Struct.new(:name, :file, :line)
   Klasslike = Struct.new(:scope, :name, :type, :inheritance, :nesting)
 
   def initialize(project_root:)
@@ -46,7 +46,6 @@ class SQLDatabaseAdapter
       create table metods (
         name varchar(255),
         file varchar(255),
-        target varchar(255),
         line int
       );
     SQL
@@ -80,11 +79,10 @@ class SQLDatabaseAdapter
     ])
   end
 
-  def add_metod(name:, file:, target:, line:)
-    @db.execute("insert into metods values (?, ?, ?, ?)", [
+  def add_metod(name:, file:, line:)
+    @db.execute("insert into metods values (?, ?, ?)", [
       name,
       file,
-      target,
       line,
     ])
   end

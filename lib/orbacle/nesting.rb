@@ -38,10 +38,6 @@ module Orbacle
       @levels.map {|level| level.full_name }
     end
 
-    def is_selfed?
-      @levels.last.is_a?(ClassConstLevel)
-    end
-
     def increase_nesting_const(const_ref)
       @levels << ConstLevel.new(const_ref)
     end
