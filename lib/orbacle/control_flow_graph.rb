@@ -4,7 +4,7 @@ require 'parser/current'
 module Orbacle
   class ControlFlowGraph
     class Node
-      def initialize(type, params)
+      def initialize(type, params = {})
         @type = type
         @params = params
       end
@@ -33,6 +33,8 @@ module Orbacle
         handle_lvasgn(ast)
       when :int
         handle_int(ast)
+      when :array
+        handle_array(ast)
       else
         raise ArgumentError.new(ast)
       end
@@ -47,7 +49,7 @@ module Orbacle
 
       n2 = process(expr)
 
-      @graph.add_edge(n1, n2)
+      @graph.add_edge(n2, n1)
 
       return n1
     end
@@ -58,6 +60,18 @@ module Orbacle
       @graph.add_vertex(n)
 
       return n
+    end
+
+    def handle_array(ast)
+      node_array = Node.new(:array)
+      @graph.add_vertex(node_array)
+
+      exprs_nodes = ast.children.map(&method(:process))
+      exprs_nodes.each do |node_expr|
+        @graph.add_edge(node_expr, node_array)
+      end
+
+      return node_array
     end
   end
 end
