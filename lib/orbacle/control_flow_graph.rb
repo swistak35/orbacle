@@ -26,10 +26,11 @@ module Orbacle
 
       @graph = RGL::DirectedAdjacencyGraph.new
       @type_rules = []
+      @local_environment = {}
 
       process(ast)
 
-      return [@graph, @type_rules]
+      return [@graph, @type_rules, @local_environment]
     end
 
     private
@@ -57,6 +58,8 @@ module Orbacle
       n2, expr_type = process(expr)
 
       @graph.add_edge(n2, n1)
+
+      @local_environment[var_name] = expr_type
 
       return [n1, expr_type]
     end

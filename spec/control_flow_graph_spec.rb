@@ -8,7 +8,7 @@ module Orbacle
         x = 42
       END
 
-      root, typings = generate_cfg(snippet)
+      root, typings, local_environment = generate_cfg(snippet)
 
       expect(root).to include_edge(
         node(:int, { value: 42 }),
@@ -16,6 +16,8 @@ module Orbacle
 
       expect(typings).to include(
         rule(node(:int, { value: 42}), nominal_type("Integer")))
+
+      expect(local_environment["x"]).to eq(nominal_type("Integer"))
     end
 
     specify do
