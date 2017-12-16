@@ -15,14 +15,21 @@ module Orbacle
         @type == other.type && @params == other.params
       end
     end
+
+    TypingRule = Struct.new(:node, :type)
+    NominalType = Struct.new(:name)
+    UnionType = Struct.new(:types)
+    GenericType = Struct.new(:nominal_type, :type_vars)
+
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
 
       @graph = RGL::DirectedAdjacencyGraph.new
+      @type_rules = []
 
       process(ast)
 
-      return @graph
+      return [@graph, @type_rules]
     end
 
     private
@@ -47,11 +54,11 @@ module Orbacle
       n1 = Node.new(:lvasgn, { var_name: var_name })
       @graph.add_vertex(n1)
 
-      n2 = process(expr)
+      n2, expr_type = process(expr)
 
       @graph.add_edge(n2, n1)
 
-      return n1
+      return [n1, expr_type]
     end
 
     def handle_int(ast)
@@ -59,7 +66,11 @@ module Orbacle
       n = Node.new(:int, { value: value })
       @graph.add_vertex(n)
 
-      return n
+      type = NominalType.new("Integer")
+
+      @type_rules << TypingRule.new(n, type)
+
+      return [n, type]
     end
 
     def handle_array(ast)
@@ -67,11 +78,17 @@ module Orbacle
       @graph.add_vertex(node_array)
 
       exprs_nodes = ast.children.map(&method(:process))
-      exprs_nodes.each do |node_expr|
+      exprs_nodes.each do |node_expr, _expr_type|
         @graph.add_edge(node_expr, node_array)
       end
 
-      return node_array
+      exprs_types = exprs_nodes.map {|_node, type| type }.uniq
+
+      type = GenericType.new("Array", [UnionType.new(exprs_types)])
+
+      @type_rules << TypingRule.new(node_array, type)
+
+      return [node_array, type]
     end
   end
 end

@@ -8,10 +8,14 @@ module Orbacle
         x = 42
       END
 
-      r = generate_cfg(snippet)
-      expect(r).to include_edge(
+      root, typings = generate_cfg(snippet)
+
+      expect(root).to include_edge(
         node(:int, { value: 42 }),
         node(:lvasgn, { var_name: "x" }))
+
+      expect(typings).to include(
+        rule(node(:int, { value: 42}), nominal_type("Integer")))
     end
 
     specify do
@@ -19,16 +23,17 @@ module Orbacle
       [42, 24]
       END
 
-      r = generate_cfg(snippet)
-      expect(r).to include_edge(
+      root, typings = generate_cfg(snippet)
+
+      expect(root).to include_edge(
         node(:int, { value: 42 }),
         node(:array))
-      expect(r).to include_edge(
+      expect(root).to include_edge(
         node(:int, { value: 24 }),
         node(:array))
-    end
 
-    specify do
+      expect(typings).to include(
+        rule(node(:array), generic_type("Array", [union_type([nominal_type("Integer")])])))
     end
 
     def generate_cfg(snippet)
@@ -38,6 +43,22 @@ module Orbacle
 
     def node(type, params = {})
       Orbacle::ControlFlowGraph::Node.new(type, params)
+    end
+
+    def rule(node, type)
+      Orbacle::ControlFlowGraph::TypingRule.new(node, type)
+    end
+
+    def nominal_type(name)
+      Orbacle::ControlFlowGraph::NominalType.new(name)
+    end
+
+    def union_type(types)
+      Orbacle::ControlFlowGraph::UnionType.new(types)
+    end
+
+    def generic_type(name, type_vars)
+      Orbacle::ControlFlowGraph::GenericType.new(name, type_vars)
     end
   end
 end
