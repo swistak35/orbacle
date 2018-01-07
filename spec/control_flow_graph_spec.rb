@@ -15,6 +15,9 @@ module Orbacle
         node(:lvasgn, { var_name: "x" }))
 
       expect(typings).to include(
+        equal(var(0), nominal("Integer")))
+
+      expect(typings).to include(
         rule(node(:int, { value: 42}), nominal_type("Integer")))
 
       expect(local_environment["x"]).to eq(nominal_type("Integer"))
@@ -36,6 +39,24 @@ module Orbacle
 
       expect(typings).to include(
         rule(node(:array), generic_type("Array", [union_type([nominal_type("Integer")])])))
+    end
+
+    specify do
+      snippet = <<-END
+      [42, 24].map {|i| i.next }
+      END
+
+      root, typings = generate_cfg(snippet)
+
+      # expect(root).to include_edge(
+      #   node(:int, { value: 42 }),
+      #   node(:array))
+      # expect(root).to include_edge(
+      #   node(:int, { value: 24 }),
+      #   node(:array))
+
+      # expect(typings).to include(
+      #   rule(node(:array), generic_type("Array", [union_type([nominal_type("Integer")])])))
     end
 
     def generate_cfg(snippet)

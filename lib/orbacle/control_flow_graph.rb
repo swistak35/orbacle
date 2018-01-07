@@ -43,6 +43,8 @@ module Orbacle
         handle_int(ast)
       when :array
         handle_array(ast)
+      when :block
+        handle_block(ast)
       else
         raise ArgumentError.new(ast)
       end
@@ -92,6 +94,11 @@ module Orbacle
       @type_rules << TypingRule.new(node_array, type)
 
       return [node_array, type]
+    end
+
+    def handle_block(ast)
+      target_node, block_args, block_body = ast.children
+
     end
   end
 end
