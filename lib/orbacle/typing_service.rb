@@ -4,6 +4,7 @@ module Orbacle
   class TypingService
     NominalType = Struct.new(:name)
     UnionType = Struct.new(:types)
+    GenericType = Struct.new(:name, :parameters)
 
     def call(original_graph, message_sends)
       graph = original_graph.reverse
@@ -43,6 +44,7 @@ module Orbacle
       case node.type
       when :int then false
       when :lvar then true
+      when :array then true
       else raise ArgumentError.new(node.type)
       end
     end
@@ -51,6 +53,7 @@ module Orbacle
       case node.type
       when :int then handle_int(node, sources)
       when :lvar then handle_lvar(node, sources)
+      when :array then handle_array(node, sources)
       else raise ArgumentError.new(node.type)
       end
     end
@@ -62,6 +65,11 @@ module Orbacle
     def handle_lvar(_node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
       build_union(sources_types)
+    end
+
+    def handle_array(_node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      GenericType.new("Array", sources_types)
     end
 
     def build_union(sources_types)

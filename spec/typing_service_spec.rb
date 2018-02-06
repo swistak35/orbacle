@@ -17,6 +17,31 @@ module Orbacle
       expect(result[lvar_node]).to eq(nominal("Integer"))
     end
 
+    specify do
+      graph = build_graph([
+        int_node1 = node(:int),
+        int_node2 = node(:int),
+        array_node = node(:array),
+      ], [
+        [int_node1, array_node],
+        [int_node2, array_node],
+      ])
+      result = type_graph(graph)
+
+      expect(result[array_node]).to eq(generic("Array", [nominal("Integer")]))
+    end
+
+    def build_graph(vertices, edges)
+      graph = RGL::DirectedAdjacencyGraph.new
+      vertices.each do |v|
+        graph.add_vertex(v)
+      end
+      edges.each do |edge|
+        graph.add_edge(*edge)
+      end
+      graph
+    end
+
     def type_graph(graph, message_sends = [])
       service = TypingService.new
       service.(graph, message_sends)
@@ -24,6 +49,10 @@ module Orbacle
 
     def nominal(*args)
       TypingService::NominalType.new(*args)
+    end
+
+    def generic(*args)
+      TypingService::GenericType.new(*args)
     end
 
     def node(type, params = {})
