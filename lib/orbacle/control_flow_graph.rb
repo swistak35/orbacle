@@ -112,8 +112,23 @@ module Orbacle
     def handle_send(ast, lenv)
       obj_expr = ast.children[0]
       message_name = ast.children[1]
+      arg_exprs = ast.children[2..-1]
 
       obj_node, obj_lenv = process(obj_expr, lenv)
+
+      arg_nodes = []
+      final_lenv = arg_exprs.reduce(obj_lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        arg_nodes << ast_child_node
+        new_lenv
+      end
+
+      call_arg_nodes = []
+      arg_nodes.each do |arg_node|
+        call_arg_node = Node.new(:call_arg)
+        @graph.add_vertex(call_arg_node)
+        @graph.add_edge(arg_node, call_arg_node)
+      end
 
       call_obj_node = Node.new(:call_obj)
       @graph.add_vertex(call_obj_node)

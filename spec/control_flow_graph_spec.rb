@@ -64,7 +64,7 @@ module Orbacle
         node(:lvar, { var_name: "x" }))
     end
 
-    specify "method call" do
+    specify "method call, without args" do
       snippet = <<-END
       x = 42
       x.succ
@@ -75,6 +75,22 @@ module Orbacle
       expect(root).to include_edge(
         node(:lvar, { var_name: "x" }),
         node(:call_obj))
+    end
+
+    specify "method call, with args" do
+      snippet = <<-END
+      x = 42
+      x.floor(2)
+      END
+
+      root, _ = generate_cfg(snippet)
+
+      expect(root).to include_edge(
+        node(:lvar, { var_name: "x" }),
+        node(:call_obj))
+      expect(root).to include_edge(
+        node(:int, { value: 2 }),
+        node(:call_arg))
     end
 
     def generate_cfg(snippet)
