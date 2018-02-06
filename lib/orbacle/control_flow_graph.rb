@@ -16,7 +16,8 @@ module Orbacle
       end
     end
 
-    MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result)
+    MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
+    Block = Struct.new(:args, :result)
 
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
@@ -46,6 +47,8 @@ module Orbacle
         handle_lvar(ast, lenv)
       when :send
         handle_send(ast, lenv)
+      when :block
+        handle_block(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -142,9 +145,39 @@ module Orbacle
       call_result_node = Node.new(:call_result)
       @graph.add_vertex(call_result_node)
 
-      @message_sends << MessageSend.new(message_name.to_s, call_obj_node, call_arg_nodes, call_result_node)
+      message_send = MessageSend.new(message_name.to_s, call_obj_node, call_arg_nodes, call_result_node, nil)
+      @message_sends << message_send
 
-      return [call_result_node, obj_lenv]
+      return [call_result_node, obj_lenv, { message_send: message_send }]
+    end
+
+    def handle_block(ast, lenv)
+      send_expr = ast.children[0]
+      args_ast = ast.children[1]
+      block_expr = ast.children[2]
+
+      send_node, send_lenv, _additional = process(send_expr, lenv)
+      message_send = _additional.fetch(:message_send)
+
+      args_ast_nodes = []
+      lenv_with_args = args_ast.children.reduce(send_lenv) do |current_lenv, arg_ast|
+        arg_name = arg_ast.children[0].to_s
+        arg_node = Node.new(:block_arg, { var_name: arg_name })
+        @graph.add_vertex(arg_node)
+        args_ast_nodes << arg_node
+        current_lenv.merge(arg_name => arg_node)
+      end
+
+      # It's not exactly good - local vars defined in blocks are not available outside (?),
+      #     but assignments done in blocks are valid.
+      block_final_node, block_result_lenv = process(block_expr, lenv_with_args)
+      block_result_node = Node.new(:block_result)
+      @graph.add_vertex(block_result_node)
+      @graph.add_edge(block_final_node, block_result_node)
+      block = Block.new(args_ast_nodes, block_result_node)
+      message_send.block = block
+
+      return [send_node, block_result_lenv]
     end
   end
 end

@@ -106,6 +106,29 @@ module Orbacle
               node(:call_result)))
     end
 
+    specify "method call, with block" do
+      snippet = <<-END
+      x = 42
+      x.map {|y| y }
+      END
+
+      root, _, sends = generate_cfg(snippet)
+
+      expect(root).to include_edge(
+        node(:block_arg, { var_name: "y" }),
+        node(:lvar, { var_name: "y" }))
+      expect(root).to include_edge(
+        node(:lvar, { var_name: "y" }),
+        node(:block_result))
+
+      expect(sends).to include(
+        msend("map",
+              node(:call_obj),
+              [],
+              node(:call_result),
+              block([node(:block_arg, { var_name: "y" })], node(:block_result))))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
@@ -115,8 +138,12 @@ module Orbacle
       Orbacle::ControlFlowGraph::Node.new(type, params)
     end
 
-    def msend(message_send, call_obj, call_args, call_result)
-      ControlFlowGraph::MessageSend.new(message_send, call_obj, call_args, call_result)
+    def msend(message_send, call_obj, call_args, call_result, block = nil)
+      ControlFlowGraph::MessageSend.new(message_send, call_obj, call_args, call_result, block)
+    end
+
+    def block(args_node, result_node)
+      ControlFlowGraph::Block.new(args_node, result_node)
     end
   end
 end
