@@ -8,16 +8,13 @@ module Orbacle
         x = 42
       END
 
-      root, typings, local_environment = generate_cfg(snippet)
+      root, local_environment = generate_cfg(snippet)
 
       expect(root).to include_edge(
         node(:int, { value: 42 }),
         node(:lvasgn, { var_name: "x" }))
 
-      expect(typings).to include(
-        rule(node(:int, { value: 42}), nominal_type("Integer")))
-
-      expect(local_environment["x"]).to eq(nominal_type("Integer"))
+      expect(local_environment["x"]).to eq(node(:int, { value: 42 }))
     end
 
     specify do
@@ -25,7 +22,7 @@ module Orbacle
       [42, 24]
       END
 
-      root, typings = generate_cfg(snippet)
+      root, _ = generate_cfg(snippet)
 
       expect(root).to include_edge(
         node(:int, { value: 42 }),
@@ -33,9 +30,38 @@ module Orbacle
       expect(root).to include_edge(
         node(:int, { value: 24 }),
         node(:array))
+    end
 
-      expect(typings).to include(
-        rule(node(:array), generic_type("Array", [union_type([nominal_type("Integer")])])))
+    specify do
+      snippet = <<-END
+      x = 42
+      y = 17
+      END
+
+      root, local_environment = generate_cfg(snippet)
+
+      expect(root).to include_edge(
+        node(:int, { value: 42 }),
+        node(:lvasgn, { var_name: "x" }))
+      expect(root).to include_edge(
+        node(:int, { value: 17 }),
+        node(:lvasgn, { var_name: "y" }))
+
+      expect(local_environment["x"]).to eq(node(:int, { value: 42 }))
+      expect(local_environment["y"]).to eq(node(:int, { value: 17 }))
+    end
+
+    specify do
+      snippet = <<-END
+      x = [42, 24]
+      x
+      END
+
+      root, _ = generate_cfg(snippet)
+
+      expect(root).to include_edge(
+        node(:array),
+        node(:lvar, { var_name: "x" }))
     end
 
     def generate_cfg(snippet)
@@ -45,22 +71,6 @@ module Orbacle
 
     def node(type, params = {})
       Orbacle::ControlFlowGraph::Node.new(type, params)
-    end
-
-    def rule(node, type)
-      Orbacle::ControlFlowGraph::TypingRule.new(node, type)
-    end
-
-    def nominal_type(name)
-      Orbacle::ControlFlowGraph::NominalType.new(name)
-    end
-
-    def union_type(types)
-      Orbacle::ControlFlowGraph::UnionType.new(types)
-    end
-
-    def generic_type(name, type_vars)
-      Orbacle::ControlFlowGraph::GenericType.new(name, type_vars)
     end
   end
 end

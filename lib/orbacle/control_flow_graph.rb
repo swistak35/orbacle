@@ -16,82 +16,95 @@ module Orbacle
       end
     end
 
-    TypingRule = Struct.new(:node, :type)
-    NominalType = Struct.new(:name)
-    UnionType = Struct.new(:types)
-    GenericType = Struct.new(:nominal_type, :type_vars)
-
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
 
       @graph = RGL::DirectedAdjacencyGraph.new
-      @type_rules = []
-      @local_environment = {}
 
-      process(ast)
+      initial_local_environment = {}
+      _final_node, final_local_environment = process(ast, initial_local_environment)
 
-      return [@graph, @type_rules, @local_environment]
+      return [@graph, final_local_environment]
     end
 
     private
 
-    def process(ast)
+    def process(ast, lenv)
       case ast.type
       when :lvasgn
-        handle_lvasgn(ast)
+        handle_lvasgn(ast, lenv)
       when :int
-        handle_int(ast)
+        handle_int(ast, lenv)
       when :array
-        handle_array(ast)
+        handle_array(ast, lenv)
+      when :begin
+        handle_begin(ast, lenv)
+      when :lvar
+        handle_lvar(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
     end
 
-    def handle_lvasgn(ast)
+    def handle_lvasgn(ast, lenv)
       var_name = ast.children[0].to_s
       expr = ast.children[1]
 
       n1 = Node.new(:lvasgn, { var_name: var_name })
       @graph.add_vertex(n1)
 
-      n2, expr_type = process(expr)
+      n2, n2_lenv = process(expr, lenv)
 
       @graph.add_edge(n2, n1)
 
-      @local_environment[var_name] = expr_type
+      new_lenv = n2_lenv.merge(var_name => n2)
 
-      return [n1, expr_type]
+      return [n1, new_lenv]
     end
 
-    def handle_int(ast)
+    def handle_int(ast, lenv)
       value = ast.children[0]
       n = Node.new(:int, { value: value })
       @graph.add_vertex(n)
 
-      type = NominalType.new("Integer")
-
-      @type_rules << TypingRule.new(n, type)
-
-      return [n, type]
+      return [n, lenv]
     end
 
-    def handle_array(ast)
+    def handle_array(ast, lenv)
       node_array = Node.new(:array)
       @graph.add_vertex(node_array)
 
-      exprs_nodes = ast.children.map(&method(:process))
-      exprs_nodes.each do |node_expr, _expr_type|
+      exprs_nodes = []
+      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        exprs_nodes << ast_child_node
+        new_lenv
+      end
+      exprs_nodes.each do |node_expr|
         @graph.add_edge(node_expr, node_array)
       end
 
-      exprs_types = exprs_nodes.map {|_node, type| type }.uniq
+      return [node_array, final_lenv]
+    end
 
-      type = GenericType.new("Array", [UnionType.new(exprs_types)])
+    def handle_begin(ast, lenv)
+      final_node, final_lenv = ast.children.reduce([nil, lenv]) do |(current_node, current_lenv), ast_child|
+        process(ast_child, current_lenv)
+      end
+      return [final_node, final_lenv]
+    end
 
-      @type_rules << TypingRule.new(node_array, type)
+    def handle_lvar(ast, lenv)
+      var_name = ast.children[0].to_s
 
-      return [node_array, type]
+      node_lvar = Node.new(:lvar, { var_name: var_name })
+      @graph.add_vertex(node_lvar)
+
+      var_definition_node = lenv[var_name]
+      # raise some error if lenv[var_name].nil? - because it means, that it's undefine
+      @graph.add_edge(var_definition_node, node_lvar)
+
+      return [node_lvar, lenv]
     end
   end
 end
