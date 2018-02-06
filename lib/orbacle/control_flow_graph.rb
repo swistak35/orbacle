@@ -16,15 +16,18 @@ module Orbacle
       end
     end
 
+    MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result)
+
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
 
       @graph = RGL::DirectedAdjacencyGraph.new
+      @message_sends = []
 
       initial_local_environment = {}
       _final_node, final_local_environment = process(ast, initial_local_environment)
 
-      return [@graph, final_local_environment]
+      return [@graph, final_local_environment, @message_sends]
     end
 
     private
@@ -126,6 +129,7 @@ module Orbacle
       call_arg_nodes = []
       arg_nodes.each do |arg_node|
         call_arg_node = Node.new(:call_arg)
+        call_arg_nodes << call_arg_node
         @graph.add_vertex(call_arg_node)
         @graph.add_edge(arg_node, call_arg_node)
       end
@@ -137,6 +141,8 @@ module Orbacle
 
       call_result_node = Node.new(:call_result)
       @graph.add_vertex(call_result_node)
+
+      @message_sends << MessageSend.new(message_name.to_s, call_obj_node, call_arg_nodes, call_result_node)
 
       return [call_result_node, obj_lenv]
     end

@@ -70,11 +70,18 @@ module Orbacle
       x.succ
       END
 
-      root, _ = generate_cfg(snippet)
+      root, _, sends = generate_cfg(snippet)
 
       expect(root).to include_edge(
         node(:lvar, { var_name: "x" }),
         node(:call_obj))
+
+      expect(sends).to include(
+        msend(
+          "succ",
+          node(:call_obj),
+          [],
+          node(:call_result)))
     end
 
     specify "method call, with args" do
@@ -83,7 +90,7 @@ module Orbacle
       x.floor(2)
       END
 
-      root, _ = generate_cfg(snippet)
+      root, _, sends = generate_cfg(snippet)
 
       expect(root).to include_edge(
         node(:lvar, { var_name: "x" }),
@@ -91,6 +98,12 @@ module Orbacle
       expect(root).to include_edge(
         node(:int, { value: 2 }),
         node(:call_arg))
+
+      expect(sends).to include(
+        msend("floor",
+              node(:call_obj),
+              [node(:call_arg)],
+              node(:call_result)))
     end
 
     def generate_cfg(snippet)
@@ -100,6 +113,10 @@ module Orbacle
 
     def node(type, params = {})
       Orbacle::ControlFlowGraph::Node.new(type, params)
+    end
+
+    def msend(message_send, call_obj, call_args, call_result)
+      ControlFlowGraph::MessageSend.new(message_send, call_obj, call_args, call_result)
     end
   end
 end
