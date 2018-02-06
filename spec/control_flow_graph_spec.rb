@@ -51,7 +51,7 @@ module Orbacle
       expect(local_environment["y"]).to eq(node(:int, { value: 17 }))
     end
 
-    specify do
+    specify "local variable usage" do
       snippet = <<-END
       x = [42, 24]
       x
@@ -62,6 +62,19 @@ module Orbacle
       expect(root).to include_edge(
         node(:array),
         node(:lvar, { var_name: "x" }))
+    end
+
+    specify "method call" do
+      snippet = <<-END
+      x = 42
+      x.succ
+      END
+
+      root, _ = generate_cfg(snippet)
+
+      expect(root).to include_edge(
+        node(:lvar, { var_name: "x" }),
+        node(:call_obj))
     end
 
     def generate_cfg(snippet)

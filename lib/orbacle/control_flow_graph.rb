@@ -41,6 +41,8 @@ module Orbacle
         handle_begin(ast, lenv)
       when :lvar
         handle_lvar(ast, lenv)
+      when :send
+        handle_send(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -105,6 +107,23 @@ module Orbacle
       @graph.add_edge(var_definition_node, node_lvar)
 
       return [node_lvar, lenv]
+    end
+
+    def handle_send(ast, lenv)
+      obj_expr = ast.children[0]
+      message_name = ast.children[1]
+
+      obj_node, obj_lenv = process(obj_expr, lenv)
+
+      call_obj_node = Node.new(:call_obj)
+      @graph.add_vertex(call_obj_node)
+
+      @graph.add_edge(obj_node, call_obj_node)
+
+      call_result_node = Node.new(:call_result)
+      @graph.add_vertex(call_result_node)
+
+      return [call_result_node, obj_lenv]
     end
   end
 end
