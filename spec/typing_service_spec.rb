@@ -39,10 +39,9 @@ module Orbacle
       x.succ
       END
 
-      graph, _, sends, final_node = generate_cfg(snippet)
-      result = type_graph(graph, sends)
+      result = type_snippet(snippet)
 
-      expect(result[final_node]).to eq(nominal("Integer"))
+      expect(result).to eq(nominal("Integer"))
     end
 
     specify do
@@ -51,10 +50,20 @@ module Orbacle
       x.map {|y| y }
       END
 
-      graph, _, sends, final_node = generate_cfg(snippet)
-      result = type_graph(graph, sends)
+      result = type_snippet(snippet)
 
-      expect(result[final_node]).to eq(generic("Array", [nominal("Integer")]))
+      expect(result).to eq(generic("Array", [nominal("Integer")]))
+    end
+
+    specify do
+      snippet = <<-END
+      x = [1,2]
+      x.map {|y| y.to_s }
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [nominal("String")]))
     end
 
     def type_snippet(snippet)
