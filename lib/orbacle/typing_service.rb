@@ -27,7 +27,11 @@ module Orbacle
       end
     end
     UnionType = Struct.new(:types)
-    GenericType = Struct.new(:name, :parameters)
+    class GenericType < Struct.new(:name, :parameters)
+      def each_possible_type
+        yield self
+      end
+    end
 
     def call(graph, message_sends)
       @graph = DoubleEdgedGraph.new(graph)
@@ -77,6 +81,8 @@ module Orbacle
       when :lvasgn then true
       when :call_obj then true
       when :call_result then true
+      when :block_arg then true
+      when :block_result then true
       else raise ArgumentError.new(node.type)
       end
     end
@@ -89,7 +95,11 @@ module Orbacle
       when :lvasgn then handle_lvasgn(node, sources)
       when :call_obj then handle_call_obj(node, sources)
       when :call_result then handle_call_result(node, sources)
+      when :block_arg then handle_block_arg(node, sources)
+      when :block_result then handle_block_result(node, sources)
       when :primitive_integer_succ then handle_primitive_integer_succ(node, sources)
+      when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
+      when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
       else raise ArgumentError.new(node.type)
       end
     end
@@ -123,6 +133,16 @@ module Orbacle
       @result[sources.first]
     end
 
+    def handle_block_arg(_node, sources)
+      raise if sources.size != 1
+      @result[sources.first]
+    end
+
+    def handle_block_result(_node, sources)
+      raise if sources.size != 1
+      @result[sources.first]
+    end
+
     def build_union(sources_types)
       if sources_types.size == 1
         sources_types.first
@@ -149,6 +169,8 @@ module Orbacle
     def primitive_send?(type, message_name)
       if type.name == "Integer" && message_name == "succ"
         true
+      elsif type.name == "Array" && message_name == "map"
+        true
       else
         false
       end
@@ -159,6 +181,8 @@ module Orbacle
 
       if type.name == "Integer" && message_name == "succ"
         send_primitive_integer_succ(type, message_send, graph)
+      elsif type.name == "Array" && message_name == "map"
+        send_primitive_array_map(type, message_send, graph)
       else
         raise ArgumentError.new(possible_type)
       end
@@ -177,8 +201,42 @@ module Orbacle
       @changed_in_this_iteration << node
     end
 
+    def send_primitive_array_map(type, message_send, graph)
+      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
+        adjacent_node.type == :primitive_array_map_1
+      end
+      return if already_handled
+
+      raise if message_send.block.nil?
+
+      unwrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_1)
+      @graph.add_vertex(unwrapping_node)
+      @graph.add_edge(message_send.send_obj, unwrapping_node)
+      @graph.add_edge(unwrapping_node, message_send.block.args.first)
+
+      wrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_2)
+      @graph.add_vertex(wrapping_node)
+      @graph.add_edge(message_send.block.result, wrapping_node)
+      @graph.add_edge(wrapping_node, message_send.send_result)
+
+      @changed_in_this_iteration << unwrapping_node
+      @changed_in_this_iteration << wrapping_node
+    end
+
     def handle_primitive_integer_succ(_node, _sources)
       NominalType.new("Integer")
+    end
+
+    def handle_primitive_array_map_1(_node, sources)
+      raise if sources.size != 1
+      source = sources.first
+      @result[source].parameters.first
+    end
+
+    def handle_primitive_array_map_2(_node, sources)
+      raise if sources.size != 1
+      source = sources.first
+      GenericType.new("Array", [@result[source]])
     end
   end
 end

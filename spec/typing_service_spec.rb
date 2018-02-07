@@ -23,7 +23,7 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
-    specify do
+    specify "simple (primitive) literal array" do
       snippet = <<-END
       [1, 2]
       END
@@ -43,6 +43,18 @@ module Orbacle
       result = type_graph(graph, sends)
 
       expect(result[final_node]).to eq(nominal("Integer"))
+    end
+
+    specify do
+      snippet = <<-END
+      x = [1,2]
+      x.map {|y| y }
+      END
+
+      graph, _, sends, final_node = generate_cfg(snippet)
+      result = type_graph(graph, sends)
+
+      expect(result[final_node]).to eq(generic("Array", [nominal("Integer")]))
     end
 
     def type_snippet(snippet)
