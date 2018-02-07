@@ -33,6 +33,18 @@ module Orbacle
       expect(result).to eq(generic("Array", [nominal("Integer")]))
     end
 
+    specify do
+      snippet = <<-END
+      x = 42
+      x.succ
+      END
+
+      graph, _, sends, final_node = generate_cfg(snippet)
+      result = type_graph(graph, sends)
+
+      expect(result[final_node]).to eq(nominal("Integer"))
+    end
+
     def type_snippet(snippet)
       graph, _, sends, final_node = generate_cfg(snippet)
       typing_result = type_graph(graph, sends)
