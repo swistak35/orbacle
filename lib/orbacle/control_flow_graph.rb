@@ -189,6 +189,21 @@ module Orbacle
 
     def handle_def(ast, lenv)
       method_name = ast.children[0]
+      formal_arguments = ast.children[1]
+      method_body = ast.children[2]
+
+      formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
+        arg_name = arg_ast.children[0].to_s
+        arg_node = Node.new(:formal_arg, { var_name: arg_name })
+        h[arg_name] = arg_node
+      end
+
+      @currently_parsed_method_result_node = Node.new(:method_result)
+      @graph.add_vertex(@currently_parsed_method_result_node)
+      if method_body
+        final_node, _result_lenv = process(method_body, formal_arguments_hash)
+        @graph.add_edge(final_node, @currently_parsed_method_result_node)
+      end
 
       @methods << [
         Skope.from_nesting(@current_nesting).absolute_str,

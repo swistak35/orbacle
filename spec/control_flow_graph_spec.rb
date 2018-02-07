@@ -129,19 +129,39 @@ module Orbacle
               block([node(:block_arg, { var_name: "y" })], node(:block_result))))
     end
 
-    specify "method definition, without formal arguments" do
+    specify "simple method definition" do
       snippet = <<-END
-      def foo
+      def foo(x)
+        x
       end
       END
 
-      root, _, _, _, methods, constants, klasslikes = generate_cfg(snippet)
+      root, _, _, _, _, _, _ = generate_cfg(snippet)
 
-      expect(methods).to eq([
-        [nil, "foo", { line: 1 }],
-      ])
-      expect(constants).to match_array([])
-      expect(klasslikes).to be_empty
+      expect(root).to include_edge(
+        node(:formal_arg, { var_name: "x" }),
+        node(:lvar, { var_name: "x" }))
+      expect(root).to include_edge(
+        node(:lvar, { var_name: "x" }),
+        node(:method_result))
+    end
+
+    context "methods, constants, klasslikes" do
+      specify "method definition, without formal arguments" do
+        snippet = <<-END
+        def foo(x)
+          x
+        end
+        END
+
+        root, _, _, _, methods, constants, klasslikes = generate_cfg(snippet)
+
+        expect(methods).to eq([
+          [nil, "foo", { line: 1 }],
+        ])
+        expect(constants).to match_array([])
+        expect(klasslikes).to be_empty
+      end
     end
 
     def generate_cfg(snippet)
