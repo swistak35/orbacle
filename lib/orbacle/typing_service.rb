@@ -2,6 +2,25 @@ require 'rgl/adjacency'
 
 module Orbacle
   class TypingService
+    class DoubleEdgedGraph
+      def initialize(graph)
+        @original = graph
+        @reversed = graph.reverse
+      end
+
+      def add_vertex(node)
+        @original.add_vertex(node)
+        @reversed.add_vertex(node)
+      end
+
+      def add_edge(u, v)
+        @original.add_edge(u, v)
+        @reversed.add_edge(v, u)
+      end
+
+      attr_reader :original, :reversed
+    end
+
     class NominalType < Struct.new(:name)
       def each_possible_type
         yield self
@@ -10,15 +29,15 @@ module Orbacle
     UnionType = Struct.new(:types)
     GenericType = Struct.new(:name, :parameters)
 
-    def call(original_graph, message_sends)
-      graph = original_graph.reverse
+    def call(graph, message_sends)
+      @graph = DoubleEdgedGraph.new(graph)
 
       @result = {}
       recently_changed = Set.new
 
-      graph.vertices.select do |node|
+      @graph.original.vertices.select do |node|
         if !dependent_on_input?(node)
-          @result[node] = compute_result(node, graph.adjacent_vertices(node))
+          @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
           recently_changed << node
         end
       end
@@ -28,10 +47,10 @@ module Orbacle
 
         # we could compute here just the set of "affected" vertices set and not iterate
 
-        original_graph.edges.each do |edge|
+        @graph.original.edges.each do |edge|
           if recently_changed.include?(edge.source)
             previous_result = @result[edge.target]
-            @result[edge.target] = compute_result(edge.target, graph.adjacent_vertices(edge.target))
+            @result[edge.target] = compute_result(edge.target, @graph.reversed.adjacent_vertices(edge.target))
             if previous_result != @result[edge.target]
               @changed_in_this_iteration << edge.target
             end
@@ -40,7 +59,7 @@ module Orbacle
 
         message_sends.each do |message_send|
           if satisfied_message_send?(message_send)
-            handle_message_send(message_send, graph, original_graph)
+            handle_message_send(message_send, graph)
           end
         end
 
@@ -117,10 +136,10 @@ module Orbacle
         message_send.send_args.all? {|a| @result[a] }
     end
 
-    def handle_message_send(message_send, graph, original_graph)
+    def handle_message_send(message_send, graph)
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if primitive_send?(possible_type, message_send.message_send)
-          handle_primitive(possible_type, message_send, graph, original_graph)
+          handle_primitive(possible_type, message_send, graph)
         else
           raise "Not implemented yet"
         end
@@ -135,29 +154,26 @@ module Orbacle
       end
     end
 
-    def handle_primitive(type, message_send, graph, original_graph)
+    def handle_primitive(type, message_send, graph)
       message_name = message_send.message_send
 
       if type.name == "Integer" && message_name == "succ"
-        send_primitive_integer_succ(type, message_send, graph, original_graph)
+        send_primitive_integer_succ(type, message_send, graph)
       else
         raise ArgumentError.new(possible_type)
       end
     end
 
-    def send_primitive_integer_succ(type, message_send, graph, original_graph)
-      already_handled = original_graph.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
+    def send_primitive_integer_succ(type, message_send, graph)
+      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
         adjacent_node.type == :primitive_integer_succ
       end
       return if already_handled
 
       node = ControlFlowGraph::Node.new(:primitive_integer_succ)
-      original_graph.add_vertex(node)
-      original_graph.add_edge(message_send.send_obj, node)
-      original_graph.add_edge(node, message_send.send_result)
-      graph.add_vertex(node)
-      graph.add_edge(node, message_send.send_obj)
-      graph.add_edge(message_send.send_result, node)
+      @graph.add_vertex(node)
+      @graph.add_edge(message_send.send_obj, node)
+      @graph.add_edge(node, message_send.send_result)
       @changed_in_this_iteration << node
     end
 
