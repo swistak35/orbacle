@@ -1,5 +1,6 @@
 require 'rgl/adjacency'
 require 'parser/current'
+require 'orbacle/nesting'
 
 module Orbacle
   class ControlFlowGraph
@@ -24,11 +25,15 @@ module Orbacle
 
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
+      @current_nesting = Nesting.new
+      @methods = []
+      @constants = []
+      @klasslikes = []
 
       initial_local_environment = {}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
-      return [@graph, final_local_environment, @message_sends, final_node]
+      return [@graph, final_local_environment, @message_sends, final_node, @methods, @constants, @klasslikes]
     end
 
     private
@@ -49,6 +54,8 @@ module Orbacle
         handle_send(ast, lenv)
       when :block
         handle_block(ast, lenv)
+      when :def
+        handle_def(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -178,6 +185,16 @@ module Orbacle
       message_send.block = block
 
       return [send_node, block_result_lenv]
+    end
+
+    def handle_def(ast, lenv)
+      method_name = ast.children[0]
+
+      @methods << [
+        Skope.from_nesting(@current_nesting).absolute_str,
+        method_name.to_s,
+        { line: ast.loc.line }
+      ]
     end
   end
 end

@@ -129,6 +129,21 @@ module Orbacle
               block([node(:block_arg, { var_name: "y" })], node(:block_result))))
     end
 
+    specify "method definition, without formal arguments" do
+      snippet = <<-END
+      def foo
+      end
+      END
+
+      root, _, _, _, methods, constants, klasslikes = generate_cfg(snippet)
+
+      expect(methods).to eq([
+        [nil, "foo", { line: 1 }],
+      ])
+      expect(constants).to match_array([])
+      expect(klasslikes).to be_empty
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
