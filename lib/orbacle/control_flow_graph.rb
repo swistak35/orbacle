@@ -26,9 +26,9 @@ module Orbacle
       @message_sends = []
 
       initial_local_environment = {}
-      _final_node, final_local_environment = process(ast, initial_local_environment)
+      final_node, final_local_environment = process(ast, initial_local_environment)
 
-      return [@graph, final_local_environment, @message_sends]
+      return [@graph, final_local_environment, @message_sends, final_node]
     end
 
     private

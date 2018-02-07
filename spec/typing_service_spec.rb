@@ -1,48 +1,45 @@
 require 'spec_helper'
-# require 'support/graph_matchers'
 
 module Orbacle
   RSpec.describe "ControlFlowGraph" do
-    specify do
-      graph = RGL::DirectedAdjacencyGraph.new
-      int_node = node(:int, { value: 42 })
-      graph.add_vertex(int_node)
-      lvar_node = node(:lvar, { var_name: "x" })
-      graph.add_vertex(lvar_node)
-      graph.add_edge(int_node, lvar_node)
+    specify "int primitive" do
+      snippet = <<-END
+      42
+      END
 
-      result = type_graph(graph)
+      result = type_snippet(snippet)
 
-      expect(result[int_node]).to eq(nominal("Integer"))
-      expect(result[lvar_node]).to eq(nominal("Integer"))
+      expect(result).to eq(nominal("Integer"))
+    end
+
+    specify "simple lvar reference" do
+      snippet = <<-END
+      x = 42
+      x
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Integer"))
     end
 
     specify do
-      graph = build_graph([
-        int_node1 = node(:int),
-        int_node2 = node(:int),
-        array_node = node(:array),
-      ], [
-        [int_node1, array_node],
-        [int_node2, array_node],
-      ])
-      result = type_graph(graph)
+      snippet = <<-END
+      [1, 2]
+      END
 
-      expect(result[array_node]).to eq(generic("Array", [nominal("Integer")]))
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [nominal("Integer")]))
     end
 
-    def build_graph(vertices, edges)
-      graph = RGL::DirectedAdjacencyGraph.new
-      vertices.each do |v|
-        graph.add_vertex(v)
-      end
-      edges.each do |edge|
-        graph.add_edge(*edge)
-      end
-      graph
+    def type_snippet(snippet)
+      graph, _, sends, final_node = generate_cfg(snippet)
+      typing_result = type_graph(graph, sends)
+      typing_result[final_node]
     end
 
-    def type_graph(graph, message_sends = [])
+    def type_graph(graph, message_sends)
       service = TypingService.new
       service.(graph, message_sends)
     end
@@ -55,8 +52,9 @@ module Orbacle
       TypingService::GenericType.new(*args)
     end
 
-    def node(type, params = {})
-      ControlFlowGraph::Node.new(type, params)
+    def generate_cfg(snippet)
+      service = ControlFlowGraph.new
+      service.process_file(snippet)
     end
   end
 end

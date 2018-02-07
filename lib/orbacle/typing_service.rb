@@ -45,6 +45,7 @@ module Orbacle
       when :int then false
       when :lvar then true
       when :array then true
+      when :lvasgn then true
       else raise ArgumentError.new(node.type)
       end
     end
@@ -54,6 +55,7 @@ module Orbacle
       when :int then handle_int(node, sources)
       when :lvar then handle_lvar(node, sources)
       when :array then handle_array(node, sources)
+      when :lvasgn then handle_lvasgn(node, sources)
       else raise ArgumentError.new(node.type)
       end
     end
@@ -70,6 +72,11 @@ module Orbacle
     def handle_array(_node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
       GenericType.new("Array", sources_types)
+    end
+
+    def handle_lvasgn(_node, sources)
+      raise if sources.size != 1
+      @result[sources.first]
     end
 
     def build_union(sources_types)
