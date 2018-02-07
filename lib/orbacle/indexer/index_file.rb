@@ -6,9 +6,10 @@ module Orbacle
       end
 
       def call(path:, content:)
-        parser = ParseFileMethods.new
-        result = parser.process_file(content)
-        result[:constants].each do |c|
+        parser = ControlFlowGraph.new
+        _graph, _final_lenv, _sends, _node, methods, constants, klasslikes = parser.process_file(content)
+        # return [@graph, final_local_environment, @message_sends, final_node, @methods, @constants, @klasslikes]
+        constants.each do |c|
           scope, name, type, opts = c
 
           @db.add_constant(
@@ -18,7 +19,7 @@ module Orbacle
             path: path,
             line: opts.fetch(:line))
         end
-        result[:methods].each do |m|
+        methods.each do |m|
           _scope, name, opts = m
 
           @db.add_metod(
@@ -26,7 +27,7 @@ module Orbacle
             file: path,
             line: opts.fetch(:line))
         end
-        result[:klasslikes].each do |kl|
+        klasslikes.each do |kl|
           @db.add_klasslike(
             scope: kl.scope,
             name: kl.name,

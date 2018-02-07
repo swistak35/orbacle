@@ -104,6 +104,8 @@ module Orbacle
         handle_module(ast, lenv)
       when :casgn
         handle_casgn(ast, lenv)
+      when :const
+        handle_const(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -174,6 +176,8 @@ module Orbacle
       obj_expr = ast.children[0]
       message_name = ast.children[1]
       arg_exprs = ast.children[2..-1]
+
+      return if obj_expr.nil? # Currently can happen, when calling method on something which is not yet known
 
       obj_node, obj_lenv = process(obj_expr, lenv)
 
@@ -355,6 +359,9 @@ module Orbacle
           scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
           name: const_name_ref.name)
       end
+    end
+
+    def handle_const(ast, lenv)
     end
 
     def expr_is_class_definition?(expr)
