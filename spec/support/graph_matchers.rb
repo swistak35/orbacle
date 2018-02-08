@@ -42,3 +42,39 @@ RSpec::Matchers.define :include_edge do |expected_source, expected_target|
     end
   end
 end
+
+
+RSpec::Matchers.define :include_node do |expected_node|
+  match do |graph|
+    graph.vertices.any? do |node|
+      node == expected_node
+    end
+  end
+
+  failure_message do |graph|
+    if graph.vertices.empty?
+      "There are no vertices in this graph"
+    else
+      graph.vertices.each_with_index.map do |node, index|
+        if node.type != expected_node.type
+          <<-EOS
+          Not matching node types
+            at index: #{index}
+            expected: #{expected_node.type}
+            actual:   #{node.type}
+          EOS
+        elsif node.params != expected_node.params
+          <<-EOS
+          Invalid source node data
+            at index: #{index}
+            in node:  #{node.type}
+            data:     #{HashDiff.diff(expected_node.params, node.params)}
+            data differences in form: {:key=>[expected, actual]
+          EOS
+        else
+          raise "That should not happen"
+        end
+      end.join("\n")
+    end
+  end
+end

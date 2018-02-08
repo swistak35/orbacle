@@ -84,6 +84,12 @@ module Orbacle
         handle_lvasgn(ast, lenv)
       when :int
         handle_int(ast, lenv)
+      when :true
+        handle_true(ast, lenv)
+      when :false
+        handle_false(ast, lenv)
+      when :nil
+        handle_nil(ast, lenv)
       when :array
         handle_array(ast, lenv)
       when :begin
@@ -132,6 +138,27 @@ module Orbacle
     def handle_int(ast, lenv)
       value = ast.children[0]
       n = Node.new(:int, { value: value })
+      @graph.add_vertex(n)
+
+      return [n, lenv]
+    end
+
+    def handle_true(ast, lenv)
+      n = Node.new(:bool, { value: true })
+      @graph.add_vertex(n)
+
+      return [n, lenv]
+    end
+
+    def handle_false(ast, lenv)
+      n = Node.new(:bool, { value: false })
+      @graph.add_vertex(n)
+
+      return [n, lenv]
+    end
+
+    def handle_nil(ast, lenv)
+      n = Node.new(:nil)
       @graph.add_vertex(n)
 
       return [n, lenv]

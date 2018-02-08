@@ -5,16 +5,52 @@ module Orbacle
   RSpec.describe "ControlFlowGraph" do
     specify do
       snippet = <<-END
-        x = 42
+        42
       END
 
       result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:lvasgn, { var_name: "x" }))
+      expect(result.final_node).to eq(node(:int, { value: 42 }))
+    end
 
-      expect(result.final_lenv["x"]).to eq(node(:int, { value: 42 }))
+    specify do
+      snippet = <<-END
+      -42
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:int, { value: -42 }))
+    end
+
+    specify do
+      snippet = <<-END
+      true
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:bool, { value: true }))
+    end
+
+    specify do
+      snippet = <<-END
+      false
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:bool, { value: false }))
+    end
+
+    specify do
+      snippet = <<-END
+      nil
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:nil))
     end
 
     specify do
