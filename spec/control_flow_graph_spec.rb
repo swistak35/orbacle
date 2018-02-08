@@ -8,13 +8,13 @@ module Orbacle
         x = 42
       END
 
-      root, local_environment = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:int, { value: 42 }),
         node(:lvasgn, { var_name: "x" }))
 
-      expect(local_environment["x"]).to eq(node(:int, { value: 42 }))
+      expect(result.final_lenv["x"]).to eq(node(:int, { value: 42 }))
     end
 
     specify do
@@ -22,12 +22,12 @@ module Orbacle
       [42, 24]
       END
 
-      root, _ = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:int, { value: 42 }),
         node(:array))
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:int, { value: 24 }),
         node(:array))
     end
@@ -38,17 +38,17 @@ module Orbacle
       y = 17
       END
 
-      root, local_environment = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:int, { value: 42 }),
         node(:lvasgn, { var_name: "x" }))
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:int, { value: 17 }),
         node(:lvasgn, { var_name: "y" }))
 
-      expect(local_environment["x"]).to eq(node(:int, { value: 42 }))
-      expect(local_environment["y"]).to eq(node(:int, { value: 17 }))
+      expect(result.final_lenv["x"]).to eq(node(:int, { value: 42 }))
+      expect(result.final_lenv["y"]).to eq(node(:int, { value: 17 }))
     end
 
     specify "local variable usage" do
@@ -57,9 +57,9 @@ module Orbacle
       x
       END
 
-      root, _ = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:array),
         node(:lvar, { var_name: "x" }))
     end
@@ -70,13 +70,13 @@ module Orbacle
       x.succ
       END
 
-      root, _, sends = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:lvar, { var_name: "x" }),
         node(:call_obj))
 
-      expect(sends).to include(
+      expect(result.message_sends).to include(
         msend(
           "succ",
           node(:call_obj),
@@ -90,16 +90,16 @@ module Orbacle
       x.floor(2)
       END
 
-      root, _, sends = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:lvar, { var_name: "x" }),
         node(:call_obj))
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:int, { value: 2 }),
         node(:call_arg))
 
-      expect(sends).to include(
+      expect(result.message_sends).to include(
         msend("floor",
               node(:call_obj),
               [node(:call_arg)],
@@ -112,16 +112,16 @@ module Orbacle
       x.map {|y| y }
       END
 
-      root, _, sends = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:block_arg, { var_name: "y" }),
         node(:lvar, { var_name: "y" }))
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:lvar, { var_name: "y" }),
         node(:block_result))
 
-      expect(sends).to include(
+      expect(result.message_sends).to include(
         msend("map",
               node(:call_obj),
               [],
@@ -136,12 +136,12 @@ module Orbacle
       end
       END
 
-      root, _, _, _, _, _, _ = generate_cfg(snippet)
+      result = generate_cfg(snippet)
 
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:formal_arg, { var_name: "x" }),
         node(:lvar, { var_name: "x" }))
-      expect(root).to include_edge(
+      expect(result.graph).to include_edge(
         node(:lvar, { var_name: "x" }),
         node(:method_result))
     end

@@ -58,6 +58,8 @@ module Orbacle
       end
     end
 
+    Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :methods, :constants, :klasslikes)
+
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
 
@@ -71,7 +73,7 @@ module Orbacle
       initial_local_environment = {}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
-      return [@graph, final_local_environment, @message_sends, final_node, @methods, @constants, @klasslikes]
+      return Result.new(@graph, final_local_environment, @message_sends, final_node, @methods, @constants, @klasslikes)
     end
 
     private
