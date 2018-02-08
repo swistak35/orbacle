@@ -67,9 +67,9 @@ module Orbacle
     end
 
     def type_snippet(snippet)
-      graph, _, sends, final_node = generate_cfg(snippet)
-      typing_result = type_graph(graph, sends)
-      typing_result[final_node]
+      result = generate_cfg(snippet)
+      typing_result = type_graph(result.graph, result.message_sends)
+      typing_result[result.final_node]
     end
 
     def type_graph(graph, message_sends)

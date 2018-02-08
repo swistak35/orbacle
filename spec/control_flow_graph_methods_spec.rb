@@ -516,11 +516,11 @@ RSpec.describe Orbacle::ControlFlowGraph do
   def parse_file_methods
     ->(file) {
       service = Orbacle::ControlFlowGraph.new
-      _root, _final_lenv, _message_sends, _final_node, methods, constants, klasslikes = service.process_file(file)
+      result = service.process_file(file)
       {
-        methods: methods,
-        constants: constants,
-        klasslikes: klasslikes,
+        methods: result.methods,
+        constants: result.constants,
+        klasslikes: result.klasslikes,
       }
     }
   end
