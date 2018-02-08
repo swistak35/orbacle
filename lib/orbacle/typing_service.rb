@@ -47,35 +47,18 @@ module Orbacle
       @methods = methods
 
       @result = {}
-      @fresh_nodes = []
-      recently_changed = Set.new
 
-      recently_changed = Set.new
-      @graph.original.each_vertex do |v|
-        @result[v] = compute_result(v, @graph.reversed.adjacent_vertices(v))
-        if @result[v]
-          recently_changed << v
-          # puts "Marked #{v} as dirty after setting it's value to #{@result[v].inspect}"
-        end
-      end
+      @worklist = Set.new(@graph.original.vertices)
+      while !@worklist.empty?
+        current_worklist = @worklist
+        @worklist = Set.new
 
-      while !recently_changed.empty?
-        @changed_in_this_iteration = Set.new
-
-        # we could compute here just the set of "affected" vertices set and not iterate
-
-        @fresh_nodes.each do |node|
+        current_worklist.each do |node|
+          current_result = @result[node]
           @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
-        end
-        @fresh_nodes = []
-
-        @graph.original.edges.each do |edge|
-          if recently_changed.include?(edge.source)
-            previous_result = @result[edge.target]
-            @result[edge.target] = compute_result(edge.target, @graph.reversed.adjacent_vertices(edge.target))
-            if previous_result != @result[edge.target]
-              @changed_in_this_iteration << edge.target
-              # puts "Marked #{edge.target} as dirty after setting it's value to #{@result[edge.target].inspect}"
+          if current_result != @result[node]
+            @graph.original.adjacent_vertices(node).each do |adjacent_node|
+              @worklist << adjacent_node
             end
           end
         end
@@ -85,8 +68,6 @@ module Orbacle
             handle_message_send(message_send, graph)
           end
         end
-
-        recently_changed = @changed_in_this_iteration
       end
 
       return @result
@@ -203,7 +184,7 @@ module Orbacle
           method_result_node = found_method[4]
           if !@graph.original.has_edge?(method_result_node, message_send.send_result)
             @graph.add_edge(method_result_node, message_send.send_result)
-            @changed_in_this_iteration << method_result_node
+            @worklist << message_send.send_result
           end
         end
       end
@@ -245,10 +226,10 @@ module Orbacle
 
       node = ControlFlowGraph::Node.new(:constructor, { name: type.klasslike.name })
       @graph.add_vertex(node)
-      @fresh_nodes << node
       @graph.add_edge(message_send.send_obj, node)
+      @worklist << node
       @graph.add_edge(node, message_send.send_result)
-      @changed_in_this_iteration << node
+      @worklist << message_send.send_result
     end
 
     def send_primitive_integer_succ(type, message_send, graph)
@@ -259,10 +240,10 @@ module Orbacle
 
       node = ControlFlowGraph::Node.new(:primitive_integer_succ)
       @graph.add_vertex(node)
-      @fresh_nodes << node
       @graph.add_edge(message_send.send_obj, node)
+      @worklist << node
       @graph.add_edge(node, message_send.send_result)
-      @changed_in_this_iteration << node
+      @worklist << message_send.send_result
     end
 
     def send_primitive_integer_to_s(type, message_send, graph)
@@ -273,10 +254,10 @@ module Orbacle
 
       node = ControlFlowGraph::Node.new(:primitive_integer_to_s)
       @graph.add_vertex(node)
-      @fresh_nodes << node
       @graph.add_edge(message_send.send_obj, node)
+      @worklist << node
       @graph.add_edge(node, message_send.send_result)
-      @changed_in_this_iteration << node
+      @worklist << message_send.send_result
     end
 
     def send_primitive_array_map(type, message_send, graph)
@@ -289,18 +270,17 @@ module Orbacle
 
       unwrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_1)
       @graph.add_vertex(unwrapping_node)
-      @fresh_nodes << unwrapping_node
       @graph.add_edge(message_send.send_obj, unwrapping_node)
+      @worklist << unwrapping_node
       @graph.add_edge(unwrapping_node, message_send.block.args.first)
+      @worklist << message_send.block.args.first
 
       wrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_2)
       @graph.add_vertex(wrapping_node)
-      @fresh_nodes << wrapping_node
       @graph.add_edge(message_send.block.result, wrapping_node)
+      @worklist << wrapping_node
       @graph.add_edge(wrapping_node, message_send.send_result)
-
-      @changed_in_this_iteration << unwrapping_node
-      @changed_in_this_iteration << wrapping_node
+      @worklist << message_send.send_result
     end
 
     def handle_primitive_integer_succ(_node, _sources)
@@ -325,9 +305,6 @@ module Orbacle
 
     def handle_constructor(node, sources)
       NominalType.new(node.params.fetch(:name))
-    end
-
-    def find_appropriate_method(method_name)
     end
   end
 end
