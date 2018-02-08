@@ -136,7 +136,7 @@ module Orbacle
 
     def handle_array(_node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      GenericType.new("Array", sources_types)
+      GenericType.new("Array", [build_union(sources_types)])
     end
 
     def handle_lvasgn(_node, sources)

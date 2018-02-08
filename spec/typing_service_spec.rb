@@ -63,6 +63,16 @@ module Orbacle
       expect(result).to eq(nominal("Symbol"))
     end
 
+    specify "simple (primitive) literal array" do
+      snippet = <<-END
+      [1, "foobar"]
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
+    end
+
     specify "Integer#succ primitive call" do
       snippet = <<-END
       x = 42
@@ -121,6 +131,10 @@ module Orbacle
 
     def nominal(*args)
       TypingService::NominalType.new(*args)
+    end
+
+    def union(*args)
+      TypingService::UnionType.new(*args)
     end
 
     def generic(*args)
