@@ -2,11 +2,11 @@ require 'spec_helper'
 
 RSpec.describe Orbacle::ControlFlowGraph do
   def build_klass(scope: nil, name:, inheritance: nil, nesting: [])
-    Orbacle::ParseFileMethods::Klasslike.build_klass(scope: scope, name: name, inheritance: inheritance, nesting: nesting)
+    Orbacle::ControlFlowGraph::Klasslike.build_klass(scope: scope, name: name, inheritance: inheritance, nesting: nesting)
   end
 
   def build_module(scope: nil, name:)
-    Orbacle::ParseFileMethods::Klasslike.build_module(scope: scope, name: name)
+    Orbacle::ControlFlowGraph::Klasslike.build_module(scope: scope, name: name)
   end
 
   specify do

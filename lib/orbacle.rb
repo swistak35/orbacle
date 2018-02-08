@@ -7,7 +7,6 @@ require 'orbacle/const_ref'
 require 'orbacle/skope'
 require 'orbacle/nesting'
 
-require 'orbacle/parse_file_methods'
 require 'orbacle/call_definition'
 require 'orbacle/lang_server'
 require 'orbacle/indexer/index_file'

@@ -1,4 +1,3 @@
-require 'orbacle/parse_file_methods'
 require 'sqlite3'
 
 module Orbacle
