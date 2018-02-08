@@ -73,10 +73,6 @@ module Orbacle
       return @result
     end
 
-    def dependent_on_input?(node)
-      ![:int].include?(node.type)
-    end
-
     def compute_result(node, sources)
       case node.type
       when :int then handle_int(node, sources)
