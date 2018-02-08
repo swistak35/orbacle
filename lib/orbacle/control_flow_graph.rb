@@ -194,8 +194,7 @@ module Orbacle
       node_lvar = Node.new(:lvar, { var_name: var_name })
       @graph.add_vertex(node_lvar)
 
-      var_definition_node = lenv[var_name]
-      # raise some error if lenv[var_name].nil? - because it means, that it's undefine
+      var_definition_node = lenv.fetch(var_name)
       @graph.add_edge(var_definition_node, node_lvar)
 
       return [node_lvar, lenv]

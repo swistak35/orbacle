@@ -3,7 +3,7 @@ require 'support/graph_matchers'
 
 module Orbacle
   RSpec.describe "ControlFlowGraph" do
-    specify do
+    specify "primitive int" do
       snippet = <<-END
         42
       END
@@ -13,7 +13,7 @@ module Orbacle
       expect(result.final_node).to eq(node(:int, { value: 42 }))
     end
 
-    specify do
+    specify "primitive negative int" do
       snippet = <<-END
       -42
       END
@@ -23,7 +23,7 @@ module Orbacle
       expect(result.final_node).to eq(node(:int, { value: -42 }))
     end
 
-    specify do
+    specify "primitive bool" do
       snippet = <<-END
       true
       END
@@ -33,7 +33,7 @@ module Orbacle
       expect(result.final_node).to eq(node(:bool, { value: true }))
     end
 
-    specify do
+    specify "primitive bool" do
       snippet = <<-END
       false
       END
@@ -43,7 +43,7 @@ module Orbacle
       expect(result.final_node).to eq(node(:bool, { value: false }))
     end
 
-    specify do
+    specify "primitive nil" do
       snippet = <<-END
       nil
       END
@@ -53,13 +53,14 @@ module Orbacle
       expect(result.final_node).to eq(node(:nil))
     end
 
-    specify do
+    specify "literal array" do
       snippet = <<-END
       [42, 24]
       END
 
       result = generate_cfg(snippet)
 
+      expect(result.final_node).to eq(node(:array))
       expect(result.graph).to include_edge(
         node(:int, { value: 42 }),
         node(:array))
@@ -68,7 +69,7 @@ module Orbacle
         node(:array))
     end
 
-    specify do
+    specify "local variable assignment" do
       snippet = <<-END
       x = 42
       y = 17
@@ -76,6 +77,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
+      expect(result.final_node).to eq(node(:lvasgn, { var_name: "y" }))
       expect(result.graph).to include_edge(
         node(:int, { value: 42 }),
         node(:lvasgn, { var_name: "x" }))
@@ -89,14 +91,15 @@ module Orbacle
 
     specify "local variable usage" do
       snippet = <<-END
-      x = [42, 24]
+      x = 42
       x
       END
 
       result = generate_cfg(snippet)
 
+      expect(result.final_node).to eq(node(:lvar, { var_name: "x" }))
       expect(result.graph).to include_edge(
-        node(:array),
+        node(:int, { value: 42 }),
         node(:lvar, { var_name: "x" }))
     end
 
