@@ -94,6 +94,8 @@ module Orbacle
         handle_array(ast, lenv)
       when :str
         handle_str(ast, lenv)
+      when :sym
+        handle_sym(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -169,6 +171,14 @@ module Orbacle
     def handle_str(ast, lenv)
       value = ast.children[0]
       n = Node.new(:str, { value: value })
+      @graph.add_vertex(n)
+
+      return [n, lenv]
+    end
+
+    def handle_sym(ast, lenv)
+      value = ast.children[0]
+      n = Node.new(:sym, { value: value })
       @graph.add_vertex(n)
 
       return [n, lenv]
