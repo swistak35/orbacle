@@ -69,6 +69,16 @@ module Orbacle
         node(:array))
     end
 
+    specify "primitive int" do
+      snippet = <<-END
+      "foobar"
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:str, { value: "foobar" }))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42

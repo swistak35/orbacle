@@ -92,6 +92,8 @@ module Orbacle
         handle_nil(ast, lenv)
       when :array
         handle_array(ast, lenv)
+      when :str
+        handle_str(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -159,6 +161,14 @@ module Orbacle
 
     def handle_nil(ast, lenv)
       n = Node.new(:nil)
+      @graph.add_vertex(n)
+
+      return [n, lenv]
+    end
+
+    def handle_str(ast, lenv)
+      value = ast.children[0]
+      n = Node.new(:str, { value: value })
       @graph.add_vertex(n)
 
       return [n, lenv]
