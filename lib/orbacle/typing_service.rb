@@ -42,8 +42,9 @@ module Orbacle
       end
     end
 
-    def call(graph, message_sends)
+    def call(graph, message_sends, methods)
       @graph = DoubleEdgedGraph.new(graph)
+      @methods = methods
 
       @result = {}
       @fresh_nodes = []
@@ -113,6 +114,7 @@ module Orbacle
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
       when :class then handle_class(node, sources)
       when :constructor then handle_constructor(node, sources)
+      when :method_result then handle_method_result(node, sources)
       else raise ArgumentError.new(node.type)
       end
     end
@@ -164,6 +166,11 @@ module Orbacle
       @result[sources.first]
     end
 
+    def handle_method_result(node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      build_union(sources_types)
+    end
+
     def build_union(sources_types)
       if sources_types.size == 0
         nil
@@ -185,11 +192,19 @@ module Orbacle
     end
 
     def handle_message_send(message_send, graph)
+      message_name = message_send.message_send
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if primitive_send?(possible_type, message_send.message_send)
           handle_primitive(possible_type, message_send, graph)
         else
-          raise "Not implemented yet"
+          found_method = @methods.find {|m| m[0] == "::#{possible_type.name}" && m[1] == message_name }
+          raise "Method not found" if found_method.nil?
+          formal_argument_nodes = found_method[3]
+          method_result_node = found_method[4]
+          if !@graph.original.has_edge?(method_result_node, message_send.send_result)
+            @graph.add_edge(method_result_node, message_send.send_result)
+            @changed_in_this_iteration << method_result_node
+          end
         end
       end
     end
@@ -310,6 +325,9 @@ module Orbacle
 
     def handle_constructor(node, sources)
       NominalType.new(node.params.fetch(:name))
+    end
+
+    def find_appropriate_method(method_name)
     end
   end
 end

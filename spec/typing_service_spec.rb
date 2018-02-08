@@ -118,15 +118,25 @@ module Orbacle
       expect(result).to eq(nominal("Foo"))
     end
 
-    def type_snippet(snippet)
-      result = generate_cfg(snippet)
-      typing_result = type_graph(result.graph, result.message_sends)
-      typing_result[result.final_node]
+    specify "simple user-defined method call" do
+      snippet = <<-END
+      class Foo
+        def bar
+          42
+        end
+      end
+      Foo.new.bar
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Integer"))
     end
 
-    def type_graph(graph, message_sends)
-      service = TypingService.new
-      service.(graph, message_sends)
+    def type_snippet(snippet)
+      result = ControlFlowGraph.new.process_file(snippet)
+      typing_result = TypingService.new.(result.graph, result.message_sends, result.methods)
+      typing_result[result.final_node]
     end
 
     def nominal(*args)
@@ -139,11 +149,6 @@ module Orbacle
 
     def generic(*args)
       TypingService::GenericType.new(*args)
-    end
-
-    def generate_cfg(snippet)
-      service = ControlFlowGraph.new
-      service.process_file(snippet)
     end
   end
 end

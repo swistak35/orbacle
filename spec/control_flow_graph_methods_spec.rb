@@ -518,7 +518,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
       service = Orbacle::ControlFlowGraph.new
       result = service.process_file(file)
       {
-        methods: result.methods,
+        methods: result.methods.map {|m| m[0..2] },
         constants: result.constants,
         klasslikes: result.klasslikes,
       }
