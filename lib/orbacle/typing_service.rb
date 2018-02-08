@@ -26,6 +26,15 @@ module Orbacle
         yield self
       end
     end
+    class ClassType < Struct.new(:klasslike)
+      def name
+        "Class"
+      end
+
+      def each_possible_type
+        yield self
+      end
+    end
     UnionType = Struct.new(:types)
     class GenericType < Struct.new(:name, :parameters)
       def each_possible_type
@@ -100,6 +109,8 @@ module Orbacle
       when :primitive_integer_to_s then handle_primitive_integer_to_s(node, sources)
       when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
+      when :class then handle_class(node, sources)
+      when :constructor then handle_constructor(node, sources)
       else raise ArgumentError.new(node.type)
       end
     end
@@ -153,6 +164,11 @@ module Orbacle
       end
     end
 
+    def handle_class(node, _sources)
+      klasslike = node.params.fetch(:klasslike)
+      ClassType.new(klasslike)
+    end
+
     def satisfied_message_send?(message_send)
       @result[message_send.send_obj] &&
         message_send.send_args.all? {|a| @result[a] }
@@ -169,11 +185,11 @@ module Orbacle
     end
 
     def primitive_send?(type, message_name)
-      if type.name == "Integer" && ["succ", "to_s"].include?(message_name)
+      if type.name == "Class" && message_name == "new"
+        true
+      elsif type.name == "Integer" && ["succ", "to_s"].include?(message_name)
         true
       elsif type.name == "Array" && message_name == "map"
-        true
-      elsif message_name == "new"
         true
       else
         false
@@ -189,9 +205,25 @@ module Orbacle
         send_primitive_integer_to_s(type, message_send, graph)
       elsif type.name == "Array" && message_name == "map"
         send_primitive_array_map(type, message_send, graph)
+      elsif message_name == "new"
+        send_constructor(type, message_send, graph)
       else
         raise ArgumentError.new(possible_type)
       end
+    end
+
+    def send_constructor(type, message_send, graph)
+      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
+        adjacent_node.type == :constructor
+      end
+      return if already_handled
+
+      node = ControlFlowGraph::Node.new(:constructor, { name: type.klasslike.name })
+      @graph.add_vertex(node)
+      @fresh_nodes << node
+      @graph.add_edge(message_send.send_obj, node)
+      @graph.add_edge(node, message_send.send_result)
+      @changed_in_this_iteration << node
     end
 
     def send_primitive_integer_succ(type, message_send, graph)
@@ -264,6 +296,10 @@ module Orbacle
       raise if sources.size != 1
       source = sources.first
       GenericType.new("Array", [@result[source]])
+    end
+
+    def handle_constructor(node, sources)
+      NominalType.new(node.params.fetch(:name))
     end
   end
 end

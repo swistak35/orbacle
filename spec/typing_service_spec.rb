@@ -66,17 +66,17 @@ module Orbacle
       expect(result).to eq(generic("Array", [nominal("String")]))
     end
 
-    # specify do
-    #   snippet = <<-END
-    #   class Foo
-    #   end
-    #   Foo.new
-    #   END
+    specify do
+      snippet = <<-END
+      class Foo
+      end
+      Foo.new
+      END
 
-    #   result = type_snippet(snippet)
+      result = type_snippet(snippet)
 
-    #   expect(result).to eq(nominal("Foo"))
-    # end
+      expect(result).to eq(nominal("Foo"))
+    end
 
     def type_snippet(snippet)
       result = generate_cfg(snippet)
