@@ -205,6 +205,27 @@ module Orbacle
         node(:method_result))
     end
 
+    specify "calling constructor" do
+      snippet = <<-END
+      class Foo
+      end
+      Foo.new
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:call_result))
+      expect(result.graph).to include_edge_type(
+        node(:class),
+        node(:call_obj))
+
+      expect(result.message_sends).to include(
+        msend("new",
+              node(:call_obj),
+              [],
+              node(:call_result)))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)

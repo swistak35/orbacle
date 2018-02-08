@@ -37,12 +37,15 @@ module Orbacle
       @graph = DoubleEdgedGraph.new(graph)
 
       @result = {}
+      @fresh_nodes = []
       recently_changed = Set.new
 
-      @graph.original.vertices.select do |node|
-        if !dependent_on_input?(node)
-          @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
-          recently_changed << node
+      recently_changed = Set.new
+      @graph.original.each_vertex do |v|
+        @result[v] = compute_result(v, @graph.reversed.adjacent_vertices(v))
+        if @result[v]
+          recently_changed << v
+          # puts "Marked #{v} as dirty after setting it's value to #{@result[v].inspect}"
         end
       end
 
@@ -51,12 +54,18 @@ module Orbacle
 
         # we could compute here just the set of "affected" vertices set and not iterate
 
+        @fresh_nodes.each do |node|
+          @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
+        end
+        @fresh_nodes = []
+
         @graph.original.edges.each do |edge|
           if recently_changed.include?(edge.source)
             previous_result = @result[edge.target]
             @result[edge.target] = compute_result(edge.target, @graph.reversed.adjacent_vertices(edge.target))
             if previous_result != @result[edge.target]
               @changed_in_this_iteration << edge.target
+              # puts "Marked #{edge.target} as dirty after setting it's value to #{@result[edge.target].inspect}"
             end
           end
         end
@@ -74,17 +83,7 @@ module Orbacle
     end
 
     def dependent_on_input?(node)
-      case node.type
-      when :int then false
-      when :lvar then true
-      when :array then true
-      when :lvasgn then true
-      when :call_obj then true
-      when :call_result then true
-      when :block_arg then true
-      when :block_result then true
-      else raise ArgumentError.new(node.type)
-      end
+      ![:int].include?(node.type)
     end
 
     def compute_result(node, sources)
@@ -130,22 +129,24 @@ module Orbacle
     end
 
     def handle_call_result(_node, sources)
-      raise if sources.size != 1
+      raise if sources.size > 1
       @result[sources.first]
     end
 
     def handle_block_arg(_node, sources)
-      raise if sources.size != 1
+      raise if sources.size > 1
       @result[sources.first]
     end
 
     def handle_block_result(_node, sources)
-      raise if sources.size != 1
+      raise if sources.size > 1
       @result[sources.first]
     end
 
     def build_union(sources_types)
-      if sources_types.size == 1
+      if sources_types.size == 0
+        nil
+      elsif sources_types.size == 1
         sources_types.first
       else
         UnionType.new(sources_types)
@@ -171,6 +172,8 @@ module Orbacle
       if type.name == "Integer" && ["succ", "to_s"].include?(message_name)
         true
       elsif type.name == "Array" && message_name == "map"
+        true
+      elsif message_name == "new"
         true
       else
         false
@@ -199,6 +202,7 @@ module Orbacle
 
       node = ControlFlowGraph::Node.new(:primitive_integer_succ)
       @graph.add_vertex(node)
+      @fresh_nodes << node
       @graph.add_edge(message_send.send_obj, node)
       @graph.add_edge(node, message_send.send_result)
       @changed_in_this_iteration << node
@@ -212,6 +216,7 @@ module Orbacle
 
       node = ControlFlowGraph::Node.new(:primitive_integer_to_s)
       @graph.add_vertex(node)
+      @fresh_nodes << node
       @graph.add_edge(message_send.send_obj, node)
       @graph.add_edge(node, message_send.send_result)
       @changed_in_this_iteration << node
@@ -227,11 +232,13 @@ module Orbacle
 
       unwrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_1)
       @graph.add_vertex(unwrapping_node)
+      @fresh_nodes << unwrapping_node
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @graph.add_edge(unwrapping_node, message_send.block.args.first)
 
       wrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_2)
       @graph.add_vertex(wrapping_node)
+      @fresh_nodes << wrapping_node
       @graph.add_edge(message_send.block.result, wrapping_node)
       @graph.add_edge(wrapping_node, message_send.send_result)
 

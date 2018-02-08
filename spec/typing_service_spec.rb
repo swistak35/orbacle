@@ -66,6 +66,18 @@ module Orbacle
       expect(result).to eq(generic("Array", [nominal("String")]))
     end
 
+    # specify do
+    #   snippet = <<-END
+    #   class Foo
+    #   end
+    #   Foo.new
+    #   END
+
+    #   result = type_snippet(snippet)
+
+    #   expect(result).to eq(nominal("Foo"))
+    # end
+
     def type_snippet(snippet)
       result = generate_cfg(snippet)
       typing_result = type_graph(result.graph, result.message_sends)

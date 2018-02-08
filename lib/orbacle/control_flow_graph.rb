@@ -15,6 +15,10 @@ module Orbacle
       def ==(other)
         @type == other.type && @params == other.params
       end
+
+      def to_s
+        "#<#{self.class.name}:#{self.object_id} @type=#{@type.inspect}>"
+      end
     end
 
     MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
@@ -47,7 +51,7 @@ module Orbacle
         @nesting = nesting
       end
 
-      attr_reader :scope, :name, :type, :inheritance, :nesting
+      attr_reader :scope, :name, :type, :inheritance, :nesting, :node
 
       def ==(other)
         @scope == other.scope &&
@@ -55,6 +59,10 @@ module Orbacle
           @type == other.type &&
           @inheritance == other.inheritance &&
           @nesting == other.nesting
+      end
+
+      def set_node(node)
+        @node = node
       end
     end
 
@@ -90,6 +98,8 @@ module Orbacle
         handle_false(ast, lenv)
       when :nil
         handle_nil(ast, lenv)
+      when :self
+        handle_self(ast, lenv)
       when :array
         handle_array(ast, lenv)
       when :str
@@ -316,6 +326,16 @@ module Orbacle
       klass_name_ast, parent_klass_name_ast, klass_body = ast.children
       klass_name_ref = ConstRef.from_ast(klass_name_ast)
 
+      klasslike = Klasslike.build_klass(
+        scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
+        name: klass_name_ref.name,
+        inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
+        nesting: @current_nesting.get_output_nesting)
+
+      node = Node.new(:class, { klasslike: klasslike })
+      @graph.add_vertex(node)
+      klasslike.set_node(node)
+
       @constants << [
         Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
         klass_name_ref.name,
@@ -323,11 +343,7 @@ module Orbacle
         { line: klass_name_ast.loc.line },
       ]
 
-      @klasslikes << Klasslike.build_klass(
-        scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
-        name: klass_name_ref.name,
-        inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-        nesting: @current_nesting.get_output_nesting)
+      @klasslikes << klasslike
 
       @current_nesting.increase_nesting_const(klass_name_ref)
 
@@ -410,6 +426,14 @@ module Orbacle
     end
 
     def handle_const(ast, lenv)
+      const_ref = ConstRef.from_ast(ast)
+      klasslike = search_for_klasslike(const_ref, @current_nesting)
+
+      # Target implementation:
+      # raise "Case not implemented yet" if klasslike.nil?
+      # return [klasslike.node, lenv]
+
+      return [klasslike.node, lenv] if klasslike
     end
 
     def expr_is_class_definition?(expr)
@@ -422,6 +446,12 @@ module Orbacle
       expr.type == :send &&
         expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
         expr.children[1] == :new
+    end
+
+    def search_for_klasslike(const_ref, current_nesting)
+      @klasslikes.find do |klasslike|
+        klasslike.name == const_ref.full_name
+      end
     end
   end
 end

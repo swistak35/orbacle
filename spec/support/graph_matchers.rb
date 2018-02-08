@@ -43,6 +43,32 @@ RSpec::Matchers.define :include_edge do |expected_source, expected_target|
   end
 end
 
+RSpec::Matchers.define :include_edge_type do |expected_source, expected_target|
+  match do |graph|
+    graph.edges.any? do |edge|
+      edge.source.type == expected_source.type && edge.target.type == expected_target.type
+    end
+  end
+
+  failure_message do |graph|
+    if graph.edges.empty?
+      "There are no edges in this graph"
+    else
+      graph.edges.each_with_index.map do |edge, index|
+        if edge.source.type != expected_source.type || edge.target.type != expected_target.type
+          <<-EOS
+          Not matching edge types
+            at index: #{index}
+            expected: #{expected_source.type} -> #{expected_target.type}
+            actual:   #{edge.source.type} -> #{edge.target.type}
+          EOS
+        else
+          raise "That should not happen"
+        end
+      end.join("\n")
+    end
+  end
+end
 
 RSpec::Matchers.define :include_node do |expected_node|
   match do |graph|
