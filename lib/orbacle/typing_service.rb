@@ -98,6 +98,8 @@ module Orbacle
     def compute_result(node, sources)
       case node.type
       when :int then handle_int(node, sources)
+      when :str then handle_str(node, sources)
+      when :sym then handle_sym(node, sources)
       when :lvar then handle_lvar(node, sources)
       when :array then handle_array(node, sources)
       when :lvasgn then handle_lvasgn(node, sources)
@@ -117,6 +119,14 @@ module Orbacle
 
     def handle_int(node, sources)
       NominalType.new("Integer")
+    end
+
+    def handle_str(_node, _sources)
+      NominalType.new("String")
+    end
+
+    def handle_sym(_node, _sources)
+      NominalType.new("Symbol")
     end
 
     def handle_lvar(_node, sources)

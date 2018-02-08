@@ -12,6 +12,16 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
+    specify "local variable assignment" do
+      snippet = <<-END
+      x = 42
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Integer"))
+    end
+
     specify "simple lvar reference" do
       snippet = <<-END
       x = 42
@@ -33,7 +43,27 @@ module Orbacle
       expect(result).to eq(generic("Array", [nominal("Integer")]))
     end
 
-    specify do
+    specify "string literal" do
+      snippet = <<-END
+      "foobar"
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("String"))
+    end
+
+    specify "symbol literal" do
+      snippet = <<-END
+      :foobar
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Symbol"))
+    end
+
+    specify "Integer#succ primitive call" do
       snippet = <<-END
       x = 42
       x.succ
