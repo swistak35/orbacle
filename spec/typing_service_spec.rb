@@ -73,7 +73,7 @@ module Orbacle
       expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
     end
 
-    specify "Integer#succ primitive call" do
+    specify "Integer#succ" do
       snippet = <<-END
       x = 42
       x.succ
@@ -84,7 +84,7 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
-    specify do
+    specify "Array#map" do
       snippet = <<-END
       x = [1,2]
       x.map {|y| y }
@@ -95,7 +95,7 @@ module Orbacle
       expect(result).to eq(generic("Array", [nominal("Integer")]))
     end
 
-    specify do
+    specify "Array#map" do
       snippet = <<-END
       x = [1,2]
       x.map {|y| y.to_s }
@@ -106,7 +106,7 @@ module Orbacle
       expect(result).to eq(generic("Array", [nominal("String")]))
     end
 
-    specify do
+    specify "constructor call" do
       snippet = <<-END
       class Foo
       end
