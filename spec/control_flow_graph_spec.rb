@@ -69,6 +69,16 @@ module Orbacle
         node(:array))
     end
 
+    specify "literal empty array" do
+      snippet = <<-END
+      []
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:array))
+    end
+
     specify "literal string" do
       snippet = <<-END
       "foobar"

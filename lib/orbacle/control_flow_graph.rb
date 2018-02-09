@@ -318,14 +318,10 @@ module Orbacle
       node_array = Node.new(:array)
       @graph.add_vertex(node_array)
 
-      exprs_nodes = []
       final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
-        exprs_nodes << ast_child_node
+        @graph.add_edge(ast_child_node, node_array)
         new_lenv
-      end
-      exprs_nodes.each do |node_expr|
-        @graph.add_edge(node_expr, node_array)
       end
 
       return [node_array, final_lenv]
