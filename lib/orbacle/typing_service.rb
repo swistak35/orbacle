@@ -78,6 +78,8 @@ module Orbacle
       when :int then handle_int(node, sources)
       when :str then handle_str(node, sources)
       when :sym then handle_sym(node, sources)
+      when :nil then handle_nil(node, sources)
+      when :self then handle_self(node, sources)
       when :lvar then handle_lvar(node, sources)
       when :array then handle_array(node, sources)
       when :lvasgn then handle_lvasgn(node, sources)
@@ -106,6 +108,20 @@ module Orbacle
 
     def handle_sym(_node, _sources)
       NominalType.new("Symbol")
+    end
+
+    def handle_nil(_node, _sources)
+      NominalType.new("nil")
+    end
+
+    def handle_self(node, sources)
+      if node.params.fetch(:kind) == :class
+        ClassType.new(node.params.fetch(:klass)[2..-1])
+      elsif node.params.fetch(:kind) == :nominal
+        NominalType.new(node.params.fetch(:klass)[2..-1])
+      else
+        raise
+      end
     end
 
     def handle_lvar(_node, sources)

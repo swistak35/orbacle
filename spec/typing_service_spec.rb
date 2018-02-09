@@ -133,6 +133,25 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
+    specify "simple user-defined method call" do
+      snippet = <<-END
+      class Foo
+        def bar
+          self.baz
+        end
+
+        def baz
+          42
+        end
+      end
+      Foo.new.bar
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Integer"))
+    end
+
     def type_snippet(snippet)
       result = ControlFlowGraph.new.process_file(snippet)
       typing_result = TypingService.new.(result.graph, result.message_sends, result.methods)

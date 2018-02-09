@@ -268,6 +268,11 @@ module Orbacle
       return [call_result_node, obj_lenv, { message_send: message_send }]
     end
 
+    def handle_self(ast, lenv)
+      node = lenv.fetch(:self_)
+      return [node, lenv]
+    end
+
     def handle_block(ast, lenv)
       send_expr = ast.children[0]
       args_ast = ast.children[1]
@@ -314,10 +319,13 @@ module Orbacle
         @graph.add_vertex(arg_node)
       end
 
+      self_node = Node.new(:self, { kind: :nominal, klass: Skope.from_nesting(@current_nesting).absolute_str })
+      @graph.add_vertex(self_node)
+
       @currently_parsed_method_result_node = Node.new(:method_result)
       @graph.add_vertex(@currently_parsed_method_result_node)
       if method_body
-        final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+        final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash).merge(self_: self_node))
         @graph.add_edge(final_node, @currently_parsed_method_result_node)
       end
 
@@ -328,6 +336,11 @@ module Orbacle
         formal_argument_nodes,
         @currently_parsed_method_result_node,
       ]
+
+      node = Node.new(:nil)
+      @graph.add_vertex(node)
+
+      return [node, lenv]
     end
 
     def handle_class(ast, lenv)
@@ -355,11 +368,19 @@ module Orbacle
 
       @current_nesting.increase_nesting_const(klass_name_ref)
 
+      self_node = Node.new(:self, { kind: :class, klass: Skope.from_nesting(@current_nesting).absolute_str })
+      @graph.add_vertex(self_node)
+
       if klass_body
-        process(klass_body, lenv)
+        process(klass_body, lenv.merge(self_: self_node))
       end
 
       @current_nesting.decrease_nesting
+
+      node = Node.new(:nil)
+      @graph.add_vertex(node)
+
+      return [node, lenv]
     end
 
     def handle_module(ast, lenv)
