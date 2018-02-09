@@ -26,11 +26,7 @@ module Orbacle
         yield self
       end
     end
-    class ClassType < Struct.new(:klasslike)
-      def name
-        "Class"
-      end
-
+    class ClassType < Struct.new(:name)
       def each_possible_type
         yield self
       end
@@ -91,7 +87,7 @@ module Orbacle
       when :primitive_integer_to_s then handle_primitive_integer_to_s(node, sources)
       when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
-      when :class then handle_class(node, sources)
+      when :const then handle_const(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_method_result(node, sources)
       else raise ArgumentError.new(node.type)
@@ -174,9 +170,8 @@ module Orbacle
       end
     end
 
-    def handle_class(node, _sources)
-      klasslike = node.params.fetch(:klasslike)
-      ClassType.new(klasslike)
+    def handle_const(node, _sources)
+      ClassType.new(node.params.fetch(:const_ref).full_name)
     end
 
     def satisfied_message_send?(message_send)
@@ -203,7 +198,7 @@ module Orbacle
     end
 
     def primitive_send?(type, message_name)
-      if type.name == "Class" && message_name == "new"
+      if type.is_a?(ClassType) && message_name == "new"
         true
       elsif type.name == "Integer" && ["succ", "to_s"].include?(message_name)
         true
@@ -236,7 +231,7 @@ module Orbacle
       end
       return if already_handled
 
-      node = ControlFlowGraph::Node.new(:constructor, { name: type.klasslike.name })
+      node = ControlFlowGraph::Node.new(:constructor, { name: type.name })
       @graph.add_vertex(node)
       @graph.add_edge(message_send.send_obj, node)
       @worklist << node

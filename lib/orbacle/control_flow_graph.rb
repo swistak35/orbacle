@@ -179,7 +179,6 @@ module Orbacle
       @message_sends = []
       @current_nesting = Nesting.new
       @constants = []
-      @klasslikes = []
       @tree = GlobalTree.new
 
       initial_local_environment = {}
@@ -467,12 +466,6 @@ module Orbacle
         inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         nesting: @current_nesting.get_output_nesting)
 
-      node = Node.new(:class, { klasslike: klasslike })
-      @graph.add_vertex(node)
-      klasslike.set_node(node)
-
-      @klasslikes << klasslike
-
       @tree.add_klass(
         name: klass_name_ref.name,
         scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
@@ -500,10 +493,6 @@ module Orbacle
     def handle_module(ast, lenv)
       module_name_ast, module_body = ast.children
       module_name_ref = ConstRef.from_ast(module_name_ast)
-
-      @klasslikes << Klasslike.build_module(
-        scope: Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
-        name: module_name_ref.name)
 
       @tree.add_mod(
         name: module_name_ref.name,
@@ -556,19 +545,11 @@ module Orbacle
           inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           inheritance_nesting: @current_nesting.get_output_nesting,
           line: ast.loc.line)
-        @klasslikes << Klasslike.build_klass(
-          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
-          name: const_name_ref.name,
-          inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-          nesting: @current_nesting.get_output_nesting)
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
           name: const_name_ref.name,
           scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
           line: ast.loc.line)
-        @klasslikes << Klasslike.build_module(
-          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
-          name: const_name_ref.name)
       else
         @tree.add_constant(
           name: const_name_ref.name,
@@ -579,13 +560,11 @@ module Orbacle
 
     def handle_const(ast, lenv)
       const_ref = ConstRef.from_ast(ast)
-      klasslike = search_for_klasslike(const_ref, @current_nesting)
 
-      # Target implementation:
-      # raise "Case not implemented yet" if klasslike.nil?
-      # return [klasslike.node, lenv]
+      node = Node.new(:const, { const_ref: const_ref })
+      @graph.add_vertex(node)
 
-      return [klasslike.node, lenv] if klasslike
+      return [node, lenv]
     end
 
     def expr_is_class_definition?(expr)
@@ -598,12 +577,6 @@ module Orbacle
       expr.type == :send &&
         expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
         expr.children[1] == :new
-    end
-
-    def search_for_klasslike(const_ref, current_nesting)
-      @klasslikes.find do |klasslike|
-        klasslike.name == const_ref.full_name
-      end
     end
   end
 end

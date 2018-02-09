@@ -251,7 +251,7 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:call_result))
       expect(result.graph).to include_edge_type(
-        node(:class),
+             node(:const, { const_ref: ConstRef.new("Foo") }),
         node(:call_obj))
 
       expect(result.message_sends).to include(
