@@ -153,7 +153,7 @@ module Orbacle
           node(:call_result)))
     end
 
-    specify "method call, with args" do
+    specify "method call, with 1 arg" do
       snippet = <<-END
       x = 42
       x.floor(2)
@@ -172,6 +172,31 @@ module Orbacle
         msend("floor",
               node(:call_obj),
               [node(:call_arg)],
+              node(:call_result)))
+    end
+
+    specify "method call, with more than one arg" do
+      snippet = <<-END
+      x = 42
+      x.floor(2, 3)
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "x" }),
+        node(:call_obj))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 2 }),
+        node(:call_arg))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 3 }),
+        node(:call_arg))
+
+      expect(result.message_sends).to include(
+        msend("floor",
+              node(:call_obj),
+              [node(:call_arg), node(:call_arg)],
               node(:call_result)))
     end
 
