@@ -77,12 +77,16 @@ module Orbacle
           @node_result = node_result
           @node_formal_arguments = node_formal_arguments
         end
+
+        attr_reader :name, :line, :node_result, :node_formal_arguments
       end
 
       def initialize
         @klasslikes = []
         @methods = {}
       end
+
+      attr_reader :methods
 
       def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:, level:)
         method = Method.new(
@@ -107,7 +111,6 @@ module Orbacle
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
       @current_nesting = Nesting.new
-      @methods = []
       @constants = []
       @klasslikes = []
       @tree = GlobalTree.new
@@ -115,7 +118,12 @@ module Orbacle
       initial_local_environment = {}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
-      return Result.new(@graph, final_local_environment, @message_sends, final_node, @methods, @constants, @klasslikes)
+      methods = @tree.methods.flat_map do |s, h|
+        h[:instance].map {|m| [s, m.name, { line: m.line }, m.node_formal_arguments, m.node_result ]} +
+          h[:klass].map {|m| ["Metaklass(#{s})", m.name, { line: m.line }, m.node_formal_arguments, m.node_result ]}
+      end
+
+      return Result.new(@graph, final_local_environment, @message_sends, final_node, methods, @constants, @klasslikes)
     end
 
     private
@@ -372,14 +380,6 @@ module Orbacle
         scope: Skope.from_nesting(@current_nesting).absolute_str,
         level: :instance)
 
-      @methods << [
-        Skope.from_nesting(@current_nesting).absolute_str,
-        method_name.to_s,
-        { line: ast.loc.line },
-        formal_argument_nodes,
-        @currently_parsed_method_result_node,
-      ]
-
       node = Node.new(:nil)
       @graph.add_vertex(node)
 
@@ -471,12 +471,6 @@ module Orbacle
         level: :klass)
 
       @current_nesting.increase_nesting_self
-
-      @methods << [
-        Skope.from_nesting(@current_nesting).absolute_str,
-        method_name.to_s,
-        { line: ast.loc.line },
-      ]
 
       @current_nesting.decrease_nesting
     end

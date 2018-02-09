@@ -24,6 +24,10 @@ module Orbacle
       end
     end
 
+    def increase_by_metaklass
+      Skope.new(str, true)
+    end
+
     def empty?
       str.nil?
     end
