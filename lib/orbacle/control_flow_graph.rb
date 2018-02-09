@@ -113,28 +113,12 @@ module Orbacle
         attr_reader :name, :scope, :line
       end
 
-      # @tree.add_klass(
-      #   name: const_name_ref.name,
-      #   scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
-      #   inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-      #   inheritance_nesting: @current_nesting.get_output_nesting,
-      #   line: ast.loc.line)
-    # elsif expr_is_module_definition?(expr)
-      # @tree.add_module(
-      #   name: const_name_ref.name,
-      #   scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
-      #   line: ast.loc.line)
-    # else
-      # @tree.add_constant(
-      #   name: const_name_ref.name,
-      #   scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
-      #   line: ast.loc.line)
       def initialize
-        @klasslikes = []
+        @constants = []
         @methods = {}
       end
 
-      attr_reader :methods
+      attr_reader :methods, :constants
 
       def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:, level:)
         method = Method.new(
@@ -152,17 +136,17 @@ module Orbacle
 
       def add_klass(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
         klass = Klass.new(name: name, scope: scope, line: line, inheritance_name: inheritance_name, inheritance_nesting: inheritance_nesting)
-        @klasslikes << klass
+        @constants << klass
       end
 
       def add_mod(name:, scope:, line:)
         mod = Mod.new(name: name, scope: scope, line: line)
-        @klasslikes << mod
+        @constants << mod
       end
 
       def add_constant(name:, scope:, line:)
         constant = Constant.new(name: name, scope: scope, line: line)
-        @klasslikes << constant
+        @constants << constant
       end
     end
 
@@ -186,7 +170,18 @@ module Orbacle
           h[:klass].map {|m| ["Metaklass(#{s})", m.name, { line: m.line }, m.node_formal_arguments, m.node_result ]}
       end
 
-      return Result.new(@graph, final_local_environment, @message_sends, final_node, methods, @constants, @klasslikes)
+      constants = @tree.constants.map do |c|
+        case c
+        when GlobalTree::Klass
+          [c.scope, c.name, :klass, { line: c.line }]
+        when GlobalTree::Mod
+          [c.scope, c.name, :mod, { line: c.line }]
+        when GlobalTree::Constant
+          [c.scope, c.name, :other, { line: c.line }]
+        end
+      end
+
+      return Result.new(@graph, final_local_environment, @message_sends, final_node, methods, constants, @klasslikes)
     end
 
     private
@@ -463,13 +458,6 @@ module Orbacle
       @graph.add_vertex(node)
       klasslike.set_node(node)
 
-      @constants << [
-        Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
-        klass_name_ref.name,
-        :klass,
-        { line: klass_name_ast.loc.line },
-      ]
-
       @klasslikes << klasslike
 
       @tree.add_klass(
@@ -499,13 +487,6 @@ module Orbacle
     def handle_module(ast, lenv)
       module_name_ast, module_body = ast.children
       module_name_ref = ConstRef.from_ast(module_name_ast)
-
-      @constants << [
-        Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
-        module_name_ref.name,
-        :mod,
-        { line: module_name_ast.loc.line },
-      ]
 
       @klasslikes << Klasslike.build_module(
         scope: Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
@@ -553,13 +534,6 @@ module Orbacle
     def handle_casgn(ast, lenv)
       const_prename, const_name, expr = ast.children
       const_name_ref = ConstRef.new(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
-
-      @constants << [
-        Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
-        const_name_ref.name,
-        :other,
-        { line: ast.loc.line }
-      ]
 
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
