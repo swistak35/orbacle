@@ -348,12 +348,15 @@ module Orbacle
 
     def handle_send(ast, lenv)
       obj_expr = ast.children[0]
-      message_name = ast.children[1]
+      message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
 
-      return if obj_expr.nil? # Currently can happen, when calling method on something which is not yet known
-
-      obj_node, obj_lenv = process(obj_expr, lenv)
+      if obj_expr.nil?
+        obj_node = lenv.fetch(:self_)
+        obj_lenv = lenv
+      else
+        obj_node, obj_lenv = process(obj_expr, lenv)
+      end
 
       arg_nodes = []
       final_lenv = arg_exprs.reduce(obj_lenv) do |current_lenv, ast_child|
@@ -378,7 +381,7 @@ module Orbacle
       call_result_node = Node.new(:call_result)
       @graph.add_vertex(call_result_node)
 
-      message_send = MessageSend.new(message_name.to_s, call_obj_node, call_arg_nodes, call_result_node, nil)
+      message_send = MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
       @message_sends << message_send
 
       return [call_result_node, obj_lenv, { message_send: message_send }]

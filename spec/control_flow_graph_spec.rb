@@ -261,6 +261,52 @@ module Orbacle
               node(:call_result)))
     end
 
+    specify "method call, on self" do
+      snippet = <<-END
+      class Foo
+        def bar
+          self.baz
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:self, { kind: :nominal, klass: "::Foo" }),
+        node(:call_obj))
+
+      expect(result.message_sends).to include(
+        msend(
+          "baz",
+          node(:call_obj),
+          [],
+          node(:call_result)))
+    end
+
+    specify "method call, on implicit self" do
+      snippet = <<-END
+      class Foo
+        def bar
+          baz
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:self, { kind: :nominal, klass: "::Foo" }),
+        node(:call_obj))
+
+      expect(result.message_sends).to include(
+        msend(
+          "baz",
+          node(:call_obj),
+          [],
+          node(:call_result)))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
