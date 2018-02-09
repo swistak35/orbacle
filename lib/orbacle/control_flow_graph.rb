@@ -358,24 +358,18 @@ module Orbacle
         obj_node, obj_lenv = process(obj_expr, lenv)
       end
 
-      arg_nodes = []
+      call_arg_nodes = []
       final_lenv = arg_exprs.reduce(obj_lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
-        arg_nodes << ast_child_node
-        new_lenv
-      end
-
-      call_arg_nodes = []
-      arg_nodes.each do |arg_node|
         call_arg_node = Node.new(:call_arg)
         call_arg_nodes << call_arg_node
         @graph.add_vertex(call_arg_node)
-        @graph.add_edge(arg_node, call_arg_node)
+        @graph.add_edge(ast_child_node, call_arg_node)
+        new_lenv
       end
 
       call_obj_node = Node.new(:call_obj)
       @graph.add_vertex(call_obj_node)
-
       @graph.add_edge(obj_node, call_obj_node)
 
       call_result_node = Node.new(:call_result)
@@ -384,7 +378,7 @@ module Orbacle
       message_send = MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
       @message_sends << message_send
 
-      return [call_result_node, obj_lenv, { message_send: message_send }]
+      return [call_result_node, final_lenv, { message_send: message_send }]
     end
 
     def handle_self(ast, lenv)
