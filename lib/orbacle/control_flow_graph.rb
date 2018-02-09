@@ -66,6 +66,39 @@ module Orbacle
       end
     end
 
+    class GlobalTree
+      class Method
+        def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:)
+          raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
+
+          @name = name
+          @line = line
+          @visibility = visibility
+          @node_result = node_result
+          @node_formal_arguments = node_formal_arguments
+        end
+      end
+
+      def initialize
+        @klasslikes = []
+        @methods = {}
+      end
+
+      def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:, level:)
+        method = Method.new(
+          name: name,
+          line: line,
+          visibility: visibility,
+          node_result: node_result,
+          node_formal_arguments: node_formal_arguments)
+        @methods[scope] ||= {
+          klass: [],
+          instance: [],
+        }
+        @methods.fetch(scope).fetch(level) << method
+      end
+    end
+
     Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :methods, :constants, :klasslikes)
 
     def process_file(file)
@@ -77,6 +110,7 @@ module Orbacle
       @methods = []
       @constants = []
       @klasslikes = []
+      @tree = GlobalTree.new
 
       initial_local_environment = {}
       final_node, final_local_environment = process(ast, initial_local_environment)
@@ -329,6 +363,15 @@ module Orbacle
         @graph.add_edge(final_node, @currently_parsed_method_result_node)
       end
 
+      @tree.add_method(
+        name: method_name.to_s,
+        line: ast.loc.line,
+        visibility: :public,
+        node_result: @currently_parsed_method_result_node,
+        node_formal_arguments: formal_argument_nodes,
+        scope: Skope.from_nesting(@current_nesting).absolute_str,
+        level: :instance)
+
       @methods << [
         Skope.from_nesting(@current_nesting).absolute_str,
         method_name.to_s,
@@ -417,6 +460,15 @@ module Orbacle
 
     def handle_defs(ast, lenv)
       method_receiver, method_name, method_body = ast.children
+
+      @tree.add_method(
+        name: method_name.to_s,
+        line: ast.loc.line,
+        visibility: :public,
+        node_result: nil, #todo
+        node_formal_arguments: [], #todo
+        scope: Skope.from_nesting(@current_nesting).absolute_str,
+        level: :klass)
 
       @current_nesting.increase_nesting_self
 
