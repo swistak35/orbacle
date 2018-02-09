@@ -81,6 +81,54 @@ module Orbacle
         attr_reader :name, :line, :node_result, :node_formal_arguments
       end
 
+      class Klass
+        def initialize(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
+          @name = name
+          @scope = scope
+          @line = line
+          @inheritance_name = inheritance_name
+          @inheritance_nesting = inheritance_nesting
+        end
+
+        attr_reader :name, :scope, :line, :inheritance_name, :inheritance_nesting
+      end
+
+      class Mod
+        def initialize(name:, scope:, line:)
+          @name = name
+          @scope = scope
+          @line = line
+        end
+
+        attr_reader :name, :scope, :line
+      end
+
+      class Constant
+        def initialize(name:, scope:, line:)
+          @name = name
+          @scope = scope
+          @line = line
+        end
+
+        attr_reader :name, :scope, :line
+      end
+
+      # @tree.add_klass(
+      #   name: const_name_ref.name,
+      #   scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
+      #   inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
+      #   inheritance_nesting: @current_nesting.get_output_nesting,
+      #   line: ast.loc.line)
+    # elsif expr_is_module_definition?(expr)
+      # @tree.add_module(
+      #   name: const_name_ref.name,
+      #   scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
+      #   line: ast.loc.line)
+    # else
+      # @tree.add_constant(
+      #   name: const_name_ref.name,
+      #   scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
+      #   line: ast.loc.line)
       def initialize
         @klasslikes = []
         @methods = {}
@@ -100,6 +148,21 @@ module Orbacle
           instance: [],
         }
         @methods.fetch(scope).fetch(level) << method
+      end
+
+      def add_klass(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
+        klass = Klass.new(name: name, scope: scope, line: line, inheritance_name: inheritance_name, inheritance_nesting: inheritance_nesting)
+        @klasslikes << klass
+      end
+
+      def add_mod(name:, scope:, line:)
+        mod = Mod.new(name: name, scope: scope, line: line)
+        @klasslikes << mod
+      end
+
+      def add_constant(name:, scope:, line:)
+        constant = Constant.new(name: name, scope: scope, line: line)
+        @klasslikes << constant
       end
     end
 
@@ -409,6 +472,13 @@ module Orbacle
 
       @klasslikes << klasslike
 
+      @tree.add_klass(
+        name: klass_name_ref.name,
+        scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
+        inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
+        inheritance_nesting: @current_nesting.get_output_nesting,
+        line: klass_name_ast.loc.line)
+
       @current_nesting.increase_nesting_const(klass_name_ref)
 
       self_node = Node.new(:self, { kind: :class, klass: Skope.from_nesting(@current_nesting).absolute_str })
@@ -440,6 +510,11 @@ module Orbacle
       @klasslikes << Klasslike.build_module(
         scope: Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
         name: module_name_ref.name)
+
+      @tree.add_mod(
+        name: module_name_ref.name,
+        scope: Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).prefix.absolute_str,
+        line: module_name_ast.loc.line)
 
       @current_nesting.increase_nesting_const(module_name_ref)
 
@@ -488,15 +563,30 @@ module Orbacle
 
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
+        @tree.add_klass(
+          name: const_name_ref.name,
+          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
+          inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
+          inheritance_nesting: @current_nesting.get_output_nesting,
+          line: ast.loc.line)
         @klasslikes << Klasslike.build_klass(
           scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
           name: const_name_ref.name,
           inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           nesting: @current_nesting.get_output_nesting)
       elsif expr_is_module_definition?(expr)
+        @tree.add_mod(
+          name: const_name_ref.name,
+          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
+          line: ast.loc.line)
         @klasslikes << Klasslike.build_module(
           scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
           name: const_name_ref.name)
+      else
+        @tree.add_constant(
+          name: const_name_ref.name,
+          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).prefix.absolute_str,
+          line: ast.loc.line)
       end
     end
 
