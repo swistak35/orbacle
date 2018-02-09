@@ -75,7 +75,7 @@ module Orbacle
             current_node << tree_node
           end
       end
-      tree.print_tree
+      # tree.print_tree
 
       ExportClassHierarchy.new.(tree)
 

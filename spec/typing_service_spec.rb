@@ -133,7 +133,7 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
-    specify "simple user-defined method call" do
+    specify "method call to self" do
       snippet = <<-END
       class Foo
         def bar
