@@ -2,11 +2,17 @@ require 'spec_helper'
 
 RSpec.describe Orbacle::ControlFlowGraph do
   def build_klass(scope: nil, name:, inheritance: nil, nesting: [])
-    Orbacle::ControlFlowGraph::Klasslike.build_klass(scope: scope, name: name, inheritance: inheritance, nesting: nesting)
+    # Orbacle::ControlFlowGraph::GlobalTree::Klass.new(scope: scope, name: name, inheritance_name: inheritance, inheritance_nesting: nesting, line: line)
+    [Orbacle::ControlFlowGraph::GlobalTree::Klass, scope, name, inheritance, nesting]
   end
 
   def build_module(scope: nil, name:)
-    Orbacle::ControlFlowGraph::Klasslike.build_module(scope: scope, name: name)
+    # Orbacle::ControlFlowGraph::GlobalTree::Mod.new(scope: scope, name: name, line: line)
+    [Orbacle::ControlFlowGraph::GlobalTree::Mod, scope, name]
+  end
+
+  def build_constant(scope: nil, name:)
+    [Orbacle::ControlFlowGraph::GlobalTree::Constant, scope, name]
   end
 
   specify do
@@ -22,9 +28,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Foo", "bar", { line: 2 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }]
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_klass(name: "Foo")
     ])
   end
@@ -46,10 +49,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Foo", "baz", { line: 5 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }]
-    ])
-    expect(r[:klasslikes]).to match_array([
-      build_klass(name: "Foo")
+      build_klass(name: "Foo", scope: nil)
     ])
   end
 
@@ -72,10 +72,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Foo", "baz", { line: 6 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod, { line: 1 }],
-      ["::Some", "Foo", :klass, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
       build_klass(scope: "::Some", name: "Foo", nesting: ["Some"]),
     ])
@@ -102,11 +98,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Bar", "rab", { line: 8 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod, { line: 1 }],
-      ["::Some", "Foo", :klass, { line: 2 }],
-      ["::Some", "Bar", :klass, { line: 7 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
       build_klass(scope: "::Some", name: "Foo", nesting: ["Some"]),
       build_klass(scope: "::Some", name: "Bar", nesting: ["Some"]),
@@ -130,11 +121,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Foo::Bar", "baz", { line: 4 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod, { line: 1 }],
-      ["::Some", "Foo", :mod, { line: 2 }],
-      ["::Some::Foo", "Bar", :klass, { line: 3 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
       build_module(scope: "::Some", name: "Foo"),
       build_klass(scope: "::Some::Foo", name: "Bar", nesting: ["Some", "Foo"]),
@@ -156,10 +142,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Foo::Bar", "baz", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      ["::Some", "Foo", :mod, { line: 1 }],
-      ["::Some::Foo", "Bar", :klass, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(scope: "::Some", name: "Foo"),
       build_klass(scope: "::Some::Foo", name: "Bar", nesting: ["Some::Foo"]),
     ])
@@ -180,10 +162,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Foo::Bar::Baz", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      ["::Some::Foo", "Bar", :mod, { line: 1 }],
-      ["::Some::Foo::Bar", "Baz", :klass, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(scope: "::Some::Foo", name: "Bar"),
       build_klass(scope: "::Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo::Bar"]),
     ])
@@ -204,10 +182,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Foo::Bar::Baz", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      ["::Some", "Foo", :mod, { line: 1 }],
-      ["::Some::Foo::Bar", "Baz", :klass, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(scope: "::Some", name: "Foo"),
       build_klass(scope: "::Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo"])
     ])
@@ -228,10 +202,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Foo", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Bar", :klass, { line: 1 }],
-      [nil, "Foo", :klass, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_klass(name: "Bar"),
       build_klass(name: "Foo", nesting: ["Bar"])
     ])
@@ -252,10 +222,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Foo", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Bar", :klass, { line: 1 }],
-      [nil, "Foo", :mod, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_klass(name: "Bar"),
       build_module(name: "Foo"),
     ])
@@ -271,8 +237,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     expect(r[:methods]).to eq([
       [nil, "xxx", { line: 1 }],
     ])
-    expect(r[:constants]).to match_array([])
-    expect(r[:klasslikes]).to be_empty
+    expect(r[:constants]).to be_empty
   end
 
   specify do
@@ -290,11 +255,8 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Foo", "bar", { line: 4 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }],
-      ["::Foo", "Bar", :other, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_klass(name: "Foo"),
+      build_constant(name: "Bar", scope: "::Foo")
     ])
   end
 
@@ -308,10 +270,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([])
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }],
-      ["::Foo::Ban::Baz", "Bar", :other, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
+      build_constant(name: "Bar", scope: "::Foo::Ban::Baz"),
       build_klass(name: "Foo"),
     ])
   end
@@ -325,10 +284,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }],
-      [nil, "Bar", :other, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
+      build_constant(name: "Bar", scope: nil),
       build_klass(name: "Foo"),
     ])
   end
@@ -342,10 +298,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }],
-      ["::Baz", "Bar", :other, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
+      build_constant(name: "Bar", scope: "::Baz"),
       build_klass(name: "Foo"),
     ])
   end
@@ -359,10 +312,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      [nil, "Foo", :klass, { line: 1 }],
-      ["::Baz::Bam", "Bar", :other, { line: 2 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
+      build_constant(name: "Bar", scope: "::Baz::Bam"),
       build_klass(name: "Foo"),
     ])
   end
@@ -388,11 +338,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
       ["::Some::Bar", "rab", { line: 8 }],
     ])
     expect(r[:constants]).to match_array([
-      [nil, "Some", :mod, { line: 1 }],
-      ["::Some", "Foo", :mod, { line: 2 }],
-      ["::Some", "Bar", :mod, { line: 7 }],
-    ])
-    expect(r[:klasslikes]).to match_array([
       build_module(name: "Some"),
       build_module(scope: "::Some", name: "Foo"),
       build_module(scope: "::Some", name: "Bar"),
@@ -406,7 +351,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_klass(name: "Foo", inheritance: "Bar")
     ])
   end
@@ -418,7 +363,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_klass(name: "Foo", inheritance: "Bar::Baz")
     ])
   end
@@ -430,7 +375,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_klass(name: "Foo", inheritance: "::Bar::Baz")
     ])
   end
@@ -444,7 +389,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_module(name: "Some"),
       build_klass(scope: "::Some", name: "Foo", inheritance: "Bar", nesting: ["Some"]),
     ])
@@ -456,7 +401,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_klass(name: "Foo", inheritance: "Bar")
     ])
   end
@@ -467,7 +412,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_klass(name: "Foo")
     ])
   end
@@ -478,7 +423,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:klasslikes]).to match_array([
+    expect(r[:constants]).to match_array([
       build_module(name: "Foo")
     ])
   end
@@ -519,8 +464,13 @@ RSpec.describe Orbacle::ControlFlowGraph do
       result = service.process_file(file)
       {
         methods: result.methods.map {|m| m[0..2] },
-        constants: result.constants,
-        klasslikes: result.klasslikes,
+        constants: result.constants.map do |c|
+          if c.is_a?(Orbacle::ControlFlowGraph::GlobalTree::Klass)
+            [c.class, c.scope, c.name, c.inheritance_name, c.inheritance_nesting]
+          else
+            [c.class, c.scope, c.name]
+          end
+        end
       }
     }
   end

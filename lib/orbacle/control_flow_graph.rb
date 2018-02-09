@@ -91,6 +91,14 @@ module Orbacle
         end
 
         attr_reader :name, :scope, :line, :inheritance_name, :inheritance_nesting
+
+        def ==(other)
+          @name == other.name &&
+            @scope == other.scope &&
+            @inheritance_name == other.inheritance_name &&
+            @inheritance_nesting == other.inheritance_nesting &&
+            @line == line
+        end
       end
 
       class Mod
@@ -101,6 +109,12 @@ module Orbacle
         end
 
         attr_reader :name, :scope, :line
+
+        def ==(other)
+          @name == other.name &&
+            @scope == other.scope &&
+            @line == line
+        end
       end
 
       class Constant
@@ -111,6 +125,12 @@ module Orbacle
         end
 
         attr_reader :name, :scope, :line
+
+        def ==(other)
+          @name == other.name &&
+            @scope == other.scope &&
+            @line == line
+        end
       end
 
       def initialize
@@ -181,7 +201,7 @@ module Orbacle
         end
       end
 
-      return Result.new(@graph, final_local_environment, @message_sends, final_node, methods, constants, @klasslikes)
+      return Result.new(@graph, final_local_environment, @message_sends, final_node, methods, @tree.constants)
     end
 
     private

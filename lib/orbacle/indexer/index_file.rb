@@ -9,14 +9,12 @@ module Orbacle
         parser = ControlFlowGraph.new
         result = parser.process_file(content)
         result.constants.each do |c|
-          scope, name, type, opts = c
-
           @db.add_constant(
-            scope: scope,
-            name: name,
-            type: type.to_s,
+            scope: c.scope,
+            name: c.name,
+            type: type_of(c),
             path: path,
-            line: opts.fetch(:line))
+            line: c.line)
         end
         result.methods.each do |m|
           _scope, name, opts = m
@@ -26,13 +24,21 @@ module Orbacle
             file: path,
             line: opts.fetch(:line))
         end
-        result.klasslikes.each do |kl|
+        result.constants.select {|c| [ControlFlowGraph::GlobalTree::Klass, ControlFlowGraph::GlobalTree::Mod].include?(c.class)}.each do |kl|
           @db.add_klasslike(
             scope: kl.scope,
             name: kl.name,
-            type: kl.type,
-            inheritance: kl.inheritance,
-            nesting: kl.nesting)
+            type: type_of(kl),
+            inheritance: type_of(kl) == "klass" ? kl.inheritance_name : nil,
+            nesting: type_of(kl) == "klass" ? kl.inheritance_nesting : nil)
+        end
+      end
+
+      def type_of(c)
+        case c
+        when ControlFlowGraph::GlobalTree::Klass then "klass"
+        when ControlFlowGraph::GlobalTree::Mod then "mod"
+        when ControlFlowGraph::GlobalTree::Constant then "other"
         end
       end
     end
