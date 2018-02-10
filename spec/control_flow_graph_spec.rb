@@ -79,7 +79,7 @@ module Orbacle
       expect(result.final_node).to eq(node(:array))
     end
 
-    specify "literal string" do
+    specify "string literal" do
       snippet = <<-END
       "foobar"
       END
@@ -87,6 +87,41 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.final_node).to eq(node(:str, { value: "foobar" }))
+    end
+
+    specify "string heredoc" do
+      snippet = <<-END
+        <<-HERE
+        foo
+        HERE
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:str, { value: "        foo\n" }))
+    end
+
+    specify "string with interpolation" do
+      snippet = '
+      bar = 42
+      "foo#{bar}baz"
+      '
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:dstr))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:lvar, { var_name: "bar" }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:dstr))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "bar" }),
+        node(:dstr))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "baz" }),
+        node(:dstr))
     end
 
     specify "literal symbol" do

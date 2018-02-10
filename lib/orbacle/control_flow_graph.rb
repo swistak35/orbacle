@@ -223,6 +223,8 @@ module Orbacle
         handle_array(ast, lenv)
       when :str
         handle_str(ast, lenv)
+      when :dstr
+        handle_dstr(ast, lenv)
       when :sym
         handle_sym(ast, lenv)
       when :begin
@@ -303,6 +305,19 @@ module Orbacle
       @graph.add_vertex(n)
 
       return [n, lenv]
+    end
+
+    def handle_dstr(ast, lenv)
+      node_dstr = Node.new(:dstr)
+      @graph.add_vertex(node_dstr)
+
+      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        @graph.add_edge(ast_child_node, node_dstr)
+        new_lenv
+      end
+
+      return [node_dstr, final_lenv]
     end
 
     def handle_sym(ast, lenv)
