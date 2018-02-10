@@ -324,6 +324,20 @@ module Orbacle
               block([node(:block_arg, { var_name: "y" })], node(:block_result))))
     end
 
+    specify "empty method definition" do
+      snippet = <<-END
+      def foo
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:nil),
+        node(:method_result))
+      expect(result.final_node).to eq(node(:sym, { value: :foo }))
+    end
+
     specify "simple method definition" do
       snippet = <<-END
       def foo(x)

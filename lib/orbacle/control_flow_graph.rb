@@ -489,6 +489,10 @@ module Orbacle
       if method_body
         final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash).merge(self_: self_node))
         @graph.add_edge(final_node, @currently_parsed_method_result_node)
+      else
+        final_node = Node.new(:nil)
+        @graph.add_vertex(final_node)
+        @graph.add_edge(final_node, @currently_parsed_method_result_node)
       end
 
       @tree.add_method(
@@ -500,7 +504,7 @@ module Orbacle
         scope: Skope.from_nesting(@current_nesting).absolute_str,
         level: :instance)
 
-      node = Node.new(:nil)
+      node = Node.new(:sym, { value: method_name })
       @graph.add_vertex(node)
 
       return [node, lenv]
