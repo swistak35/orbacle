@@ -157,6 +157,49 @@ module Orbacle
         node(:dsym))
     end
 
+    specify "regexp" do
+      snippet = <<-END
+      /foobar/
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foobar" }),
+        node(:regexp, { regopt: [] }))
+    end
+
+    specify "regexp with options" do
+      snippet = <<-END
+      /foobar/im
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foobar" }),
+        node(:regexp, { regopt: [:i, :m] }))
+    end
+
+    specify "regexp with interpolation" do
+      snippet = '
+      bar = 42
+      /foo#{bar}/
+      '
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:regexp, { regopt: [] }))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "bar" }),
+        node(:regexp, { regopt: [] }))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42

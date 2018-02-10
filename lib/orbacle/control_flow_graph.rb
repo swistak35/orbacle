@@ -229,6 +229,8 @@ module Orbacle
         handle_sym(ast, lenv)
       when :dsym
         handle_dsym(ast, lenv)
+      when :regexp
+        handle_regexp(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -354,6 +356,21 @@ module Orbacle
       end
 
       return [node_array, final_lenv]
+    end
+
+    def handle_regexp(ast, lenv)
+      expr_nodes = ast.children[0..-2]
+      regopt = ast.children[-1]
+
+      node_regexp = Node.new(:regexp, { regopt: regopt.children })
+
+      final_lenv = expr_nodes.reduce(lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        @graph.add_edge(ast_child_node, node_regexp)
+        new_lenv
+      end
+
+      return [node_regexp, final_lenv]
     end
 
     def handle_begin(ast, lenv)
