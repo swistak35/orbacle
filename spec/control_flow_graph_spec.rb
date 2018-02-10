@@ -341,6 +341,40 @@ module Orbacle
         node(:method_result))
     end
 
+    specify "method definition with splat argument" do
+      snippet = <<-END
+      def foo(x, *rest)
+        rest
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
+      expect(result.graph).to include_edge(
+        node(:formal_restarg, { var_name: "rest" }),
+        node(:lvar, { var_name: "rest" }))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "rest" }),
+        node(:method_result))
+    end
+
+    specify "method definition with splat argument in the middle" do
+      snippet = <<-END
+      def foo(x, *rest, y)
+        rest
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
+      expect(result.graph).to include_node(node(:formal_arg, { var_name: "y" }))
+      expect(result.graph).to include_edge(
+        node(:formal_restarg, { var_name: "rest" }),
+        node(:lvar, { var_name: "rest" }))
+    end
+
     specify "calling constructor" do
       snippet = <<-END
       class Foo

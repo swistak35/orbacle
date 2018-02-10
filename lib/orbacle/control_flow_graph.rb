@@ -469,13 +469,16 @@ module Orbacle
       formal_argument_nodes = []
       formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
         arg_name = arg_ast.children[0].to_s
-        arg_node = Node.new(:formal_arg, { var_name: arg_name })
-        formal_argument_nodes << arg_node
-        h[arg_name] = arg_node
-      end
+        if arg_ast.type == :arg
+          arg_node = Node.new(:formal_arg, { var_name: arg_name })
+        elsif arg_ast.type == :restarg
+          arg_node = Node.new(:formal_restarg, { var_name: arg_name })
+        else raise
+        end
 
-      formal_argument_nodes.each do |arg_node|
+        formal_argument_nodes << arg_node
         @graph.add_vertex(arg_node)
+        h[arg_name] = arg_node
       end
 
       self_node = Node.new(:self, { kind: :nominal, klass: Skope.from_nesting(@current_nesting).absolute_str })
