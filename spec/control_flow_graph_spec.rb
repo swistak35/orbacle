@@ -200,6 +200,25 @@ module Orbacle
         node(:regexp, { regopt: [] }))
     end
 
+    specify "empty hash" do
+      snippet = <<-END
+      {
+        "foo" => 42,
+        bar: "nananana",
+      }
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:hash))
+      expect(result.graph).to include_edge(
+        node(:hash_keys),
+        node(:hash))
+      expect(result.graph).to include_edge(
+        node(:hash_values),
+        node(:hash))
+    end
+
     specify "hash" do
       snippet = <<-END
       {
