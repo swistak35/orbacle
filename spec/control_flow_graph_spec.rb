@@ -252,6 +252,52 @@ module Orbacle
         node(:hash_values))
     end
 
+    specify "simple inclusive range" do
+      snippet = <<-END
+      (2..4)
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:range, { inclusive: true }))
+      expect(result.graph).to include_edge(
+        node(:range_from),
+        node(:range, { inclusive: true }))
+      expect(result.graph).to include_edge(
+        node(:range_to),
+        node(:range, { inclusive: true }))
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 2 }),
+        node(:range_from))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 4 }),
+        node(:range_to))
+    end
+
+    specify "simple exclusive range" do
+      snippet = <<-END
+      (2...4)
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:range, { inclusive: false }))
+      expect(result.graph).to include_edge(
+        node(:range_from),
+        node(:range, { inclusive: false }))
+      expect(result.graph).to include_edge(
+        node(:range_to),
+        node(:range, { inclusive: false }))
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 2 }),
+        node(:range_from))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 4 }),
+        node(:range_to))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42

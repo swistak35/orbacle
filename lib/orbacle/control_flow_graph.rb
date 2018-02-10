@@ -233,6 +233,10 @@ module Orbacle
         handle_regexp(ast, lenv)
       when :hash
         handle_hash(ast, lenv)
+      when :irange
+        handle_irange(ast, lenv)
+      when :erange
+        handle_erange(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -373,6 +377,33 @@ module Orbacle
       end
 
       return [node_regexp, final_lenv]
+    end
+
+    def handle_irange(ast, lenv)
+      common_range(ast, lenv, true)
+    end
+
+    def handle_erange(ast, lenv)
+      common_range(ast, lenv, false)
+    end
+
+    def common_range(ast, lenv, inclusive)
+      range_from_ast = ast.children[0]
+      range_to_ast = ast.children[1]
+
+      range_node = Node.new(:range, { inclusive: inclusive })
+
+      range_from_node, lenv2 = process(range_from_ast, lenv)
+      from_node = Node.new(:range_from)
+      @graph.add_edge(range_from_node, from_node)
+      @graph.add_edge(from_node, range_node)
+
+      range_to_node, final_lenv = process(range_to_ast, lenv2)
+      to_node = Node.new(:range_to)
+      @graph.add_edge(range_to_node, to_node)
+      @graph.add_edge(to_node, range_node)
+
+      return [range_node, final_lenv]
     end
 
     def handle_begin(ast, lenv)
