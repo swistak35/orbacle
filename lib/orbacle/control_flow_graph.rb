@@ -231,6 +231,8 @@ module Orbacle
         handle_dsym(ast, lenv)
       when :regexp
         handle_regexp(ast, lenv)
+      when :hash
+        handle_hash(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -508,6 +510,28 @@ module Orbacle
       @graph.add_vertex(node)
 
       return [node, lenv]
+    end
+
+    def handle_hash(ast, lenv)
+      node_hash_keys = Node.new(:hash_keys)
+      node_hash_values = Node.new(:hash_values)
+      node_hash = Node.new(:hash)
+      @graph.add_vertex(node_hash)
+      @graph.add_vertex(node_hash_keys)
+      @graph.add_vertex(node_hash_values)
+      @graph.add_edge(node_hash_keys, node_hash)
+      @graph.add_edge(node_hash_values, node_hash)
+
+      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+        hash_key, hash_value = ast_child.children
+        hash_key_node, lenv_for_value = process(hash_key, current_lenv)
+        hash_value_node, new_lenv = process(hash_value, lenv_for_value)
+        @graph.add_edge(hash_key_node, node_hash_keys)
+        @graph.add_edge(hash_value_node, node_hash_values)
+        new_lenv
+      end
+
+      return [node_hash, final_lenv]
     end
 
     def handle_class(ast, lenv)

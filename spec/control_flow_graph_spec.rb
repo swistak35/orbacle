@@ -200,6 +200,39 @@ module Orbacle
         node(:regexp, { regopt: [] }))
     end
 
+    specify "hash" do
+      snippet = <<-END
+      {
+        "foo" => 42,
+        bar: "nananana",
+      }
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:hash))
+      expect(result.graph).to include_edge(
+        node(:hash_keys),
+        node(:hash))
+      expect(result.graph).to include_edge(
+        node(:hash_values),
+        node(:hash))
+
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:hash_keys))
+      expect(result.graph).to include_edge(
+        node(:sym, { value: :bar }),
+        node(:hash_keys))
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:hash_values))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "nananana" }),
+        node(:hash_values))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42
