@@ -1,11 +1,11 @@
 module Orbacle
-  class Skope
+  class Scope
     def self.from_nesting(nesting)
-      nesting.levels.inject(Skope.empty) do |skope, nesting_level|
+      nesting.levels.inject(Scope.empty) do |scope, nesting_level|
         if nesting_level.metaklass?
-          Skope.new(nesting_level.full_name.split("::").reject(&:empty?), nesting_level.metaklass?)
+          Scope.new(nesting_level.full_name.split("::").reject(&:empty?), nesting_level.metaklass?)
         else
-          skope.increase_by_ref(nesting_level.const_ref)
+          scope.increase_by_ref(nesting_level.const_ref)
         end
       end
     end
@@ -23,24 +23,24 @@ module Orbacle
 
     def increase_by_ref(const_ref)
       if const_ref.absolute?
-        Skope.new(const_ref.elems, false)
+        Scope.new(const_ref.elems, false)
       else
-        Skope.new(elems + const_ref.elems, metaklass?)
+        Scope.new(elems + const_ref.elems, metaklass?)
       end
     end
 
     def increase_by_metaklass
       raise if metaklass?
-      Skope.new(elems, true)
+      Scope.new(elems, true)
     end
 
     def decrease
       if metaklass?
-        Skope.new(elems, false)
+        Scope.new(elems, false)
       elsif elems.empty?
         raise
       else
-        Skope.new(elems[0..-2], false)
+        Scope.new(elems[0..-2], false)
       end
     end
 

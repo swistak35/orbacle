@@ -400,7 +400,7 @@ module Orbacle
 
       # It should also not be constants, but some kind of klasslikes
       klass = @tree.constants.find do |c|
-        c.name == Skope.from_nesting(@current_nesting).absolute_str
+        c.name == Scope.from_nesting(@current_nesting).absolute_str
       end
 
       if !klass.nodes.instance_variables[ivar_name]
@@ -504,7 +504,7 @@ module Orbacle
         h[arg_name] = arg_node
       end
 
-      self_node = Node.new(:self, { kind: :nominal, klass: Skope.from_nesting(@current_nesting).absolute_str })
+      self_node = Node.new(:self, { kind: :nominal, klass: Scope.from_nesting(@current_nesting).absolute_str })
       @graph.add_vertex(self_node)
 
       @currently_parsed_method_result_node = Node.new(:method_result)
@@ -524,7 +524,7 @@ module Orbacle
         visibility: :public,
         node_result: @currently_parsed_method_result_node,
         node_formal_arguments: formal_argument_nodes,
-        scope: Skope.from_nesting(@current_nesting).absolute_str,
+        scope: Scope.from_nesting(@current_nesting).absolute_str,
         level: :instance)
 
       node = Node.new(:sym, { value: method_name })
@@ -561,14 +561,14 @@ module Orbacle
 
       @tree.add_klass(
         name: klass_name_ref.name,
-        scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).decrease.absolute_str,
+        scope: Scope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).decrease.absolute_str,
         inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         inheritance_nesting: @current_nesting.get_output_nesting,
         line: klass_name_ast.loc.line)
 
       @current_nesting.increase_nesting_const(klass_name_ref)
 
-      self_node = Node.new(:self, { kind: :class, klass: Skope.from_nesting(@current_nesting).absolute_str })
+      self_node = Node.new(:self, { kind: :class, klass: Scope.from_nesting(@current_nesting).absolute_str })
       @graph.add_vertex(self_node)
 
       if klass_body
@@ -589,7 +589,7 @@ module Orbacle
 
       @tree.add_mod(
         name: module_name_ref.name,
-        scope: Skope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).decrease.absolute_str,
+        scope: Scope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).decrease.absolute_str,
         line: module_name_ast.loc.line)
 
       @current_nesting.increase_nesting_const(module_name_ref)
@@ -618,7 +618,7 @@ module Orbacle
         visibility: :public,
         node_result: nil, #todo
         node_formal_arguments: [], #todo
-        scope: Skope.from_nesting(@current_nesting).absolute_str,
+        scope: Scope.from_nesting(@current_nesting).absolute_str,
         level: :klass)
 
       @current_nesting.increase_nesting_self
@@ -634,19 +634,19 @@ module Orbacle
         parent_klass_name_ast = expr.children[2]
         @tree.add_klass(
           name: const_name_ref.name,
-          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
+          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
           inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           inheritance_nesting: @current_nesting.get_output_nesting,
           line: ast.loc.line)
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
           name: const_name_ref.name,
-          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
+          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
           line: ast.loc.line)
       else
         @tree.add_constant(
           name: const_name_ref.name,
-          scope: Skope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
+          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
           line: ast.loc.line)
       end
     end

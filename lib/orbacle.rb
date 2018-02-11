@@ -4,7 +4,7 @@ end
 require 'orbacle/command_line_interface'
 
 require 'orbacle/const_ref'
-require 'orbacle/skope'
+require 'orbacle/scope'
 require 'orbacle/nesting'
 
 require 'orbacle/call_definition'

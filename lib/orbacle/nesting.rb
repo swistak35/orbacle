@@ -14,9 +14,9 @@ module Orbacle
       end
     end
 
-    class ClassConstLevel < Struct.new(:skope)
+    class ClassConstLevel < Struct.new(:scope)
       def full_name
-        skope.absolute_str
+        scope.absolute_str
       end
 
       def absolute?
@@ -43,7 +43,7 @@ module Orbacle
     end
 
     def increase_nesting_self
-      @levels << ClassConstLevel.new(Skope.from_nesting(self))
+      @levels << ClassConstLevel.new(Scope.from_nesting(self))
     end
 
     def decrease_nesting
