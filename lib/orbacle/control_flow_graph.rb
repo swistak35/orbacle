@@ -40,15 +40,23 @@ module Orbacle
       end
 
       class Klass
-        def initialize(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
+        class Nodes
+          def initialize(instance_variables = {})
+            @instance_variables = instance_variables
+          end
+          attr_accessor :instance_variables
+        end
+
+        def initialize(name:, scope:, line:, inheritance_name:, inheritance_nesting:, nodes: Nodes.new)
           @name = name
           @scope = scope
           @line = line
           @inheritance_name = inheritance_name
           @inheritance_nesting = inheritance_nesting
+          @nodes = nodes
         end
 
-        attr_reader :name, :scope, :line, :inheritance_name, :inheritance_nesting
+        attr_reader :name, :scope, :line, :inheritance_name, :inheritance_nesting, :nodes
 
         def ==(other)
           @name == other.name &&
@@ -199,6 +207,8 @@ module Orbacle
         handle_begin(ast, lenv)
       when :lvar
         handle_lvar(ast, lenv)
+      when :ivar
+        handle_ivar(ast, lenv)
       when :send
         handle_send(ast, lenv)
       when :block
@@ -381,6 +391,28 @@ module Orbacle
       @graph.add_edge(var_definition_node, node_lvar)
 
       return [node_lvar, lenv]
+    end
+
+    def handle_ivar(ast, lenv)
+      ivar_name = ast.children.first.to_s
+
+      # Probably there is some good relation between self
+
+      # It should also not be constants, but some kind of klasslikes
+      klass = @tree.constants.find do |c|
+        c.name == Skope.from_nesting(@current_nesting).absolute_str[2..-1]
+      end
+
+      if !klass.nodes.instance_variables[ivar_name]
+        klass.nodes.instance_variables[ivar_name] = Node.new(:ivar_definition)
+        @graph.add_vertex(klass.nodes.instance_variables[ivar_name])
+      end
+
+      node = Node.new(:ivar)
+
+      @graph.add_edge(klass.nodes.instance_variables[ivar_name], node)
+
+      return [node, lenv]
     end
 
     def handle_send(ast, lenv)

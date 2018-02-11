@@ -487,6 +487,22 @@ module Orbacle
         node(:lvar, { var_name: "rest" }))
     end
 
+    specify "simple method definition" do
+      snippet = <<-END
+      class Foo
+        def bar
+          @baz
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:ivar_definition),
+        node(:ivar))
+    end
+
     specify "calling constructor" do
       snippet = <<-END
       class Foo
