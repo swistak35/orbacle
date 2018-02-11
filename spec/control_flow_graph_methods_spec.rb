@@ -2,15 +2,29 @@ require 'spec_helper'
 
 RSpec.describe Orbacle::ControlFlowGraph do
   def build_klass(scope: "", name:, inheritance: nil, nesting: [])
-    [Orbacle::ControlFlowGraph::GlobalTree::Klass, scope, name, inheritance, nesting]
+    [Orbacle::GlobalTree::Klass, scope, name, inheritance, nesting]
   end
 
   def build_module(scope: "", name:)
-    [Orbacle::ControlFlowGraph::GlobalTree::Mod, scope, name]
+    [Orbacle::GlobalTree::Mod, scope, name]
   end
 
   def build_constant(scope: "", name:)
-    [Orbacle::ControlFlowGraph::GlobalTree::Constant, scope, name]
+    [Orbacle::GlobalTree::Constant, scope, name]
+  end
+
+  specify do
+    file = <<-END
+    class Foo
+      def bar
+      end
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "Foo", "bar")
+    expect(meth.visibility).to eq(:public)
+    expect(meth.line).to eq(2)
   end
 
   specify do
@@ -22,9 +36,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
     END
 
     r = parse_file_methods.(file)
-    expect(r[:methods]).to eq([
-      ["Foo", "bar", { line: 2 }],
-    ])
     expect(r[:constants]).to match_array([
       build_klass(name: "Foo")
     ])
@@ -463,7 +474,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
       {
         methods: result.methods.map {|m| m[0..2] },
         constants: result.constants.map do |c|
-          if c.is_a?(Orbacle::ControlFlowGraph::GlobalTree::Klass)
+          if c.is_a?(Orbacle::GlobalTree::Klass)
             [c.class, c.scope, c.name, c.inheritance_name, c.inheritance_nesting]
           else
             [c.class, c.scope, c.name]
@@ -471,5 +482,18 @@ RSpec.describe Orbacle::ControlFlowGraph do
         end
       }
     }
+  end
+
+  def compute_graph(file)
+    service = Orbacle::ControlFlowGraph.new
+    service.process_file(file)
+  end
+
+  def find_methods(result, scope, name)
+    result.tree.methods.select {|m| m.name == name && m.scope.to_s == scope }
+  end
+
+  def find_method(result, scope, name)
+    find_methods(result, scope, name).first
   end
 end

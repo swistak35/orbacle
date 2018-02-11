@@ -1,7 +1,7 @@
 module Orbacle
   class GlobalTree
     class Method
-      def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:)
+      def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @name = name
@@ -9,9 +9,10 @@ module Orbacle
         @visibility = visibility
         @node_result = node_result
         @node_formal_arguments = node_formal_arguments
+        @scope = scope
       end
 
-      attr_reader :name, :line, :node_result, :node_formal_arguments
+      attr_reader :name, :line, :visibility, :node_result, :node_formal_arguments, :scope
     end
 
     class Klass
@@ -76,28 +77,26 @@ module Orbacle
 
     def initialize
       @constants = []
-      @methods = {}
+      @methods = []
     end
 
     attr_reader :methods, :constants
 
-    def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:, level:)
+    def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:)
       method = Method.new(
         name: name,
         line: line,
+        scope: scope,
         visibility: visibility,
         node_result: node_result,
         node_formal_arguments: node_formal_arguments)
-      @methods[scope] ||= {
-        klass: [],
-        instance: [],
-      }
-      @methods.fetch(scope).fetch(level) << method
+      @methods << method
     end
 
     def add_klass(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
       klass = Klass.new(name: name, scope: scope, line: line, inheritance_name: inheritance_name, inheritance_nesting: inheritance_nesting)
       @constants << klass
+      klass
     end
 
     def add_mod(name:, scope:, line:)

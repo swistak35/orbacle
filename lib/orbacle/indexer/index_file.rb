@@ -24,7 +24,7 @@ module Orbacle
             file: path,
             line: opts.fetch(:line))
         end
-        result.constants.select {|c| [ControlFlowGraph::GlobalTree::Klass, ControlFlowGraph::GlobalTree::Mod].include?(c.class)}.each do |kl|
+        result.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}.each do |kl|
           @db.add_klasslike(
             scope: kl.scope,
             name: kl.name,
@@ -36,9 +36,9 @@ module Orbacle
 
       def type_of(c)
         case c
-        when ControlFlowGraph::GlobalTree::Klass then "klass"
-        when ControlFlowGraph::GlobalTree::Mod then "mod"
-        when ControlFlowGraph::GlobalTree::Constant then "other"
+        when GlobalTree::Klass then "klass"
+        when GlobalTree::Mod then "mod"
+        when GlobalTree::Constant then "other"
         end
       end
     end

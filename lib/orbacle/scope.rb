@@ -64,5 +64,9 @@ module Orbacle
     def ==(other)
       @elems == other.elems && metaklass? == other.metaklass?
     end
+
+    def to_s
+      absolute_str
+    end
   end
 end
