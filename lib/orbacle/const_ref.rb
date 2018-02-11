@@ -2,34 +2,45 @@ module Orbacle
   class ConstRef
     def self.from_ast(ast)
       full_name = AstUtils.const_to_string(ast)
-      new(full_name)
+      from_full_name(full_name)
     end
 
-    def initialize(full_name)
-      @full_name = full_name
-      raise ArgumentError if full_name.empty?
+    def self.from_full_name(full_name)
+      if full_name.start_with?("::")
+        new(full_name[2..-1].split("::"), true)
+      else
+        new(full_name.split("::"), false)
+      end
     end
 
-    attr_reader :full_name
+    def initialize(elems, is_absolute)
+      @elems = elems
+      @is_absolute = is_absolute
+      raise ArgumentError if elems.empty?
+    end
+
+    def full_name
+      if absolute?
+        "::#{relative_name}"
+      else
+        relative_name
+      end
+    end
 
     def name
-      full_name.split("::").last
+      @elems.last
     end
 
     def prename
-      full_name.split("::")[0..-2]
+      @elems[0..-2]
     end
 
     def absolute?
-      full_name.start_with?("::")
+      @is_absolute
     end
 
     def relative_name
-      if absolute?
-        full_name[2..-1]
-      else
-        full_name
-      end
+      @elems.join("::")
     end
   end
 end

@@ -628,7 +628,7 @@ module Orbacle
 
     def handle_casgn(ast, lenv)
       const_prename, const_name, expr = ast.children
-      const_name_ref = ConstRef.new(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
+      const_name_ref = ConstRef.from_full_name(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
 
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
