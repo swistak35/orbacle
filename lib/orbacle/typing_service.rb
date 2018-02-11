@@ -111,10 +111,11 @@ module Orbacle
     end
 
     def handle_self(node, sources)
-      if node.params.fetch(:kind) == :class
-        ClassType.new(node.params.fetch(:klass))
-      elsif node.params.fetch(:kind) == :nominal
-        NominalType.new(node.params.fetch(:klass))
+      selfie = node.params.fetch(:selfie)
+      if selfie.klass?
+        ClassType.new(selfie.scope.absolute_str)
+      elsif selfie.instance?
+        NominalType.new(selfie.scope.absolute_str)
       else
         raise
       end

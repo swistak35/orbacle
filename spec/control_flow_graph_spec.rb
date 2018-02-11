@@ -536,7 +536,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.graph).to include_edge(
-        node(:self, { kind: :nominal, klass: "Foo" }),
+        node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
         node(:call_obj))
 
       expect(result.message_sends).to include(
@@ -559,7 +559,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.graph).to include_edge(
-        node(:self, { kind: :nominal, klass: "Foo" }),
+        node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
         node(:call_obj))
 
       expect(result.message_sends).to include(

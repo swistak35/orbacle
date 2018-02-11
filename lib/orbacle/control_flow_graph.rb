@@ -504,7 +504,8 @@ module Orbacle
         h[arg_name] = arg_node
       end
 
-      self_node = Node.new(:self, { kind: :nominal, klass: Scope.from_nesting(@current_nesting).absolute_str })
+      new_selfie = Selfie.instance_from_scope(Scope.from_nesting(@current_nesting))
+      self_node = Node.new(:self, { selfie: new_selfie })
       @graph.add_vertex(self_node)
 
       @currently_parsed_method_result_node = Node.new(:method_result)
@@ -568,7 +569,8 @@ module Orbacle
 
       @current_nesting.increase_nesting_const(klass_name_ref)
 
-      self_node = Node.new(:self, { kind: :class, klass: Scope.from_nesting(@current_nesting).absolute_str })
+      new_selfie = Selfie.klass_from_scope(Scope.from_nesting(@current_nesting))
+      self_node = Node.new(:self, { selfie: new_selfie })
       @graph.add_vertex(self_node)
 
       if klass_body

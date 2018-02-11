@@ -60,5 +60,9 @@ module Orbacle
     def metaklass?
       @is_metaklass
     end
+
+    def ==(other)
+      @elems == other.elems && metaklass? == other.metaklass?
+    end
   end
 end
