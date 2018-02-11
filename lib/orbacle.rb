@@ -6,6 +6,7 @@ require 'orbacle/command_line_interface'
 require 'orbacle/const_ref'
 require 'orbacle/scope'
 require 'orbacle/nesting'
+require 'orbacle/selfie'
 
 require 'orbacle/call_definition'
 require 'orbacle/lang_server'
