@@ -7,6 +7,7 @@ require 'orbacle/const_ref'
 require 'orbacle/scope'
 require 'orbacle/nesting'
 require 'orbacle/selfie'
+require 'orbacle/global_tree'
 
 require 'orbacle/call_definition'
 require 'orbacle/lang_server'
