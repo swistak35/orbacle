@@ -1,17 +1,15 @@
 require 'spec_helper'
 
 RSpec.describe Orbacle::ControlFlowGraph do
-  def build_klass(scope: nil, name:, inheritance: nil, nesting: [])
-    # Orbacle::ControlFlowGraph::GlobalTree::Klass.new(scope: scope, name: name, inheritance_name: inheritance, inheritance_nesting: nesting, line: line)
+  def build_klass(scope: "", name:, inheritance: nil, nesting: [])
     [Orbacle::ControlFlowGraph::GlobalTree::Klass, scope, name, inheritance, nesting]
   end
 
-  def build_module(scope: nil, name:)
-    # Orbacle::ControlFlowGraph::GlobalTree::Mod.new(scope: scope, name: name, line: line)
+  def build_module(scope: "", name:)
     [Orbacle::ControlFlowGraph::GlobalTree::Mod, scope, name]
   end
 
-  def build_constant(scope: nil, name:)
+  def build_constant(scope: "", name:)
     [Orbacle::ControlFlowGraph::GlobalTree::Constant, scope, name]
   end
 
@@ -25,7 +23,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "bar", { line: 2 }],
+      ["Foo", "bar", { line: 2 }],
     ])
     expect(r[:constants]).to match_array([
       build_klass(name: "Foo")
@@ -45,11 +43,11 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "bar", { line: 2 }],
-      ["::Foo", "baz", { line: 5 }],
+      ["Foo", "bar", { line: 2 }],
+      ["Foo", "baz", { line: 5 }],
     ])
     expect(r[:constants]).to match_array([
-      build_klass(name: "Foo", scope: nil)
+      build_klass(name: "Foo")
     ])
   end
 
@@ -68,12 +66,12 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo", "bar", { line: 3 }],
-      ["::Some::Foo", "baz", { line: 6 }],
+      ["Some::Foo", "bar", { line: 3 }],
+      ["Some::Foo", "baz", { line: 6 }],
     ])
     expect(r[:constants]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "::Some", name: "Foo", nesting: ["Some"]),
+      build_klass(scope: "Some", name: "Foo", nesting: ["Some"]),
     ])
   end
 
@@ -94,13 +92,13 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo", "oof", { line: 3 }],
-      ["::Some::Bar", "rab", { line: 8 }],
+      ["Some::Foo", "oof", { line: 3 }],
+      ["Some::Bar", "rab", { line: 8 }],
     ])
     expect(r[:constants]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "::Some", name: "Foo", nesting: ["Some"]),
-      build_klass(scope: "::Some", name: "Bar", nesting: ["Some"]),
+      build_klass(scope: "Some", name: "Foo", nesting: ["Some"]),
+      build_klass(scope: "Some", name: "Bar", nesting: ["Some"]),
     ])
   end
 
@@ -118,12 +116,12 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo::Bar", "baz", { line: 4 }],
+      ["Some::Foo::Bar", "baz", { line: 4 }],
     ])
     expect(r[:constants]).to match_array([
       build_module(name: "Some"),
-      build_module(scope: "::Some", name: "Foo"),
-      build_klass(scope: "::Some::Foo", name: "Bar", nesting: ["Some", "Foo"]),
+      build_module(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some::Foo", name: "Bar", nesting: ["Some", "Foo"]),
     ])
   end
 
@@ -139,11 +137,11 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo::Bar", "baz", { line: 3 }],
+      ["Some::Foo::Bar", "baz", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      build_module(scope: "::Some", name: "Foo"),
-      build_klass(scope: "::Some::Foo", name: "Bar", nesting: ["Some::Foo"]),
+      build_module(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some::Foo", name: "Bar", nesting: ["Some::Foo"]),
     ])
   end
 
@@ -159,11 +157,11 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo::Bar::Baz", "xxx", { line: 3 }],
+      ["Some::Foo::Bar::Baz", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      build_module(scope: "::Some::Foo", name: "Bar"),
-      build_klass(scope: "::Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo::Bar"]),
+      build_module(scope: "Some::Foo", name: "Bar"),
+      build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo::Bar"]),
     ])
   end
 
@@ -179,11 +177,11 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo::Bar::Baz", "xxx", { line: 3 }],
+      ["Some::Foo::Bar::Baz", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
-      build_module(scope: "::Some", name: "Foo"),
-      build_klass(scope: "::Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo"])
+      build_module(scope: "Some", name: "Foo"),
+      build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo"])
     ])
   end
 
@@ -199,7 +197,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "xxx", { line: 3 }],
+      ["Foo", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
       build_klass(name: "Bar"),
@@ -219,7 +217,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "xxx", { line: 3 }],
+      ["Foo", "xxx", { line: 3 }],
     ])
     expect(r[:constants]).to match_array([
       build_klass(name: "Bar"),
@@ -235,7 +233,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      [nil, "xxx", { line: 1 }],
+      ["", "xxx", { line: 1 }],
     ])
     expect(r[:constants]).to be_empty
   end
@@ -252,11 +250,11 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Foo", "bar", { line: 4 }],
+      ["Foo", "bar", { line: 4 }],
     ])
     expect(r[:constants]).to match_array([
       build_klass(name: "Foo"),
-      build_constant(name: "Bar", scope: "::Foo")
+      build_constant(name: "Bar", scope: "Foo")
     ])
   end
 
@@ -270,7 +268,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([])
     expect(r[:constants]).to match_array([
-      build_constant(name: "Bar", scope: "::Foo::Ban::Baz"),
+      build_constant(name: "Bar", scope: "Foo::Ban::Baz"),
       build_klass(name: "Foo"),
     ])
   end
@@ -284,7 +282,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      build_constant(name: "Bar", scope: nil),
+      build_constant(name: "Bar"),
       build_klass(name: "Foo"),
     ])
   end
@@ -298,7 +296,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      build_constant(name: "Bar", scope: "::Baz"),
+      build_constant(name: "Bar", scope: "Baz"),
       build_klass(name: "Foo"),
     ])
   end
@@ -312,7 +310,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
-      build_constant(name: "Bar", scope: "::Baz::Bam"),
+      build_constant(name: "Bar", scope: "Baz::Bam"),
       build_klass(name: "Foo"),
     ])
   end
@@ -334,13 +332,13 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["::Some::Foo", "oof", { line: 3 }],
-      ["::Some::Bar", "rab", { line: 8 }],
+      ["Some::Foo", "oof", { line: 3 }],
+      ["Some::Bar", "rab", { line: 8 }],
     ])
     expect(r[:constants]).to match_array([
       build_module(name: "Some"),
-      build_module(scope: "::Some", name: "Foo"),
-      build_module(scope: "::Some", name: "Bar"),
+      build_module(scope: "Some", name: "Foo"),
+      build_module(scope: "Some", name: "Bar"),
     ])
   end
 
@@ -391,7 +389,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
       build_module(name: "Some"),
-      build_klass(scope: "::Some", name: "Foo", inheritance: "Bar", nesting: ["Some"]),
+      build_klass(scope: "Some", name: "Foo", inheritance: "Bar", nesting: ["Some"]),
     ])
   end
 
@@ -438,7 +436,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Metaklass(::Foo)", "bar", { line: 2 }],
+      ["Metaklass(Foo)", "bar", { line: 2 }],
     ])
   end
 
@@ -454,7 +452,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
 
     r = parse_file_methods.(file)
     expect(r[:methods]).to eq([
-      ["Metaklass(::Foo)", "foo", { line: 3 }],
+      ["Metaklass(Foo)", "foo", { line: 3 }],
     ])
   end
 

@@ -72,7 +72,6 @@ module Orbacle
           results.unshift([nesting_name, results[0]].compact.join("::"))
         end
       end
-      results.map! {|r| r.start_with?("::") ? r : "::#{r}" }
       results << ""
       return results, constant_name
     end

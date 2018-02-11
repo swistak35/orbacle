@@ -3,7 +3,7 @@ require 'support/test_project'
 
 module Orbacle
   RSpec.describe CallDefinition do
-    specify do
+    xspecify do
       project = TestProject.new
         .add_file(path: "bar.rb",
           content: <<-END

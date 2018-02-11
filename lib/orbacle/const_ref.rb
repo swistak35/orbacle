@@ -19,6 +19,8 @@ module Orbacle
       raise ArgumentError if elems.empty?
     end
 
+    attr_reader :elems, :is_absolute
+
     def full_name
       if absolute?
         "::#{relative_name}"

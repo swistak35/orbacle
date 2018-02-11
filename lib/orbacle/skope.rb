@@ -1,9 +1,9 @@
 module Orbacle
-  class Skope < Struct.new(:str, :metaklass?)
+  class Skope
     def self.from_nesting(nesting)
       nesting.levels.inject(Skope.empty) do |skope, nesting_level|
         if nesting_level.metaklass?
-          Skope.new(nesting_level.full_name, nesting_level.metaklass?)
+          Skope.new(nesting_level.full_name.split("::").reject(&:empty?), nesting_level.metaklass?)
         else
           skope.increase_by_ref(nesting_level.const_ref)
         end
@@ -11,50 +11,54 @@ module Orbacle
     end
 
     def self.empty
-      new(nil, false)
+      new([], false)
     end
 
-    def increase_by_ref(const_ref)
-      raise if metaklass?
+    def initialize(elems, is_metaklass)
+      @elems = elems
+      @is_metaklass = is_metaklass
+    end
 
+    attr_reader :elems
+
+    def increase_by_ref(const_ref)
       if const_ref.absolute?
-        Skope.new(const_ref.relative_name, false)
+        Skope.new(const_ref.elems, false)
       else
-        Skope.new([str, const_ref.relative_name].compact.join("::"), false)
+        Skope.new(elems + const_ref.elems, metaklass?)
       end
     end
 
     def increase_by_metaklass
       raise if metaklass?
-      Skope.new(str, true)
+      Skope.new(elems, true)
+    end
+
+    def decrease
+      if metaklass?
+        Skope.new(elems, false)
+      elsif elems.empty?
+        raise
+      else
+        Skope.new(elems[0..-2], false)
+      end
     end
 
     def empty?
-      str.nil?
+      elems.empty?
     end
 
     def absolute_str
-      if str.nil?
-        nil
+      klasslike_name = elems.join("::")
+      if metaklass?
+        "Metaklass(#{klasslike_name})"
       else
-        name_str = str.start_with?("::") ? str : "::#{str}"
-        if metaklass?
-          "Metaklass(#{name_str})"
-        else
-          name_str
-        end
+        klasslike_name
       end
     end
 
-    def prefix
-      raise if metaklass?
-
-      new_elems = str.split("::")[0..-2]
-      if new_elems.empty? || (new_elems.size == 1 && new_elems[0].empty?)
-        Skope.new(nil, false)
-      else
-        Skope.new(new_elems.join("::"), false)
-      end
+    def metaklass?
+      @is_metaklass
     end
   end
 end

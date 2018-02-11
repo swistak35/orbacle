@@ -112,9 +112,9 @@ module Orbacle
 
     def handle_self(node, sources)
       if node.params.fetch(:kind) == :class
-        ClassType.new(node.params.fetch(:klass)[2..-1])
+        ClassType.new(node.params.fetch(:klass))
       elsif node.params.fetch(:kind) == :nominal
-        NominalType.new(node.params.fetch(:klass)[2..-1])
+        NominalType.new(node.params.fetch(:klass))
       else
         raise
       end
@@ -185,7 +185,7 @@ module Orbacle
         if primitive_send?(possible_type, message_send.message_send)
           handle_primitive(possible_type, message_send, graph)
         else
-          found_method = @methods.find {|m| m[0] == "::#{possible_type.name}" && m[1] == message_name }
+          found_method = @methods.find {|m| m[0] == possible_type.name && m[1] == message_name }
           raise "Method not found" if found_method.nil?
           formal_argument_nodes = found_method[3]
           method_result_node = found_method[4]
