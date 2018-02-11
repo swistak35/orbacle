@@ -24,48 +24,6 @@ module Orbacle
     MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
     Block = Struct.new(:args, :result)
 
-    class Klasslike
-      def self.build_module(scope:, name:)
-        new(
-          scope: scope,
-          name: name,
-          type: :module,
-          inheritance: nil,
-          nesting: nil)
-      end
-
-      def self.build_klass(scope:, name:, inheritance:, nesting:)
-        new(
-          scope: scope,
-          name: name,
-          type: :klass,
-          inheritance: inheritance,
-          nesting: nesting)
-      end
-
-      def initialize(scope:, name:, type:, inheritance:, nesting:)
-        @scope = scope
-        @name = name
-        @type = type
-        @inheritance = inheritance
-        @nesting = nesting
-      end
-
-      attr_reader :scope, :name, :type, :inheritance, :nesting, :node
-
-      def ==(other)
-        @scope == other.scope &&
-          @name == other.name &&
-          @type == other.type &&
-          @inheritance == other.inheritance &&
-          @nesting == other.nesting
-      end
-
-      def set_node(node)
-        @node = node
-      end
-    end
-
     class GlobalTree
       class Method
         def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:)
@@ -170,7 +128,7 @@ module Orbacle
       end
     end
 
-    Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :methods, :constants, :klasslikes)
+    Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :methods, :constants)
 
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
@@ -568,12 +526,6 @@ module Orbacle
     def handle_class(ast, lenv)
       klass_name_ast, parent_klass_name_ast, klass_body = ast.children
       klass_name_ref = ConstRef.from_ast(klass_name_ast)
-
-      klasslike = Klasslike.build_klass(
-        scope: Skope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).prefix.absolute_str,
-        name: klass_name_ref.name,
-        inheritance: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-        nesting: @current_nesting.get_output_nesting)
 
       @tree.add_klass(
         name: klass_name_ref.name,
