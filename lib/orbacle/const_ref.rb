@@ -23,5 +23,13 @@ module Orbacle
     def absolute?
       full_name.start_with?("::")
     end
+
+    def relative_name
+      if absolute?
+        full_name[2..-1]
+      else
+        full_name
+      end
+    end
   end
 end

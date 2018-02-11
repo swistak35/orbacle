@@ -18,13 +18,14 @@ module Orbacle
       raise if metaklass?
 
       if const_ref.absolute?
-        Skope.new(const_ref.full_name, false)
+        Skope.new(const_ref.relative_name, false)
       else
-        Skope.new([str, const_ref.full_name].compact.join("::"), false)
+        Skope.new([str, const_ref.relative_name].compact.join("::"), false)
       end
     end
 
     def increase_by_metaklass
+      raise if metaklass?
       Skope.new(str, true)
     end
 
