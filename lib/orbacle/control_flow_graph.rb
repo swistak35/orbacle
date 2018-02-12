@@ -33,11 +33,11 @@ module Orbacle
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
       @current_nesting = Nesting.new
+      @current_selfie = Selfie.main
       @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
 
-      self_main_node = Node.new(:main, { selfie: Selfie.main })
-      initial_local_environment = {self_: self_main_node}
+      initial_local_environment = {}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
       return Result.new(@graph, final_local_environment, @message_sends, final_node, @tree)
@@ -45,7 +45,7 @@ module Orbacle
 
     private
 
-    attr_reader :current_nesting
+    attr_reader :current_nesting, :current_selfie
 
     def process(ast, lenv)
       case ast.type
@@ -292,9 +292,9 @@ module Orbacle
     def handle_ivar(ast, lenv)
       ivar_name = ast.children.first.to_s
 
-      ivar_definition_node = if lenv.fetch(:self_).params.fetch(:selfie).klass?
+      ivar_definition_node = if current_selfie.klass?
         get_class_level_ivar_definition_node(ivar_name)
-      elsif lenv.fetch(:self_).params.fetch(:selfie).instance?
+      elsif current_selfie.instance?
         get_ivar_definition_node(ivar_name)
       else
         raise
@@ -316,9 +316,9 @@ module Orbacle
       node_expr, lenv_after_expr = process(expr, lenv)
       @graph.add_edge(node_expr, node_ivasgn)
 
-      ivar_definition_node = if lenv.fetch(:self_).params.fetch(:selfie).klass?
+      ivar_definition_node = if current_selfie.klass?
         get_class_level_ivar_definition_node(ivar_name)
-      elsif lenv.fetch(:self_).params.fetch(:selfie).instance?
+      elsif current_selfie.instance?
         get_ivar_definition_node(ivar_name)
       else
         raise
@@ -388,7 +388,8 @@ module Orbacle
       arg_exprs = ast.children[2..-1]
 
       if obj_expr.nil?
-        obj_node = lenv.fetch(:self_)
+        obj_node = Node.new(:self, { selfie: current_selfie })
+        @graph.add_vertex(obj_node)
         obj_lenv = lenv
       else
         obj_node, obj_lenv = process(obj_expr, lenv)
@@ -445,7 +446,8 @@ module Orbacle
     end
 
     def handle_self(ast, lenv)
-      node = lenv.fetch(:self_)
+      node = Node.new(:self, { selfie: current_selfie })
+      @graph.add_vertex(node)
       return [node, lenv]
     end
 
@@ -485,15 +487,13 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
 
-      new_selfie = Selfie.instance_from_scope(current_scope)
-      self_node = Node.new(:self, { selfie: new_selfie })
-      @graph.add_vertex(self_node)
-
       @currently_parsed_method_result_node = Node.new(:method_result)
       @graph.add_vertex(@currently_parsed_method_result_node)
       if method_body
-        final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash).merge(self_: self_node))
-        @graph.add_edge(final_node, @currently_parsed_method_result_node)
+        with_selfie(Selfie.instance_from_scope(current_scope)) do
+          final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+          @graph.add_edge(final_node, @currently_parsed_method_result_node)
+        end
       else
         final_node = Node.new(:nil)
         @graph.add_vertex(final_node)
@@ -549,12 +549,10 @@ module Orbacle
 
       switch_currently_analyzed_klass(klass) do
         with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
-          new_selfie = Selfie.klass_from_scope(current_scope)
-          self_node = Node.new(:self, { selfie: new_selfie })
-          @graph.add_vertex(self_node)
-
-          if klass_body
-            process(klass_body, lenv.merge(self_: self_node))
+          with_selfie(Selfie.klass_from_scope(current_scope)) do
+            if klass_body
+              process(klass_body, lenv)
+            end
           end
         end
       end
@@ -595,15 +593,13 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
 
-      new_selfie = Selfie.klass_from_scope(current_scope)
-      self_node = Node.new(:self, { selfie: new_selfie })
-      @graph.add_vertex(self_node)
-
       @currently_parsed_method_result_node = Node.new(:method_result)
       @graph.add_vertex(@currently_parsed_method_result_node)
       if method_body
-        final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash).merge(self_: self_node))
-        @graph.add_edge(final_node, @currently_parsed_method_result_node)
+        with_selfie(Selfie.klass_from_scope(current_scope)) do
+          final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+          @graph.add_edge(final_node, @currently_parsed_method_result_node)
+        end
       else
         final_node = Node.new(:nil)
         @graph.add_vertex(final_node)
@@ -754,6 +750,13 @@ module Orbacle
       @current_nesting = new_nesting
       yield
       @current_nesting = previous
+    end
+
+    def with_selfie(new_selfie)
+      previous = @current_selfie
+      @current_selfie = new_selfie
+      yield
+      @current_selfie = previous
     end
 
     def current_scope
