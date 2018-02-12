@@ -117,6 +117,8 @@ module Orbacle
         handle_const(ast, lenv)
       when :and
         handle_and(ast, lenv)
+      when :or
+        handle_or(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -657,17 +659,22 @@ module Orbacle
     end
 
     def handle_and(ast, lenv)
-      expr_left = ast.children[0]
-      expr_right = ast.children[1]
+      handle_binary_operator(:and, ast.children[0], ast.children[1], lenv)
+    end
 
+    def handle_or(ast, lenv)
+      handle_binary_operator(:or, ast.children[0], ast.children[1], lenv)
+    end
+
+    def handle_binary_operator(node_type, expr_left, expr_right, lenv)
       node_left, lenv_after_left = process(expr_left, lenv)
       node_right, lenv_after_right = process(expr_right, lenv_after_left)
 
-      node_and = Node.new(:and)
-      @graph.add_edge(node_left, node_and)
-      @graph.add_edge(node_right, node_and)
+      node_or = Node.new(node_type)
+      @graph.add_edge(node_left, node_or)
+      @graph.add_edge(node_right, node_or)
 
-      return [node_and, lenv_after_right]
+      return [node_or, lenv_after_right]
     end
 
     def expr_is_class_definition?(expr)
