@@ -1,9 +1,5 @@
 module Orbacle
   class Scope
-    def self.from_nesting(nesting)
-      nesting.to_scope
-    end
-
     def self.empty
       new([], false)
     end

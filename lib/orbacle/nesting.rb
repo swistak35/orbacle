@@ -43,7 +43,7 @@ module Orbacle
     end
 
     def increase_nesting_self
-      Nesting.new(levels + [ClassConstLevel.new(Scope.from_nesting(self))])
+      Nesting.new(levels + [ClassConstLevel.new(to_scope)])
     end
 
     def decrease_nesting
