@@ -33,7 +33,6 @@ module Orbacle
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
       @current_nesting = Nesting.new
-      @constants = []
       @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
 
@@ -514,7 +513,9 @@ module Orbacle
     end
 
     def handle_defs(ast, lenv)
-      method_receiver, method_name, method_body = ast.children
+      method_receiver = ast.children[0]
+      method_name = ast.children[1]
+      method_body = ast.children[2]
 
       @tree.add_method(
         name: method_name.to_s,

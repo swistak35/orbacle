@@ -419,6 +419,22 @@ module Orbacle
       ])
     end
 
+    it "method in method definition" do
+      file = <<-END
+      class Foo
+        def bar
+          def baz
+          end
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      meth = find_method(result, "Foo", "baz")
+      expect(meth.line).to eq(3)
+    end
+
     specify do
       file = <<-END
       class Foo < Bar
