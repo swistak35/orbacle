@@ -581,6 +581,24 @@ module Orbacle
         expect(meth.visibility).to eq(:public)
         # expect(meth.visibility).to eq(:private)
       end
+
+      it "method in method definition with changed visibility" do
+        file = <<-END
+        class Foo
+          private
+          def bar
+            def baz
+            end
+          end
+        end
+        END
+
+        result = compute_graph(file)
+
+        meth = find_method(result, "Foo", "baz")
+        expect(meth.visibility).to eq(:private)
+        # expect(meth.visibility).to eq(:public)
+      end
     end
 
     def parse_file_methods
