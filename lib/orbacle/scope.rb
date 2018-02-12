@@ -1,13 +1,7 @@
 module Orbacle
   class Scope
     def self.from_nesting(nesting)
-      nesting.levels.inject(Scope.empty) do |scope, nesting_level|
-        if nesting_level.metaklass?
-          Scope.new(nesting_level.full_name.split("::").reject(&:empty?), nesting_level.metaklass?)
-        else
-          scope.increase_by_ref(nesting_level.const_ref)
-        end
-      end
+      nesting.to_scope
     end
 
     def self.empty

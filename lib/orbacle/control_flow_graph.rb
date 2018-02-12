@@ -45,6 +45,8 @@ module Orbacle
 
     private
 
+    attr_reader :current_nesting
+
     def process(ast, lenv)
       case ast.type
       when :lvasgn
@@ -542,21 +544,19 @@ module Orbacle
         name: klass_name_ref.name,
         scope: Scope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).decrease,
         inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-        inheritance_nesting: @current_nesting.get_output_nesting,
+        inheritance_nesting: @current_nesting.to_primitive,
         line: klass_name_ast.loc.line)
 
       switch_currently_analyzed_klass(klass) do
-        @current_nesting.increase_nesting_const(klass_name_ref)
+        with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
+          new_selfie = Selfie.klass_from_scope(Scope.from_nesting(@current_nesting))
+          self_node = Node.new(:self, { selfie: new_selfie })
+          @graph.add_vertex(self_node)
 
-        new_selfie = Selfie.klass_from_scope(Scope.from_nesting(@current_nesting))
-        self_node = Node.new(:self, { selfie: new_selfie })
-        @graph.add_vertex(self_node)
-
-        if klass_body
-          process(klass_body, lenv.merge(self_: self_node))
+          if klass_body
+            process(klass_body, lenv.merge(self_: self_node))
+          end
         end
-
-        @current_nesting.decrease_nesting
       end
 
       node = Node.new(:nil)
@@ -574,21 +574,17 @@ module Orbacle
         scope: Scope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).decrease,
         line: module_name_ast.loc.line)
 
-      @current_nesting.increase_nesting_const(module_name_ref)
-
-      process(module_body, lenv)
-
-      @current_nesting.decrease_nesting
+      with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
+        process(module_body, lenv)
+      end
     end
 
     def handle_sclass(ast, lenv)
       self_name = ast.children[0]
       sklass_body = ast.children[1]
-      @current_nesting.increase_nesting_self
-
-      process(sklass_body, lenv)
-
-      @current_nesting.decrease_nesting
+      with_new_nesting(current_nesting.increase_nesting_self) do
+        process(sklass_body, lenv)
+      end
     end
 
     def handle_defs(ast, lenv)
@@ -639,7 +635,7 @@ module Orbacle
           name: const_name_ref.name,
           scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease,
           inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-          inheritance_nesting: @current_nesting.get_output_nesting,
+          inheritance_nesting: @current_nesting.to_primitive,
           line: ast.loc.line)
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
@@ -752,6 +748,13 @@ module Orbacle
         h[arg_name] = arg_node
       end
       return [formal_arguments_hash, formal_arguments_nodes]
+    end
+
+    def with_new_nesting(new_nesting)
+      previous = @current_nesting
+      @current_nesting = new_nesting
+      yield
+      @current_nesting = previous
     end
   end
 end

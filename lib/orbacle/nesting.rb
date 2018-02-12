@@ -28,26 +28,36 @@ module Orbacle
       end
     end
 
-    def initialize
-      @levels = []
+    def initialize(levels = [])
+      @levels = levels
     end
 
     attr_reader :levels
 
-    def get_output_nesting
-      @levels.map {|level| level.full_name }
+    def to_primitive
+      levels.map {|level| level.full_name }
     end
 
     def increase_nesting_const(const_ref)
-      @levels << ConstLevel.new(const_ref)
+      Nesting.new(levels + [ConstLevel.new(const_ref)])
     end
 
     def increase_nesting_self
-      @levels << ClassConstLevel.new(Scope.from_nesting(self))
+      Nesting.new(levels + [ClassConstLevel.new(Scope.from_nesting(self))])
     end
 
     def decrease_nesting
-      @levels.pop
+      Nesting.new(levels[0..-2])
+    end
+
+    def to_scope
+      levels.inject(Scope.empty) do |scope, nesting_level|
+        if nesting_level.metaklass?
+          Scope.new(nesting_level.full_name.split("::").reject(&:empty?), nesting_level.metaklass?)
+        else
+          scope.increase_by_ref(nesting_level.const_ref)
+        end
+      end
     end
   end
 end
