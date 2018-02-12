@@ -552,7 +552,7 @@ module Orbacle
         node(:lvar, { var_name: "rest" }))
     end
 
-    specify "simple method definition" do
+    specify "usage of instance variable" do
       snippet = <<-END
       class Foo
         def bar
@@ -566,6 +566,25 @@ module Orbacle
       expect(result.graph).to include_edge(
         node(:ivar_definition),
         node(:ivar))
+    end
+
+    specify "assignment of instance variable" do
+      snippet = <<-END
+      class Foo
+        def bar
+          @baz = 42
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:ivasgn, { var_name: "@baz" }))
+      expect(result.graph).to include_edge(
+        node(:ivasgn, { var_name: "@baz" }),
+        node(:ivar_definition))
     end
 
     specify "calling constructor" do

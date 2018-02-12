@@ -84,6 +84,8 @@ module Orbacle
         handle_lvar(ast, lenv)
       when :ivar
         handle_ivar(ast, lenv)
+      when :ivasgn
+        handle_ivasgn(ast, lenv)
       when :send
         handle_send(ast, lenv)
       when :block
@@ -279,23 +281,28 @@ module Orbacle
     def handle_ivar(ast, lenv)
       ivar_name = ast.children.first.to_s
 
-      # Probably there is some good relation between self
-
-      # It should also not be constants, but some kind of klasslikes
-      klass = @tree.constants.find do |c|
-        c.name == Scope.from_nesting(@current_nesting).absolute_str
-      end
-
-      if !klass.nodes.instance_variables[ivar_name]
-        klass.nodes.instance_variables[ivar_name] = Node.new(:ivar_definition)
-        @graph.add_vertex(klass.nodes.instance_variables[ivar_name])
-      end
+      ivar_definition_node = get_ivar_definition_node(ivar_name)
 
       node = Node.new(:ivar)
-
-      @graph.add_edge(klass.nodes.instance_variables[ivar_name], node)
+      @graph.add_edge(ivar_definition_node, node)
 
       return [node, lenv]
+    end
+
+    def handle_ivasgn(ast, lenv)
+      ivar_name = ast.children[0].to_s
+      expr = ast.children[1]
+
+      node_ivasgn = Node.new(:ivasgn, { var_name: ivar_name })
+      @graph.add_vertex(node_ivasgn)
+
+      node_expr, lenv_after_expr = process(expr, lenv)
+      @graph.add_edge(node_expr, node_ivasgn)
+
+      node_ivar_definition = get_ivar_definition_node(ivar_name)
+      @graph.add_edge(node_ivasgn, node_ivar_definition)
+
+      return [node_ivasgn, lenv_after_expr]
     end
 
     def handle_send(ast, lenv)
@@ -591,6 +598,24 @@ module Orbacle
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(klass, :public)
       yield
       @currently_analyzed_klass = previous
+    end
+
+    def get_ivar_definition_node(ivar_name)
+      # Probably there is some good relation between self
+
+      # It should also not be constants, but some kind of klasslikes
+      klass = @tree.constants.find do |c|
+        c.name == Scope.from_nesting(@current_nesting).absolute_str
+      end
+
+      raise if klass.nil?
+
+      if !klass.nodes.instance_variables[ivar_name]
+        klass.nodes.instance_variables[ivar_name] = Node.new(:ivar_definition)
+        @graph.add_vertex(klass.nodes.instance_variables[ivar_name])
+      end
+
+      return klass.nodes.instance_variables[ivar_name]
     end
   end
 end
