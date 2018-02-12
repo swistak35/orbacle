@@ -345,7 +345,7 @@ module Orbacle
       node = if @currently_analyzed_klass.klass
         @currently_analyzed_klass.method_visibility = :private
 
-        Node.new(:class, { klass: @currently_analyzed_klass })
+        Node.new(:class, { klass: @currently_analyzed_klass.klass })
       else
         # This should actually be reference to Object class
         Node.new(:nil)
