@@ -130,16 +130,16 @@ module Orbacle
       var_name = ast.children[0].to_s
       expr = ast.children[1]
 
-      n1 = Node.new(:lvasgn, { var_name: var_name })
-      @graph.add_vertex(n1)
+      node_lvasgn = Node.new(:lvasgn, { var_name: var_name })
+      @graph.add_vertex(node_lvasgn)
 
-      n2, n2_lenv = process(expr, lenv)
+      node_expr, lenv_after_expr = process(expr, lenv)
 
-      @graph.add_edge(n2, n1)
+      @graph.add_edge(node_expr, node_lvasgn)
 
-      new_lenv = n2_lenv.merge(var_name => n2)
+      final_lenv = lenv_after_expr.merge(var_name => node_lvasgn)
 
-      return [n1, new_lenv]
+      return [node_lvasgn, final_lenv]
     end
 
     def handle_int(ast, lenv)

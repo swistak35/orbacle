@@ -131,7 +131,7 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:dstr))
       expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
+        node(:lvasgn, { var_name: "bar" }),
         node(:lvar, { var_name: "bar" }))
       expect(result.graph).to include_edge(
         node(:str, { value: "foo" }),
@@ -164,7 +164,7 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:dsym))
       expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
+        node(:lvasgn, { var_name: "bar" }),
         node(:lvar, { var_name: "bar" }))
       expect(result.graph).to include_edge(
         node(:str, { value: "foo" }),
@@ -334,8 +334,8 @@ module Orbacle
         node(:int, { value: 17 }),
         node(:lvasgn, { var_name: "y" }))
 
-      expect(result.final_lenv["x"]).to eq(node(:int, { value: 42 }))
-      expect(result.final_lenv["y"]).to eq(node(:int, { value: 17 }))
+      expect(result.final_lenv["x"]).to eq(node(:lvasgn, { var_name: "x" }))
+      expect(result.final_lenv["y"]).to eq(node(:lvasgn, { var_name: "y" }))
     end
 
     specify "local variable usage" do
@@ -348,7 +348,7 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:lvar, { var_name: "x" }))
       expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
+        node(:lvasgn, { var_name: "x" }),
         node(:lvar, { var_name: "x" }))
     end
 
@@ -841,7 +841,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
+        node(:lvasgn, { var_name: "x" }),
         node(:lvar, { var_name: "x" }))
     end
 
@@ -958,10 +958,10 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
+        node(:lvasgn, { var_name: "x" }),
         node(:lvar, { var_name: "x" }))
       expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
+        node(:lvasgn, { var_name: "y" }),
         node(:lvar, { var_name: "y" }))
     end
 
