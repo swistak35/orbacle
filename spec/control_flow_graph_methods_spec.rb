@@ -11,14 +11,15 @@ module Orbacle
       END
 
       result = compute_graph(file)
+
       meth = find_method(result, "Foo", "bar")
       expect(meth.visibility).to eq(:public)
       expect(meth.line).to eq(2)
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo")
-      ])
+      klass = find_constant(result, "", "Foo")
+      expect(klass.line).to eq(1)
+      expect(klass.inheritance_name).to eq(nil)
+      expect(klass.inheritance_nesting).to eq([])
     end
 
     specify "private method in class declaration" do
@@ -118,14 +119,13 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Foo", "bar", { line: 2 }],
-        ["Foo", "baz", { line: 5 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo")
-      ])
+      result = compute_graph(file)
+
+      meth = find_method(result, "Foo", "bar")
+      expect(meth.line).to eq(2)
+
+      meth = find_method(result, "Foo", "baz")
+      expect(meth.line).to eq(5)
     end
 
     it do
@@ -595,6 +595,14 @@ module Orbacle
 
     def find_method(result, scope, name)
       find_methods(result, scope, name).first
+    end
+
+    def find_constants(result, scope, name)
+      result.tree.constants.select {|c| c.name == name && c.scope.to_s == scope }
+    end
+
+    def find_constant(result, scope, name)
+      find_constants(result, scope, name).first
     end
 
     def build_klass(scope: "", name:, inheritance: nil, nesting: [])
