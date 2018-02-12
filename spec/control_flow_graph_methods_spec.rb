@@ -102,6 +102,20 @@ RSpec.describe Orbacle::ControlFlowGraph do
     expect(meth.visibility).to eq(:private)
   end
 
+  # Currently does not work
+  specify "using private with passing a method definition" do
+    file = <<-END
+    class Foo
+      private def bar
+      end
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "Foo", "bar")
+    expect(meth.visibility).to eq(:public)
+  end
+
   specify do
     file = <<-END
     class Foo

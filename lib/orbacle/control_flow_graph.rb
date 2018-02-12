@@ -37,7 +37,7 @@ module Orbacle
       @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
 
-      initial_local_environment = {}
+      initial_local_environment = {self_: Selfie.main}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
       methods = @tree.methods.map do |m|
@@ -309,8 +309,6 @@ module Orbacle
       message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
 
-      return handle_changing_visibility(lenv, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
-
       if obj_expr.nil?
         obj_node = lenv.fetch(:self_)
         obj_lenv = lenv
@@ -327,6 +325,8 @@ module Orbacle
         @graph.add_edge(ast_child_node, call_arg_node)
         new_lenv
       end
+
+      return handle_changing_visibility(lenv, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
 
       call_obj_node = Node.new(:call_obj)
       @graph.add_vertex(call_obj_node)
