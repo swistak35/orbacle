@@ -23,6 +23,26 @@ module Orbacle
       expect(result.final_node).to eq(node(:int, { value: -42 }))
     end
 
+    specify "primitive float" do
+      snippet = <<-END
+      42.0
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:float, { value: 42.0 }))
+    end
+
+    specify "primitive negative float" do
+      snippet = <<-END
+      -42.0
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:float, { value: -42.0 }))
+    end
+
     specify "primitive bool" do
       snippet = <<-END
       true
