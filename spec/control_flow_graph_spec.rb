@@ -334,8 +334,8 @@ module Orbacle
         node(:int, { value: 17 }),
         node(:lvasgn, { var_name: "y" }))
 
-      expect(result.final_lenv["x"]).to eq(node(:lvasgn, { var_name: "x" }))
-      expect(result.final_lenv["y"]).to eq(node(:lvasgn, { var_name: "y" }))
+      expect(result.final_lenv["x"]).to match_array(node(:lvasgn, { var_name: "x" }))
+      expect(result.final_lenv["y"]).to match_array(node(:lvasgn, { var_name: "y" }))
     end
 
     specify "local variable usage" do
@@ -963,6 +963,32 @@ module Orbacle
       expect(result.graph).to include_edge(
         node(:lvasgn, { var_name: "y" }),
         node(:lvar, { var_name: "y" }))
+    end
+
+    specify "branching - using correct lenvs" do
+      snippet = <<-END
+      if "meh"
+        x = 42
+      else
+        x = 17
+      end
+      x
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_lenv["x"]).to match_array([
+        node(:lvasgn, { var_name: "x" }),
+        node(:lvasgn, { var_name: "x" }),
+      ])
+
+      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+      lvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+      expect(result.graph.adjacent_vertices(lvasgn_to_42)).to include(node(:lvar, { var_name: "x" }))
+
+      int_17 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 17 }
+      lvasgn_to_17 = result.graph.adjacent_vertices(int_17).first
+      expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: "x" }))
     end
 
     def generate_cfg(snippet)

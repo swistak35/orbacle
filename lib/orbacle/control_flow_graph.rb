@@ -137,7 +137,7 @@ module Orbacle
 
       @graph.add_edge(node_expr, node_lvasgn)
 
-      final_lenv = lenv_after_expr.merge(var_name => node_lvasgn)
+      final_lenv = lenv_after_expr.merge(var_name => [node_lvasgn])
 
       return [node_lvasgn, final_lenv]
     end
@@ -289,8 +289,9 @@ module Orbacle
       node_lvar = Node.new(:lvar, { var_name: var_name })
       @graph.add_vertex(node_lvar)
 
-      var_definition_node = lenv.fetch(var_name)
-      @graph.add_edge(var_definition_node, node_lvar)
+      lenv.fetch(var_name).each do |var_definition_node|
+        @graph.add_edge(var_definition_node, node_lvar)
+      end
 
       return [node_lvar, lenv]
     end
@@ -471,7 +472,7 @@ module Orbacle
         arg_node = Node.new(:block_arg, { var_name: arg_name })
         @graph.add_vertex(arg_node)
         args_ast_nodes << arg_node
-        current_lenv.merge(arg_name => arg_node)
+        current_lenv.merge(arg_name => [arg_node])
       end
 
       # It's not exactly good - local vars defined in blocks are not available outside (?),
@@ -704,7 +705,7 @@ module Orbacle
       @graph.add_edge(node_iftrue, node_if_result)
       @graph.add_edge(node_iffalse, node_if_result)
 
-      return [node_if_result, lenv]
+      return [node_if_result, merge_lenvs(lenv_after_iftrue, lenv_after_iffalse)]
     end
 
     def expr_is_class_definition?(expr)
@@ -793,7 +794,7 @@ module Orbacle
 
         formal_arguments_nodes << arg_node
         @graph.add_vertex(arg_node)
-        h[arg_name] = arg_node
+        h[arg_name] = [arg_node]
       end
       return [formal_arguments_hash, formal_arguments_nodes]
     end
@@ -814,6 +815,17 @@ module Orbacle
 
     def current_scope
       current_nesting.to_scope
+    end
+
+    def merge_lenvs(lenv1, lenv2)
+      final_lenv = {}
+
+      var_names = (lenv1.keys + lenv2.keys).uniq
+      var_names.each do |var_name|
+        final_lenv[var_name] = lenv1.fetch(var_name, []) + lenv2.fetch(var_name, [])
+      end
+
+      final_lenv
     end
   end
 end
