@@ -332,6 +332,23 @@ module Orbacle
         node(:lvar, { var_name: "x" }))
     end
 
+    specify "local variables defined in class are not present in method body" do
+      snippet = <<-END
+      class Foo
+        x = 42
+        def foo
+          x
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:call_result),
+        node(:method_result))
+    end
+
     specify "method call, without args" do
       snippet = <<-END
       x = 42

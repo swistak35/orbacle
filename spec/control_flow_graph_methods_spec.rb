@@ -528,9 +528,6 @@ RSpec.describe Orbacle::ControlFlowGraph do
     ])
   end
 
-
-
-
   # Currently does not work
   context "misbehaviours" do
     specify "using private with passing a method definition" do
