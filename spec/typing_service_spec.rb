@@ -154,7 +154,7 @@ module Orbacle
 
     def type_snippet(snippet)
       result = ControlFlowGraph.new.process_file(snippet)
-      typing_result = TypingService.new.(result.graph, result.message_sends, result.methods)
+      typing_result = TypingService.new.(result.graph, result.message_sends, result.tree)
       typing_result[result.final_node]
     end
 

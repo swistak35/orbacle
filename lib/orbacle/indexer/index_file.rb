@@ -16,13 +16,11 @@ module Orbacle
             path: path,
             line: c.line)
         end
-        result.methods.each do |m|
-          _scope, name, opts = m
-
+        result.tree.methods.each do |m|
           @db.add_metod(
-            name: name,
+            name: m.name,
             file: path,
-            line: opts.fetch(:line))
+            line: m.line)
         end
         result.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}.each do |kl|
           @db.add_klasslike(

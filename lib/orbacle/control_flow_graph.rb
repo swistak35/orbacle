@@ -40,10 +40,6 @@ module Orbacle
       initial_local_environment = {self_: Selfie.main}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
-      methods = @tree.methods.map do |m|
-        [m.scope.to_s, m.name, { line: m.line }, m.node_formal_arguments, m.node_result]
-      end
-
       constants = @tree.constants.map do |c|
         case c
         when GlobalTree::Klass

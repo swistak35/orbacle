@@ -38,9 +38,9 @@ module Orbacle
       end
     end
 
-    def call(graph, message_sends, methods)
+    def call(graph, message_sends, tree)
       @graph = DoubleEdgedGraph.new(graph)
-      @methods = methods
+      @tree = tree
 
       @result = {}
 
@@ -186,10 +186,10 @@ module Orbacle
         if primitive_send?(possible_type, message_send.message_send)
           handle_primitive(possible_type, message_send, graph)
         else
-          found_method = @methods.find {|m| m[0] == possible_type.name && m[1] == message_name }
+          found_method = @tree.methods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
-          formal_argument_nodes = found_method[3]
-          method_result_node = found_method[4]
+          formal_argument_nodes = found_method.node_formal_arguments
+          method_result_node = found_method.node_result
           if !@graph.original.has_edge?(method_result_node, message_send.send_result)
             @graph.add_edge(method_result_node, message_send.send_result)
             @worklist << message_send.send_result
