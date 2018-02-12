@@ -47,6 +47,35 @@ RSpec.describe Orbacle::ControlFlowGraph do
     expect(meth.line).to eq(3)
   end
 
+  specify "rechanging visibility of methods in class declaration" do
+    file = <<-END
+    class Foo
+      private
+      public
+      def bar
+      end
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "Foo", "bar")
+    expect(meth.visibility).to eq(:public)
+  end
+
+  specify "rechanging visibility of methods in class declaration" do
+    file = <<-END
+    class Foo
+      protected
+      def bar
+      end
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "Foo", "bar")
+    expect(meth.visibility).to eq(:protected)
+  end
+
   specify "private keyword does not work if not used inside object declaration" do
     file = <<-END
     private

@@ -310,6 +310,8 @@ module Orbacle
       arg_exprs = ast.children[2..-1]
 
       return handle_send_private(lenv) if obj_expr.nil? && message_name == "private"
+      return handle_send_public(lenv) if obj_expr.nil? && message_name == "public"
+      return handle_send_protected(lenv) if obj_expr.nil? && message_name == "protected"
 
       if obj_expr.nil?
         obj_node = lenv.fetch(:self_)
@@ -342,8 +344,20 @@ module Orbacle
     end
 
     def handle_send_private(lenv)
+      handle_changing_visibility(lenv, :private)
+    end
+
+    def handle_send_public(lenv)
+      handle_changing_visibility(lenv, :public)
+    end
+
+    def handle_send_protected(lenv)
+      handle_changing_visibility(lenv, :protected)
+    end
+
+    def handle_changing_visibility(lenv, new_visibility)
       node = if @currently_analyzed_klass.klass
-        @currently_analyzed_klass.method_visibility = :private
+        @currently_analyzed_klass.method_visibility = new_visibility
 
         Node.new(:class, { klass: @currently_analyzed_klass.klass })
       else
