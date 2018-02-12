@@ -115,6 +115,8 @@ module Orbacle
         handle_casgn(ast, lenv)
       when :const
         handle_const(ast, lenv)
+      when :and
+        handle_and(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -652,6 +654,20 @@ module Orbacle
       @graph.add_vertex(node)
 
       return [node, lenv]
+    end
+
+    def handle_and(ast, lenv)
+      expr_left = ast.children[0]
+      expr_right = ast.children[1]
+
+      node_left, lenv_after_left = process(expr_left, lenv)
+      node_right, lenv_after_right = process(expr_right, lenv_after_left)
+
+      node_and = Node.new(:and)
+      @graph.add_edge(node_left, node_and)
+      @graph.add_edge(node_right, node_and)
+
+      return [node_and, lenv_after_right]
     end
 
     def expr_is_class_definition?(expr)

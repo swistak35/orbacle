@@ -818,6 +818,33 @@ module Orbacle
           node(:call_result)))
     end
 
+    specify "control flow `and` operator" do
+      snippet = <<-END
+      false and 42
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:bool, { value: false }),
+        node(:and))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:and))
+    end
+
+    specify "control flow `and` operator - using correct lenv" do
+      snippet = <<-END
+      (x = 17) and x
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 17 }),
+        node(:lvar, { var_name: "x" }))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
