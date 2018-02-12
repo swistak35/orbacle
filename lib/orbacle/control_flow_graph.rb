@@ -119,6 +119,8 @@ module Orbacle
         handle_and(ast, lenv)
       when :or
         handle_or(ast, lenv)
+      when :if
+        handle_if(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -675,6 +677,34 @@ module Orbacle
       @graph.add_edge(node_right, node_or)
 
       return [node_or, lenv_after_right]
+    end
+
+    def handle_if(ast, lenv)
+      expr_cond = ast.children[0]
+      expr_iftrue = ast.children[1]
+      expr_iffalse = ast.children[2]
+
+      node_cond, lenv_after_cond = process(expr_cond, lenv)
+
+      if expr_iftrue
+        node_iftrue, lenv_after_iftrue = process(expr_iftrue, lenv_after_cond)
+      else
+        node_iftrue = Node.new(:nil)
+        lenv_after_iftrue = lenv
+      end
+
+      if expr_iffalse
+        node_iffalse, lenv_after_iffalse = process(expr_iffalse, lenv_after_cond)
+      else
+        node_iffalse = Node.new(:nil)
+        lenv_after_iffalse = lenv
+      end
+
+      node_if_result = Node.new(:if_result)
+      @graph.add_edge(node_iftrue, node_if_result)
+      @graph.add_edge(node_iffalse, node_if_result)
+
+      return [node_if_result, lenv]
     end
 
     def expr_is_class_definition?(expr)

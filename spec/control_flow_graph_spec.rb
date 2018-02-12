@@ -890,6 +890,81 @@ module Orbacle
         node(:or))
     end
 
+    specify "branching" do
+      snippet = <<-END
+      if 1
+        2
+      else
+        3
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 2 }),
+        node(:if_result))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 3 }),
+        node(:if_result))
+      expect(result.final_node).to eq(node(:if_result))
+    end
+
+    specify "branching - without iffalse" do
+      snippet = <<-END
+      if 42
+        17
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 17 }),
+        node(:if_result))
+      expect(result.graph).to include_edge(
+        node(:nil),
+        node(:if_result))
+      expect(result.final_node).to eq(node(:if_result))
+    end
+
+    specify "branching - without iftrue" do
+      snippet = <<-END
+      unless 42
+        17
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 17 }),
+        node(:if_result))
+      expect(result.graph).to include_edge(
+        node(:nil),
+        node(:if_result))
+      expect(result.final_node).to eq(node(:if_result))
+    end
+
+    specify "branching - using correct lenvs" do
+      snippet = <<-END
+      if (x = 42) && (y = 17)
+        x
+      else
+        y
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:lvar, { var_name: "x" }))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 17 }),
+        node(:lvar, { var_name: "y" }))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
