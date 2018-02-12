@@ -568,6 +568,24 @@ module Orbacle
         node(:ivar))
     end
 
+    specify "usage of instance variable in nested class" do
+      snippet = <<-END
+      class Fizz
+        class Foo
+          def bar
+            @baz
+          end
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:ivar_definition),
+        node(:ivar))
+    end
+
     specify "assignment of instance variable" do
       snippet = <<-END
       class Foo

@@ -601,11 +601,8 @@ module Orbacle
     end
 
     def get_ivar_definition_node(ivar_name)
-      # Probably there is some good relation between self
-
-      # It should also not be constants, but some kind of klasslikes
       klass = @tree.constants.find do |c|
-        c.name == Scope.from_nesting(@current_nesting).absolute_str
+        c.full_name == Scope.from_nesting(@current_nesting).absolute_str
       end
 
       raise if klass.nil?

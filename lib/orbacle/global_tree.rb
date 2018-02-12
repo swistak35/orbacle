@@ -42,6 +42,10 @@ module Orbacle
           @inheritance_nesting == other.inheritance_nesting &&
           @line == line
       end
+
+      def full_name
+        [scope, @name].reject(&:empty?).join("::")
+      end
     end
 
     class Mod
