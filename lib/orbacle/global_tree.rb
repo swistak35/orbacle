@@ -12,7 +12,8 @@ module Orbacle
         @scope = scope
       end
 
-      attr_reader :name, :line, :visibility, :node_result, :node_formal_arguments, :scope
+      attr_reader :name, :line, :node_result, :node_formal_arguments, :scope
+      attr_accessor :visibility
     end
 
     class Klass

@@ -62,7 +62,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     expect(meth.visibility).to eq(:public)
   end
 
-  specify "rechanging visibility of methods in class declaration" do
+  specify "changing visibility to protected" do
     file = <<-END
     class Foo
       protected
@@ -86,6 +86,20 @@ RSpec.describe Orbacle::ControlFlowGraph do
     result = compute_graph(file)
     meth = find_method(result, "", "bar")
     expect(meth.visibility).to eq(:public)
+  end
+
+  specify "using private with passing a symbol" do
+    file = <<-END
+    class Foo
+      def bar
+      end
+      private :bar
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "Foo", "bar")
+    expect(meth.visibility).to eq(:private)
   end
 
   specify do

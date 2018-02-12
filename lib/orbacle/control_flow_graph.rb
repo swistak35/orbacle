@@ -309,9 +309,7 @@ module Orbacle
       message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
 
-      return handle_send_private(lenv) if obj_expr.nil? && message_name == "private"
-      return handle_send_public(lenv) if obj_expr.nil? && message_name == "public"
-      return handle_send_protected(lenv) if obj_expr.nil? && message_name == "protected"
+      return handle_changing_visibility(lenv, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
 
       if obj_expr.nil?
         obj_node = lenv.fetch(:self_)
@@ -343,21 +341,20 @@ module Orbacle
       return [call_result_node, final_lenv, { message_send: message_send }]
     end
 
-    def handle_send_private(lenv)
-      handle_changing_visibility(lenv, :private)
-    end
-
-    def handle_send_public(lenv)
-      handle_changing_visibility(lenv, :public)
-    end
-
-    def handle_send_protected(lenv)
-      handle_changing_visibility(lenv, :protected)
-    end
-
-    def handle_changing_visibility(lenv, new_visibility)
+    def handle_changing_visibility(lenv, new_visibility, arg_exprs)
       node = if @currently_analyzed_klass.klass
-        @currently_analyzed_klass.method_visibility = new_visibility
+        if arg_exprs.empty?
+          @currently_analyzed_klass.method_visibility = new_visibility
+        else
+          methods_to_change_visibility = arg_exprs.map do |arg_expr|
+            [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
+          end.compact
+          @tree.methods.each do |m|
+            if m.scope == Scope.from_nesting(@current_nesting) && methods_to_change_visibility.include?(m.name)
+              m.visibility = new_visibility
+            end
+          end
+        end
 
         Node.new(:class, { klass: @currently_analyzed_klass.klass })
       else
