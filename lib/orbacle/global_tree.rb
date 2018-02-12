@@ -18,10 +18,11 @@ module Orbacle
 
     class Klass
       class Nodes
-        def initialize(instance_variables = {})
+        def initialize(instance_variables = {}, class_variables = {})
           @instance_variables = instance_variables
+          @class_variables = class_variables
         end
-        attr_accessor :instance_variables
+        attr_accessor :instance_variables, :class_variables
       end
 
       def initialize(name:, scope:, line:, inheritance_name:, inheritance_nesting:, nodes: Nodes.new)

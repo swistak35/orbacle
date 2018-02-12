@@ -86,6 +86,10 @@ module Orbacle
         handle_ivar(ast, lenv)
       when :ivasgn
         handle_ivasgn(ast, lenv)
+      when :cvar
+        handle_cvar(ast, lenv)
+      when :cvasgn
+        handle_cvasgn(ast, lenv)
       when :send
         handle_send(ast, lenv)
       when :block
@@ -303,6 +307,33 @@ module Orbacle
       @graph.add_edge(node_ivasgn, node_ivar_definition)
 
       return [node_ivasgn, lenv_after_expr]
+    end
+
+    def handle_cvasgn(ast, lenv)
+      cvar_name = ast.children[0].to_s
+      expr = ast.children[1]
+
+      node_cvasgn = Node.new(:cvasgn, { var_name: cvar_name })
+      @graph.add_vertex(node_cvasgn)
+
+      node_expr, lenv_after_expr = process(expr, lenv)
+      @graph.add_edge(node_expr, node_cvasgn)
+
+      node_cvar_definition = get_cvar_definition_node(cvar_name)
+      @graph.add_edge(node_cvasgn, node_cvar_definition)
+
+      return [node_cvasgn, lenv_after_expr]
+    end
+
+    def handle_cvar(ast, lenv)
+      cvar_name = ast.children.first.to_s
+
+      cvar_definition_node = get_cvar_definition_node(cvar_name)
+
+      node = Node.new(:cvar)
+      @graph.add_edge(cvar_definition_node, node)
+
+      return [node, lenv]
     end
 
     def handle_send(ast, lenv)
@@ -613,6 +644,21 @@ module Orbacle
       end
 
       return klass.nodes.instance_variables[ivar_name]
+    end
+
+    def get_cvar_definition_node(cvar_name)
+      klass = @tree.constants.find do |c|
+        c.full_name == Scope.from_nesting(@current_nesting).absolute_str
+      end
+
+      raise if klass.nil?
+
+      if !klass.nodes.class_variables[cvar_name]
+        klass.nodes.class_variables[cvar_name] = Node.new(:cvar_definition)
+        @graph.add_vertex(klass.nodes.class_variables[cvar_name])
+      end
+
+      return klass.nodes.class_variables[cvar_name]
     end
   end
 end

@@ -605,6 +605,37 @@ module Orbacle
         node(:ivar_definition))
     end
 
+    specify "usage of class variable" do
+      snippet = <<-END
+      class Foo
+        @@baz
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:cvar_definition),
+        node(:cvar))
+    end
+
+    specify "assignment of class variable" do
+      snippet = <<-END
+      class Foo
+        @@baz = 42
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:cvasgn, { var_name: "@@baz" }))
+      expect(result.graph).to include_edge(
+        node(:cvasgn, { var_name: "@@baz" }),
+        node(:cvar_definition))
+    end
+
     specify "calling constructor" do
       snippet = <<-END
       class Foo
