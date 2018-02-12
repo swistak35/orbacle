@@ -309,7 +309,7 @@ module Orbacle
       message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
 
-      return handle_send_private(lenv) if obj_expr.nil? && message_name == "private" && !@currently_analyzed_klass.nil?
+      return handle_send_private(lenv) if obj_expr.nil? && message_name == "private"
 
       if obj_expr.nil?
         obj_node = lenv.fetch(:self_)
@@ -342,9 +342,14 @@ module Orbacle
     end
 
     def handle_send_private(lenv)
-      @currently_analyzed_klass.method_visibility = :private
+      node = if @currently_analyzed_klass.klass
+        @currently_analyzed_klass.method_visibility = :private
 
-      node = Node.new(:class, { klass: @currently_analyzed_klass })
+        Node.new(:class, { klass: @currently_analyzed_klass })
+      else
+        # This should actually be reference to Object class
+        Node.new(:nil)
+      end
       @graph.add_vertex(node)
 
       return [node, lenv]

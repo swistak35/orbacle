@@ -47,6 +47,18 @@ RSpec.describe Orbacle::ControlFlowGraph do
     expect(meth.line).to eq(3)
   end
 
+  specify "private keyword does not work if not used inside object declaration" do
+    file = <<-END
+    private
+    def bar
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "", "bar")
+    expect(meth.visibility).to eq(:public)
+  end
+
   specify do
     file = <<-END
     class Foo
