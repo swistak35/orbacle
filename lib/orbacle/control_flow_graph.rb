@@ -121,6 +121,8 @@ module Orbacle
         handle_or(ast, lenv)
       when :if
         handle_if(ast, lenv)
+      when :return
+        handle_return(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -706,6 +708,20 @@ module Orbacle
       @graph.add_edge(node_iffalse, node_if_result)
 
       return [node_if_result, merge_lenvs(lenv_after_iftrue, lenv_after_iffalse)]
+    end
+
+    def handle_return(ast, lenv)
+      expr = ast.children[0]
+
+      if expr.nil?
+        node_expr = Node.new(:nil)
+        final_lenv = lenv
+      else
+        node_expr, final_lenv = process(expr, lenv)
+      end
+      @graph.add_edge(node_expr, @currently_parsed_method_result_node)
+
+      return [node_expr, final_lenv]
     end
 
     def expr_is_class_definition?(expr)

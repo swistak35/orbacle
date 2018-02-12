@@ -552,6 +552,42 @@ module Orbacle
         node(:lvar, { var_name: "rest" }))
     end
 
+    specify "method definition, using return with value" do
+      snippet = <<-END
+      def foo(x)
+        return 42
+        17
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:method_result))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 17 }),
+        node(:method_result))
+    end
+
+    specify "method definition, using empty return" do
+      snippet = <<-END
+      def foo(x)
+        return
+        17
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:nil),
+        node(:method_result))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 17 }),
+        node(:method_result))
+    end
+
     specify "usage of instance variable" do
       snippet = <<-END
       class Foo
