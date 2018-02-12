@@ -8,7 +8,7 @@ module Orbacle
       def call(path:, content:)
         parser = ControlFlowGraph.new
         result = parser.process_file(content)
-        result.constants.each do |c|
+        result.tree.constants.each do |c|
           @db.add_constant(
             scope: c.scope,
             name: c.name,
@@ -22,7 +22,8 @@ module Orbacle
             file: path,
             line: m.line)
         end
-        result.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}.each do |kl|
+        klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
+        klasslikes.each do |kl|
           @db.add_klasslike(
             scope: kl.scope,
             name: kl.name,

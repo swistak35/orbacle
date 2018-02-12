@@ -25,7 +25,7 @@ module Orbacle
     Block = Struct.new(:args, :result)
     CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
-    Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :methods, :constants, :tree)
+    Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
 
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
@@ -40,18 +40,7 @@ module Orbacle
       initial_local_environment = {self_: Selfie.main}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
-      constants = @tree.constants.map do |c|
-        case c
-        when GlobalTree::Klass
-          [c.scope, c.name, :klass, { line: c.line }]
-        when GlobalTree::Mod
-          [c.scope, c.name, :mod, { line: c.line }]
-        when GlobalTree::Constant
-          [c.scope, c.name, :other, { line: c.line }]
-        end
-      end
-
-      return Result.new(@graph, final_local_environment, @message_sends, final_node, methods, @tree.constants, @tree)
+      return Result.new(@graph, final_local_environment, @message_sends, final_node, @tree)
     end
 
     private

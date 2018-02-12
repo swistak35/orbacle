@@ -568,7 +568,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
       result = service.process_file(file)
       {
         methods: result.tree.methods.map {|m| [m.scope.to_s, m.name, { line: m.line }] },
-        constants: result.constants.map do |c|
+        constants: result.tree.constants.map do |c|
           if c.is_a?(Orbacle::GlobalTree::Klass)
             [c.class, c.scope, c.name, c.inheritance_name, c.inheritance_nesting]
           else
