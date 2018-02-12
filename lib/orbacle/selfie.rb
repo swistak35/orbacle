@@ -26,6 +26,10 @@ module Orbacle
       @kind == :instance
     end
 
+    def main?
+      @kind == :main
+    end
+
     attr_reader :kind, :scope
 
     def ==(other)

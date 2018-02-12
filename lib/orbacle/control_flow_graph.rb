@@ -36,7 +36,8 @@ module Orbacle
       @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
 
-      initial_local_environment = {self_: Selfie.main}
+      self_main_node = Node.new(:main, { selfie: Selfie.main })
+      initial_local_environment = {self_: self_main_node}
       final_node, final_local_environment = process(ast, initial_local_environment)
 
       return Result.new(@graph, final_local_environment, @message_sends, final_node, @tree)
@@ -285,7 +286,13 @@ module Orbacle
     def handle_ivar(ast, lenv)
       ivar_name = ast.children.first.to_s
 
-      ivar_definition_node = get_ivar_definition_node(ivar_name)
+      ivar_definition_node = if lenv.fetch(:self_).params.fetch(:selfie).klass?
+        get_class_level_ivar_definition_node(ivar_name)
+      elsif lenv.fetch(:self_).params.fetch(:selfie).instance?
+        get_ivar_definition_node(ivar_name)
+      else
+        raise
+      end
 
       node = Node.new(:ivar)
       @graph.add_edge(ivar_definition_node, node)
@@ -303,8 +310,14 @@ module Orbacle
       node_expr, lenv_after_expr = process(expr, lenv)
       @graph.add_edge(node_expr, node_ivasgn)
 
-      node_ivar_definition = get_ivar_definition_node(ivar_name)
-      @graph.add_edge(node_ivasgn, node_ivar_definition)
+      ivar_definition_node = if lenv.fetch(:self_).params.fetch(:selfie).klass?
+        get_class_level_ivar_definition_node(ivar_name)
+      elsif lenv.fetch(:self_).params.fetch(:selfie).instance?
+        get_ivar_definition_node(ivar_name)
+      else
+        raise
+      end
+      @graph.add_edge(node_ivasgn, ivar_definition_node)
 
       return [node_ivasgn, lenv_after_expr]
     end
@@ -644,6 +657,21 @@ module Orbacle
       end
 
       return klass.nodes.instance_variables[ivar_name]
+    end
+
+    def get_class_level_ivar_definition_node(ivar_name)
+      klass = @tree.constants.find do |c|
+        c.full_name == Scope.from_nesting(@current_nesting).absolute_str
+      end
+
+      raise if klass.nil?
+
+      if !klass.nodes.class_level_instance_variables[ivar_name]
+        klass.nodes.class_level_instance_variables[ivar_name] = Node.new(:ivar_definition)
+        @graph.add_vertex(klass.nodes.class_level_instance_variables[ivar_name])
+      end
+
+      return klass.nodes.class_level_instance_variables[ivar_name]
     end
 
     def get_cvar_definition_node(cvar_name)

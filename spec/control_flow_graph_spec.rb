@@ -605,6 +605,34 @@ module Orbacle
         node(:ivar_definition))
     end
 
+    specify "distinguish instance variables from class level instance variables" do
+      snippet = <<-END
+      class Fizz
+        @baz = 42
+
+        def setting_baz
+          @baz = 57
+        end
+
+        def getting_baz
+          @baz
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      int_57 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 57 }
+      ivasgn_to_57 = result.graph.adjacent_vertices(int_57).first
+      instance_level_baz = result.graph.adjacent_vertices(ivasgn_to_57).first
+      expect(result.graph.adjacent_vertices(instance_level_baz)).to match_array([node(:ivar)])
+
+      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+      ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+      class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
+      expect(result.graph.adjacent_vertices(class_level_baz)).to be_empty
+    end
+
     specify "usage of class variable" do
       snippet = <<-END
       class Foo
