@@ -428,7 +428,7 @@ module Orbacle
             [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
           end.compact
           @tree.methods.each do |m|
-            if m.scope == current_nesting.to_scope && methods_to_change_visibility.include?(m.name)
+            if m.scope == current_scope && methods_to_change_visibility.include?(m.name)
               m.visibility = new_visibility
             end
           end
@@ -485,7 +485,7 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
 
-      new_selfie = Selfie.instance_from_scope(current_nesting.to_scope)
+      new_selfie = Selfie.instance_from_scope(current_scope)
       self_node = Node.new(:self, { selfie: new_selfie })
       @graph.add_vertex(self_node)
 
@@ -506,7 +506,7 @@ module Orbacle
         visibility: @currently_analyzed_klass.method_visibility,
         node_result: @currently_parsed_method_result_node,
         node_formal_arguments: formal_arguments_nodes,
-        scope: current_nesting.to_scope)
+        scope: current_scope)
 
       node = Node.new(:sym, { value: method_name })
       @graph.add_vertex(node)
@@ -542,14 +542,14 @@ module Orbacle
 
       klass = @tree.add_klass(
         name: klass_name_ref.name,
-        scope: current_nesting.to_scope.increase_by_ref(klass_name_ref).decrease,
+        scope: current_scope.increase_by_ref(klass_name_ref).decrease,
         inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         inheritance_nesting: current_nesting.to_primitive,
         line: klass_name_ast.loc.line)
 
       switch_currently_analyzed_klass(klass) do
         with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
-          new_selfie = Selfie.klass_from_scope(current_nesting.to_scope)
+          new_selfie = Selfie.klass_from_scope(current_scope)
           self_node = Node.new(:self, { selfie: new_selfie })
           @graph.add_vertex(self_node)
 
@@ -571,7 +571,7 @@ module Orbacle
 
       @tree.add_mod(
         name: module_name_ref.name,
-        scope: current_nesting.to_scope.increase_by_ref(module_name_ref).decrease,
+        scope: current_scope.increase_by_ref(module_name_ref).decrease,
         line: module_name_ast.loc.line)
 
       with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
@@ -595,7 +595,7 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
 
-      new_selfie = Selfie.klass_from_scope(current_nesting.to_scope)
+      new_selfie = Selfie.klass_from_scope(current_scope)
       self_node = Node.new(:self, { selfie: new_selfie })
       @graph.add_vertex(self_node)
 
@@ -610,14 +610,13 @@ module Orbacle
         @graph.add_edge(final_node, @currently_parsed_method_result_node)
       end
 
-      current_scope = current_nesting.to_scope.increase_by_metaklass
       @tree.add_method(
         name: method_name.to_s,
         line: ast.loc.line,
         visibility: @currently_analyzed_klass.method_visibility,
         node_result: @currently_parsed_method_result_node,
         node_formal_arguments: formal_arguments_nodes,
-        scope: current_scope)
+        scope: current_scope.increase_by_metaklass)
 
       node = Node.new(:sym, { value: method_name })
       @graph.add_vertex(node)
@@ -633,19 +632,19 @@ module Orbacle
         parent_klass_name_ast = expr.children[2]
         @tree.add_klass(
           name: const_name_ref.name,
-          scope: current_nesting.to_scope.increase_by_ref(const_name_ref).decrease,
+          scope: current_scope.increase_by_ref(const_name_ref).decrease,
           inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           inheritance_nesting: current_nesting.to_primitive,
           line: ast.loc.line)
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
           name: const_name_ref.name,
-          scope: current_nesting.to_scope.increase_by_ref(const_name_ref).decrease,
+          scope: current_scope.increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
       else
         @tree.add_constant(
           name: const_name_ref.name,
-          scope: current_nesting.to_scope.increase_by_ref(const_name_ref).decrease,
+          scope: current_scope.increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
       end
     end
@@ -680,7 +679,7 @@ module Orbacle
 
     def get_ivar_definition_node(ivar_name)
       klass = @tree.constants.find do |c|
-        c.full_name == current_nesting.to_scope.absolute_str
+        c.full_name == current_scope.absolute_str
       end
 
       raise if klass.nil?
@@ -695,7 +694,7 @@ module Orbacle
 
     def get_class_level_ivar_definition_node(ivar_name)
       klass = @tree.constants.find do |c|
-        c.full_name == current_nesting.to_scope.absolute_str
+        c.full_name == current_scope.absolute_str
       end
 
       raise if klass.nil?
@@ -710,7 +709,7 @@ module Orbacle
 
     def get_cvar_definition_node(cvar_name)
       klass = @tree.constants.find do |c|
-        c.full_name == current_nesting.to_scope.absolute_str
+        c.full_name == current_scope.absolute_str
       end
 
       raise if klass.nil?
@@ -755,6 +754,10 @@ module Orbacle
       @current_nesting = new_nesting
       yield
       @current_nesting = previous
+    end
+
+    def current_scope
+      current_nesting.to_scope
     end
   end
 end
