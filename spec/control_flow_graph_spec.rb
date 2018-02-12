@@ -633,6 +633,25 @@ module Orbacle
       expect(result.graph.adjacent_vertices(class_level_baz)).to be_empty
     end
 
+    specify "usage of instance variable inside selfed method" do
+      snippet = <<-END
+      class Foo
+        @baz = 42
+
+        def self.bar
+          @baz
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+      ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+      class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
+      expect(result.graph.adjacent_vertices(class_level_baz)).to match_array([node(:ivar)])
+    end
+
     specify "usage of class variable" do
       snippet = <<-END
       class Foo

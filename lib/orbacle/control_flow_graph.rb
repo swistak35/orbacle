@@ -481,20 +481,7 @@ module Orbacle
       formal_arguments = ast.children[1]
       method_body = ast.children[2]
 
-      formal_argument_nodes = []
-      formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
-        arg_name = arg_ast.children[0].to_s
-        if arg_ast.type == :arg
-          arg_node = Node.new(:formal_arg, { var_name: arg_name })
-        elsif arg_ast.type == :restarg
-          arg_node = Node.new(:formal_restarg, { var_name: arg_name })
-        else raise
-        end
-
-        formal_argument_nodes << arg_node
-        @graph.add_vertex(arg_node)
-        h[arg_name] = arg_node
-      end
+      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
 
       new_selfie = Selfie.instance_from_scope(Scope.from_nesting(@current_nesting))
       self_node = Node.new(:self, { selfie: new_selfie })
@@ -516,7 +503,7 @@ module Orbacle
         line: ast.loc.line,
         visibility: @currently_analyzed_klass.method_visibility,
         node_result: @currently_parsed_method_result_node,
-        node_formal_arguments: formal_argument_nodes,
+        node_formal_arguments: formal_arguments_nodes,
         scope: Scope.from_nesting(@current_nesting))
 
       node = Node.new(:sym, { value: method_name })
@@ -607,19 +594,39 @@ module Orbacle
     def handle_defs(ast, lenv)
       method_receiver = ast.children[0]
       method_name = ast.children[1]
-      method_body = ast.children[2]
+      formal_arguments = ast.children[2]
+      method_body = ast.children[3]
 
+      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
+
+      new_selfie = Selfie.klass_from_scope(Scope.from_nesting(@current_nesting))
+      self_node = Node.new(:self, { selfie: new_selfie })
+      @graph.add_vertex(self_node)
+
+      @currently_parsed_method_result_node = Node.new(:method_result)
+      @graph.add_vertex(@currently_parsed_method_result_node)
+      if method_body
+        final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash).merge(self_: self_node))
+        @graph.add_edge(final_node, @currently_parsed_method_result_node)
+      else
+        final_node = Node.new(:nil)
+        @graph.add_vertex(final_node)
+        @graph.add_edge(final_node, @currently_parsed_method_result_node)
+      end
+
+      current_scope = Scope.from_nesting(@current_nesting).increase_by_metaklass
       @tree.add_method(
         name: method_name.to_s,
         line: ast.loc.line,
-        visibility: :public,
-        node_result: nil, #todo
-        node_formal_arguments: [], #todo
-        scope: Scope.from_nesting(@current_nesting).increase_by_metaklass)
+        visibility: @currently_analyzed_klass.method_visibility,
+        node_result: @currently_parsed_method_result_node,
+        node_formal_arguments: formal_arguments_nodes,
+        scope: current_scope)
 
-      @current_nesting.increase_nesting_self
+      node = Node.new(:sym, { value: method_name })
+      @graph.add_vertex(node)
 
-      @current_nesting.decrease_nesting
+      return [node, lenv]
     end
 
     def handle_casgn(ast, lenv)
@@ -727,6 +734,24 @@ module Orbacle
       end
 
       return @tree.nodes.global_variables[gvar_name]
+    end
+
+    def build_arguments(formal_arguments)
+      formal_arguments_nodes = []
+      formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
+        arg_name = arg_ast.children[0].to_s
+        arg_node = if arg_ast.type == :arg
+          Node.new(:formal_arg, { var_name: arg_name })
+        elsif arg_ast.type == :restarg
+          Node.new(:formal_restarg, { var_name: arg_name })
+        else raise
+        end
+
+        formal_arguments_nodes << arg_node
+        @graph.add_vertex(arg_node)
+        h[arg_name] = arg_node
+      end
+      return [formal_arguments_hash, formal_arguments_nodes]
     end
   end
 end
