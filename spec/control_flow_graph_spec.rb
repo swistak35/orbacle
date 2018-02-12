@@ -664,6 +664,74 @@ module Orbacle
         node(:cvar_definition))
     end
 
+    specify "usage of global variable" do
+      snippet = <<-END
+      $baz
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:gvar))
+      expect(result.graph).to include_edge(
+        node(:gvar_definition),
+        node(:gvar))
+    end
+
+    specify "assignment of global variable" do
+      snippet = <<-END
+      $baz = 42
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:gvasgn, { var_name: "$baz" }))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:gvasgn, { var_name: "$baz" }))
+      expect(result.graph).to include_edge(
+        node(:gvasgn, { var_name: "$baz" }),
+        node(:gvar_definition))
+    end
+
+    specify "usage and assignment of global variable" do
+      snippet = <<-END
+      class Foo
+        def foo
+          $baz
+        end
+      end
+      class Bar
+        def bar
+          $baz = 42
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+      gvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+      global_baz = result.graph.adjacent_vertices(gvasgn_to_42).first
+      expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar)])
+    end
+
+    specify "assignment of class variable" do
+      snippet = <<-END
+      class Foo
+        @@baz = 42
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:cvasgn, { var_name: "@@baz" }))
+      expect(result.graph).to include_edge(
+        node(:cvasgn, { var_name: "@@baz" }),
+        node(:cvar_definition))
+    end
+
     specify "calling constructor" do
       snippet = <<-END
       class Foo

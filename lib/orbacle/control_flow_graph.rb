@@ -91,6 +91,10 @@ module Orbacle
         handle_cvar(ast, lenv)
       when :cvasgn
         handle_cvasgn(ast, lenv)
+      when :gvar
+        handle_gvar(ast, lenv)
+      when :gvasgn
+        handle_gvasgn(ast, lenv)
       when :send
         handle_send(ast, lenv)
       when :block
@@ -345,6 +349,33 @@ module Orbacle
 
       node = Node.new(:cvar)
       @graph.add_edge(cvar_definition_node, node)
+
+      return [node, lenv]
+    end
+
+    def handle_gvasgn(ast, lenv)
+      gvar_name = ast.children[0].to_s
+      expr = ast.children[1]
+
+      node_gvasgn = Node.new(:gvasgn, { var_name: gvar_name })
+      @graph.add_vertex(node_gvasgn)
+
+      node_expr, lenv_after_expr = process(expr, lenv)
+      @graph.add_edge(node_expr, node_gvasgn)
+
+      node_gvar_definition = get_gvar_definition_node(gvar_name)
+      @graph.add_edge(node_gvasgn, node_gvar_definition)
+
+      return [node_gvasgn, lenv_after_expr]
+    end
+
+    def handle_gvar(ast, lenv)
+      gvar_name = ast.children.first.to_s
+
+      gvar_definition_node = get_gvar_definition_node(gvar_name)
+
+      node = Node.new(:gvar)
+      @graph.add_edge(gvar_definition_node, node)
 
       return [node, lenv]
     end
@@ -687,6 +718,15 @@ module Orbacle
       end
 
       return klass.nodes.class_variables[cvar_name]
+    end
+
+    def get_gvar_definition_node(gvar_name)
+      if !@tree.nodes.global_variables[gvar_name]
+        @tree.nodes.global_variables[gvar_name] = Node.new(:gvar_definition)
+        @graph.add_vertex(@tree.nodes.global_variables[gvar_name])
+      end
+
+      return @tree.nodes.global_variables[gvar_name]
     end
   end
 end

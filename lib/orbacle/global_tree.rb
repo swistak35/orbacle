@@ -82,12 +82,20 @@ module Orbacle
       end
     end
 
+    class Nodes
+      def initialize(global_variables = {})
+        @global_variables = global_variables
+      end
+      attr_accessor :global_variables
+    end
+
     def initialize
       @constants = []
       @methods = []
+      @nodes = Nodes.new
     end
 
-    attr_reader :methods, :constants
+    attr_reader :methods, :constants, :nodes
 
     def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:)
       method = Method.new(
