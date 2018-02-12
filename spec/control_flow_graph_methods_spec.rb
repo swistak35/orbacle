@@ -609,9 +609,9 @@ module Orbacle
           methods: result.tree.methods.map {|m| [m.scope.to_s, m.name, { line: m.line }] },
           constants: result.tree.constants.map do |c|
             if c.is_a?(GlobalTree::Klass)
-              [c.class, c.scope, c.name, c.inheritance_name, c.inheritance_nesting]
+              [c.class, c.scope.absolute_str, c.name, c.inheritance_name, c.inheritance_nesting]
             else
-              [c.class, c.scope, c.name]
+              [c.class, c.scope.absolute_str, c.name]
             end
           end
         }

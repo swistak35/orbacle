@@ -10,7 +10,7 @@ module Orbacle
         result = parser.process_file(content)
         result.tree.constants.each do |c|
           @db.add_constant(
-            scope: c.scope,
+            scope: c.scope.absolute_str,
             name: c.name,
             type: type_of(c),
             path: path,
@@ -25,7 +25,7 @@ module Orbacle
         klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
         klasslikes.each do |kl|
           @db.add_klasslike(
-            scope: kl.scope,
+            scope: kl.scope.absolute_str,
             name: kl.name,
             type: type_of(kl),
             inheritance: type_of(kl) == "klass" ? kl.inheritance_name : nil,

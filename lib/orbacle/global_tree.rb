@@ -44,7 +44,7 @@ module Orbacle
       end
 
       def full_name
-        [scope, @name].reject(&:empty?).join("::")
+        [*scope.elems, @name].join("::")
       end
     end
 

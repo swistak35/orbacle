@@ -478,7 +478,7 @@ module Orbacle
 
       klass = @tree.add_klass(
         name: klass_name_ref.name,
-        scope: Scope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).decrease.absolute_str,
+        scope: Scope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).decrease,
         inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         inheritance_nesting: @current_nesting.get_output_nesting,
         line: klass_name_ast.loc.line)
@@ -509,7 +509,7 @@ module Orbacle
 
       @tree.add_mod(
         name: module_name_ref.name,
-        scope: Scope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).decrease.absolute_str,
+        scope: Scope.from_nesting(@current_nesting).increase_by_ref(module_name_ref).decrease,
         line: module_name_ast.loc.line)
 
       @current_nesting.increase_nesting_const(module_name_ref)
@@ -555,19 +555,19 @@ module Orbacle
         parent_klass_name_ast = expr.children[2]
         @tree.add_klass(
           name: const_name_ref.name,
-          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
+          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease,
           inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           inheritance_nesting: @current_nesting.get_output_nesting,
           line: ast.loc.line)
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
           name: const_name_ref.name,
-          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
+          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
       else
         @tree.add_constant(
           name: const_name_ref.name,
-          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease.absolute_str,
+          scope: Scope.from_nesting(@current_nesting).increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
       end
     end
