@@ -23,6 +23,7 @@ module Orbacle
 
     MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
     Block = Struct.new(:args, :result)
+    CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
     Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :methods, :constants, :tree)
 
@@ -34,6 +35,7 @@ module Orbacle
       @current_nesting = Nesting.new
       @constants = []
       @tree = GlobalTree.new
+      @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
 
       initial_local_environment = {}
       final_node, final_local_environment = process(ast, initial_local_environment)
@@ -307,6 +309,8 @@ module Orbacle
       message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
 
+      return handle_send_private(lenv) if obj_expr.nil? && message_name == "private" && !@currently_analyzed_klass.nil?
+
       if obj_expr.nil?
         obj_node = lenv.fetch(:self_)
         obj_lenv = lenv
@@ -335,6 +339,15 @@ module Orbacle
       @message_sends << message_send
 
       return [call_result_node, final_lenv, { message_send: message_send }]
+    end
+
+    def handle_send_private(lenv)
+      @currently_analyzed_klass.method_visibility = :private
+
+      node = Node.new(:class, { klass: @currently_analyzed_klass })
+      @graph.add_vertex(node)
+
+      return [node, lenv]
     end
 
     def handle_self(ast, lenv)
@@ -409,7 +422,7 @@ module Orbacle
       @tree.add_method(
         name: method_name.to_s,
         line: ast.loc.line,
-        visibility: :public,
+        visibility: @currently_analyzed_klass.method_visibility,
         node_result: @currently_parsed_method_result_node,
         node_formal_arguments: formal_argument_nodes,
         scope: Scope.from_nesting(@current_nesting))
@@ -446,24 +459,26 @@ module Orbacle
       klass_name_ast, parent_klass_name_ast, klass_body = ast.children
       klass_name_ref = ConstRef.from_ast(klass_name_ast)
 
-      @tree.add_klass(
+      klass = @tree.add_klass(
         name: klass_name_ref.name,
         scope: Scope.from_nesting(@current_nesting).increase_by_ref(klass_name_ref).decrease.absolute_str,
         inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
         inheritance_nesting: @current_nesting.get_output_nesting,
         line: klass_name_ast.loc.line)
 
-      @current_nesting.increase_nesting_const(klass_name_ref)
+      switch_currently_analyzed_klass(klass) do
+        @current_nesting.increase_nesting_const(klass_name_ref)
 
-      new_selfie = Selfie.klass_from_scope(Scope.from_nesting(@current_nesting))
-      self_node = Node.new(:self, { selfie: new_selfie })
-      @graph.add_vertex(self_node)
+        new_selfie = Selfie.klass_from_scope(Scope.from_nesting(@current_nesting))
+        self_node = Node.new(:self, { selfie: new_selfie })
+        @graph.add_vertex(self_node)
 
-      if klass_body
-        process(klass_body, lenv.merge(self_: self_node))
+        if klass_body
+          process(klass_body, lenv.merge(self_: self_node))
+        end
+
+        @current_nesting.decrease_nesting
       end
-
-      @current_nesting.decrease_nesting
 
       node = Node.new(:nil)
       @graph.add_vertex(node)
@@ -557,6 +572,13 @@ module Orbacle
       expr.type == :send &&
         expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
         expr.children[1] == :new
+    end
+
+    def switch_currently_analyzed_klass(klass)
+      previous = @currently_analyzed_klass
+      @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(klass, :public)
+      yield
+      @currently_analyzed_klass = previous
     end
   end
 end

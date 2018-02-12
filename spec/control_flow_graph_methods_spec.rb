@@ -13,7 +13,7 @@ RSpec.describe Orbacle::ControlFlowGraph do
     [Orbacle::GlobalTree::Constant, scope, name]
   end
 
-  specify do
+  specify "simple method in class declaration" do
     file = <<-END
     class Foo
       def bar
@@ -25,20 +25,26 @@ RSpec.describe Orbacle::ControlFlowGraph do
     meth = find_method(result, "Foo", "bar")
     expect(meth.visibility).to eq(:public)
     expect(meth.line).to eq(2)
-  end
-
-  specify do
-    file = <<-END
-    class Foo
-      def bar
-      end
-    end
-    END
 
     r = parse_file_methods.(file)
     expect(r[:constants]).to match_array([
       build_klass(name: "Foo")
     ])
+  end
+
+  specify "private method in class declaration" do
+    file = <<-END
+    class Foo
+      private
+      def bar
+      end
+    end
+    END
+
+    result = compute_graph(file)
+    meth = find_method(result, "Foo", "bar")
+    expect(meth.visibility).to eq(:private)
+    expect(meth.line).to eq(3)
   end
 
   specify do
