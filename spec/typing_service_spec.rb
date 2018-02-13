@@ -12,6 +12,36 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
+    specify "primitive float" do
+      snippet = <<-END
+      42.0
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Float"))
+    end
+
+    specify "primitive bool" do
+      snippet = <<-END
+      true
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Boolean"))
+    end
+
+    specify "primitive nil" do
+      snippet = <<-END
+      nil
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("nil"))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42

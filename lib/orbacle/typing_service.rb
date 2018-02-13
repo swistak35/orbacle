@@ -72,9 +72,11 @@ module Orbacle
     def compute_result(node, sources)
       case node.type
       when :int then handle_int(node, sources)
+      when :float then handle_float(node, sources)
       when :str then handle_str(node, sources)
       when :sym then handle_sym(node, sources)
       when :nil then handle_nil(node, sources)
+      when :bool then handle_bool(node, sources)
       when :self then handle_self(node, sources)
       when :lvar then handle_lvar(node, sources)
       when :array then handle_array(node, sources)
@@ -108,6 +110,14 @@ module Orbacle
 
     def handle_nil(_node, _sources)
       NominalType.new("nil")
+    end
+
+    def handle_bool(*args)
+      NominalType.new("Boolean")
+    end
+
+    def handle_float(*args)
+      NominalType.new("Float")
     end
 
     def handle_self(node, sources)
