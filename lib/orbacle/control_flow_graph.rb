@@ -81,6 +81,10 @@ module Orbacle
         handle_irange(ast, lenv)
       when :erange
         handle_erange(ast, lenv)
+      when :back_ref
+        handle_ref(ast, lenv, :backref)
+      when :nth_ref
+        handle_ref(ast, lenv, :nthref)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -276,6 +280,13 @@ module Orbacle
       @graph.add_edge(to_node, range_node)
 
       return [range_node, final_lenv]
+    end
+
+    def handle_ref(ast, lenv, node_type)
+      ref = ast.children[0].to_s
+      node = Node.new(node_type, { ref: ref })
+      @graph.add_vertex(node)
+      return [node, lenv]
     end
 
     def handle_begin(ast, lenv)

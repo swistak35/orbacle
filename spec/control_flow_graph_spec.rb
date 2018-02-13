@@ -220,6 +220,27 @@ module Orbacle
         node(:regexp, { regopt: [] }))
     end
 
+    specify "regexp-specific global variables" do
+      snippet = <<-END
+      $`
+      $&
+      $'
+      $+
+      $1
+      $9
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:backref, { ref: "$`" }))
+      expect(result.graph).to include_node(node(:backref, { ref: "$&" }))
+      expect(result.graph).to include_node(node(:backref, { ref: "$'" }))
+      expect(result.graph).to include_node(node(:backref, { ref: "$+" }))
+
+      expect(result.graph).to include_node(node(:nthref, { ref: "1" }))
+      expect(result.graph).to include_node(node(:nthref, { ref: "9" }))
+    end
+
     specify "empty hash" do
       snippet = <<-END
       {
