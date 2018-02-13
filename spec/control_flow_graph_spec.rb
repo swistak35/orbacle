@@ -241,6 +241,17 @@ module Orbacle
       expect(result.graph).to include_node(node(:nthref, { ref: "9" }))
     end
 
+    specify "handle defined?" do
+      snippet = <<-END
+      defined?(x)
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:defined))
+      expect(result.graph.edges).to be_empty
+    end
+
     specify "empty hash" do
       snippet = <<-END
       {

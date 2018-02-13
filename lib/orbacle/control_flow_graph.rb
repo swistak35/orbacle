@@ -85,6 +85,8 @@ module Orbacle
         handle_ref(ast, lenv, :backref)
       when :nth_ref
         handle_ref(ast, lenv, :nthref)
+      when :defined?
+        handle_defined(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
       when :lvar
@@ -286,6 +288,14 @@ module Orbacle
       ref = ast.children[0].to_s
       node = Node.new(node_type, { ref: ref })
       @graph.add_vertex(node)
+      return [node, lenv]
+    end
+
+    def handle_defined(ast, lenv)
+      _expr = ast.children[0]
+
+      node = Node.new(:defined)
+
       return [node, lenv]
     end
 
