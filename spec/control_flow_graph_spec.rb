@@ -3,114 +3,126 @@ require 'support/graph_matchers'
 
 module Orbacle
   RSpec.describe "ControlFlowGraph" do
-    specify "primitive int" do
-      snippet = <<-END
-        42
-      END
+    describe "primitives" do
+      specify "nothing" do
+        snippet = ""
 
-      result = generate_cfg(snippet)
+        expect do
+          generate_cfg(snippet)
+        end.not_to raise_error
+      end
 
-      expect(result.final_node).to eq(node(:int, { value: 42 }))
+      specify "primitive int" do
+        snippet = <<-END
+          42
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:int, { value: 42 }))
+      end
+
+      specify "primitive negative int" do
+        snippet = <<-END
+        -42
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:int, { value: -42 }))
+      end
+
+      specify "primitive float" do
+        snippet = <<-END
+        42.0
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:float, { value: 42.0 }))
+      end
+
+      specify "primitive negative float" do
+        snippet = <<-END
+        -42.0
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:float, { value: -42.0 }))
+      end
+
+      specify "primitive bool" do
+        snippet = <<-END
+        true
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:bool, { value: true }))
+      end
+
+      specify "primitive bool" do
+        snippet = <<-END
+        false
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:bool, { value: false }))
+      end
+
+      specify "primitive nil" do
+        snippet = <<-END
+        nil
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:nil))
+      end
     end
 
-    specify "primitive negative int" do
-      snippet = <<-END
-      -42
-      END
+    describe "arrays" do
+      specify "literal array" do
+        snippet = <<-END
+        [42, 24]
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:int, { value: -42 }))
-    end
+        expect(result.final_node).to eq(node(:array))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 24 }),
+          node(:array))
+      end
 
-    specify "primitive float" do
-      snippet = <<-END
-      42.0
-      END
+      specify "literal empty array" do
+        snippet = <<-END
+        []
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:float, { value: 42.0 }))
-    end
+        expect(result.final_node).to eq(node(:array))
+      end
 
-    specify "primitive negative float" do
-      snippet = <<-END
-      -42.0
-      END
+      specify "splat in array" do
+        snippet = <<-END
+        foo = [1,2]
+        [*foo, 3]
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:float, { value: -42.0 }))
-    end
-
-    specify "primitive bool" do
-      snippet = <<-END
-      true
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:bool, { value: true }))
-    end
-
-    specify "primitive bool" do
-      snippet = <<-END
-      false
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:bool, { value: false }))
-    end
-
-    specify "primitive nil" do
-      snippet = <<-END
-      nil
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:nil))
-    end
-
-    specify "literal array" do
-      snippet = <<-END
-      [42, 24]
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:array))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:array))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 24 }),
-        node(:array))
-    end
-
-    specify "literal empty array" do
-      snippet = <<-END
-      []
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:array))
-    end
-
-    specify "splat in array" do
-      snippet = <<-END
-      foo = [1,2]
-      [*foo, 3]
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:array))
-      expect(result.graph).to include_edge(
-        node(:splat_array),
-        node(:array))
+        expect(result.final_node).to eq(node(:array))
+        expect(result.graph).to include_edge(
+          node(:splat_array),
+          node(:array))
+      end
     end
 
     specify "string literal" do
@@ -1383,12 +1395,15 @@ module Orbacle
         node(:lvar, { var_name: "e" }))
     end
 
-    specify "nothing" do
-      snippet = ""
+    specify "simple module" do
+      snippet = <<-END
+      module Foo
+      end
+      END
 
-      expect do
-        generate_cfg(snippet)
-      end.not_to raise_error
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:nil))
     end
 
     def generate_cfg(snippet)

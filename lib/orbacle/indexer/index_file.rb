@@ -7,7 +7,6 @@ module Orbacle
 
       def call(path:, content:)
         parser = ControlFlowGraph.new
-        puts "Processing file #{path}"
         result = parser.process_file(content)
         result.tree.constants.each do |c|
           @db.add_constant(

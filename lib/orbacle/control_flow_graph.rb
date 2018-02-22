@@ -184,8 +184,7 @@ module Orbacle
       var_name = ast.children[0].to_s
       expr = ast.children[1]
 
-      node_lvasgn = Node.new(:lvasgn, { var_name: var_name })
-      @graph.add_vertex(node_lvasgn)
+      node_lvasgn = add_vertex(Node.new(:lvasgn, { var_name: var_name }))
 
       if expr
         node_expr, lenv_after_expr = process(expr, lenv)
@@ -200,52 +199,45 @@ module Orbacle
 
     def handle_int(ast, lenv)
       value = ast.children[0]
-      n = Node.new(:int, { value: value })
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:int, { value: value }))
 
       return [n, lenv]
     end
 
     def handle_float(ast, lenv)
       value = ast.children[0]
-      n = Node.new(:float, { value: value })
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:float, { value: value }))
 
       return [n, lenv]
     end
 
     def handle_true(ast, lenv)
-      n = Node.new(:bool, { value: true })
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:bool, { value: true }))
 
       return [n, lenv]
     end
 
     def handle_false(ast, lenv)
-      n = Node.new(:bool, { value: false })
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:bool, { value: false }))
 
       return [n, lenv]
     end
 
     def handle_nil(ast, lenv)
-      n = Node.new(:nil)
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:nil))
 
       return [n, lenv]
     end
 
     def handle_str(ast, lenv)
       value = ast.children[0]
-      n = Node.new(:str, { value: value })
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:str, { value: value }))
 
       return [n, lenv]
     end
 
     def handle_dstr(ast, lenv)
-      node_dstr = Node.new(:dstr)
-      @graph.add_vertex(node_dstr)
+      node_dstr = add_vertex(Node.new(:dstr))
 
       final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
@@ -258,15 +250,13 @@ module Orbacle
 
     def handle_sym(ast, lenv)
       value = ast.children[0]
-      n = Node.new(:sym, { value: value })
-      @graph.add_vertex(n)
+      n = add_vertex(Node.new(:sym, { value: value }))
 
       return [n, lenv]
     end
 
     def handle_dsym(ast, lenv)
-      node_dsym = Node.new(:dsym)
-      @graph.add_vertex(node_dsym)
+      node_dsym = add_vertex(Node.new(:dsym))
 
       final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
@@ -278,8 +268,7 @@ module Orbacle
     end
 
     def handle_array(ast, lenv)
-      node_array = Node.new(:array)
-      @graph.add_vertex(node_array)
+      node_array = add_vertex(Node.new(:array))
 
       final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
@@ -345,8 +334,7 @@ module Orbacle
 
     def handle_ref(ast, lenv, node_type)
       ref = ast.children[0].to_s
-      node = Node.new(node_type, { ref: ref })
-      @graph.add_vertex(node)
+      node = add_vertex(Node.new(node_type, { ref: ref }))
       return [node, lenv]
     end
 
@@ -370,8 +358,7 @@ module Orbacle
     def handle_lvar(ast, lenv)
       var_name = ast.children[0].to_s
 
-      node_lvar = Node.new(:lvar, { var_name: var_name })
-      @graph.add_vertex(node_lvar)
+      node_lvar = add_vertex(Node.new(:lvar, { var_name: var_name }))
 
       lenv.fetch(var_name).each do |var_definition_node|
         @graph.add_edge(var_definition_node, node_lvar)
@@ -401,8 +388,7 @@ module Orbacle
       ivar_name = ast.children[0].to_s
       expr = ast.children[1]
 
-      node_ivasgn = Node.new(:ivasgn, { var_name: ivar_name })
-      @graph.add_vertex(node_ivasgn)
+      node_ivasgn = add_vertex(Node.new(:ivasgn, { var_name: ivar_name }))
 
       if expr
         node_expr, lenv_after_expr = process(expr, lenv)
@@ -427,8 +413,7 @@ module Orbacle
       cvar_name = ast.children[0].to_s
       expr = ast.children[1]
 
-      node_cvasgn = Node.new(:cvasgn, { var_name: cvar_name })
-      @graph.add_vertex(node_cvasgn)
+      node_cvasgn = add_vertex(Node.new(:cvasgn, { var_name: cvar_name }))
 
       if expr
         node_expr, lenv_after_expr = process(expr, lenv)
@@ -458,7 +443,7 @@ module Orbacle
       gvar_name = ast.children[0].to_s
       expr = ast.children[1]
 
-      node_gvasgn = Node.new(:gvasgn, { var_name: gvar_name })
+      node_gvasgn = add_vertex(Node.new(:gvasgn, { var_name: gvar_name }))
       @graph.add_vertex(node_gvasgn)
 
       node_expr, lenv_after_expr = process(expr, lenv)
@@ -475,7 +460,7 @@ module Orbacle
 
       gvar_definition_node = get_gvar_definition_node(gvar_name)
 
-      node = Node.new(:gvar)
+      node = add_vertex(Node.new(:gvar))
       @graph.add_edge(gvar_definition_node, node)
 
       return [node, lenv]
@@ -487,7 +472,7 @@ module Orbacle
       arg_exprs = ast.children[2..-1]
 
       if obj_expr.nil?
-        obj_node = Node.new(:self, { selfie: current_selfie })
+        obj_node = add_vertex(Node.new(:self, { selfie: current_selfie }))
         @graph.add_vertex(obj_node)
         obj_lenv = lenv
       else
@@ -497,7 +482,7 @@ module Orbacle
       call_arg_nodes = []
       final_lenv = arg_exprs.reduce(obj_lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
-        call_arg_node = Node.new(:call_arg)
+        call_arg_node = add_vertex(Node.new(:call_arg))
         call_arg_nodes << call_arg_node
         @graph.add_vertex(call_arg_node)
         @graph.add_edge(ast_child_node, call_arg_node)
@@ -506,11 +491,11 @@ module Orbacle
 
       return handle_changing_visibility(lenv, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
 
-      call_obj_node = Node.new(:call_obj)
+      call_obj_node = add_vertex(Node.new(:call_obj))
       @graph.add_vertex(call_obj_node)
       @graph.add_edge(obj_node, call_obj_node)
 
-      call_result_node = Node.new(:call_result, { csend: csend })
+      call_result_node = add_vertex(Node.new(:call_result, { csend: csend }))
       @graph.add_vertex(call_result_node)
 
       message_send = MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
@@ -534,10 +519,10 @@ module Orbacle
           end
         end
 
-        Node.new(:class, { klass: @currently_analyzed_klass.klass })
+        add_vertex(Node.new(:class, { klass: @currently_analyzed_klass.klass }))
       else
         # This should actually be reference to Object class
-        Node.new(:nil)
+        add_vertex(Node.new(:nil))
       end
       @graph.add_vertex(node)
 
@@ -545,7 +530,7 @@ module Orbacle
     end
 
     def handle_self(ast, lenv)
-      node = Node.new(:self, { selfie: current_selfie })
+      node = add_vertex(Node.new(:self, { selfie: current_selfie }))
       @graph.add_vertex(node)
       return [node, lenv]
     end
@@ -561,7 +546,7 @@ module Orbacle
       args_ast_nodes = []
       lenv_with_args = args_ast.children.reduce(send_lenv) do |current_lenv, arg_ast|
         arg_name = arg_ast.children[0].to_s
-        arg_node = Node.new(:block_arg, { var_name: arg_name })
+        arg_node = add_vertex(Node.new(:block_arg, { var_name: arg_name }))
         @graph.add_vertex(arg_node)
         args_ast_nodes << arg_node
         current_lenv.merge(arg_name => [arg_node])
@@ -570,7 +555,7 @@ module Orbacle
       # It's not exactly good - local vars defined in blocks are not available outside (?),
       #     but assignments done in blocks are valid.
       block_final_node, block_result_lenv = process(block_expr, lenv_with_args)
-      block_result_node = Node.new(:block_result)
+      block_result_node = add_vertex(Node.new(:block_result))
       @graph.add_vertex(block_result_node)
       @graph.add_edge(block_final_node, block_result_node)
       block = Block.new(args_ast_nodes, block_result_node)
@@ -586,7 +571,7 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
-      @currently_parsed_method_result_node = Node.new(:method_result)
+      @currently_parsed_method_result_node = add_vertex(Node.new(:method_result))
       @graph.add_vertex(@currently_parsed_method_result_node)
       if method_body
         with_selfie(Selfie.instance_from_scope(current_scope)) do
@@ -594,7 +579,7 @@ module Orbacle
           @graph.add_edge(final_node, @currently_parsed_method_result_node)
         end
       else
-        final_node = Node.new(:nil)
+        final_node = add_vertex(Node.new(:nil))
         @graph.add_vertex(final_node)
         @graph.add_edge(final_node, @currently_parsed_method_result_node)
       end
@@ -607,16 +592,16 @@ module Orbacle
         node_formal_arguments: formal_arguments_nodes,
         scope: current_scope)
 
-      node = Node.new(:sym, { value: method_name })
+      node = add_vertex(Node.new(:sym, { value: method_name }))
       @graph.add_vertex(node)
 
       return [node, lenv]
     end
 
     def handle_hash(ast, lenv)
-      node_hash_keys = Node.new(:hash_keys)
-      node_hash_values = Node.new(:hash_values)
-      node_hash = Node.new(:hash)
+      node_hash_keys = add_vertex(Node.new(:hash_keys))
+      node_hash_values = add_vertex(Node.new(:hash_values))
+      node_hash = add_vertex(Node.new(:hash))
       @graph.add_vertex(node_hash)
       @graph.add_vertex(node_hash_keys)
       @graph.add_vertex(node_hash_values)
@@ -656,14 +641,16 @@ module Orbacle
         end
       end
 
-      node = Node.new(:nil)
+      node = add_vertex(Node.new(:nil))
       @graph.add_vertex(node)
 
       return [node, lenv]
     end
 
     def handle_module(ast, lenv)
-      module_name_ast, module_body = ast.children
+      module_name_ast = ast.children[0]
+      module_body = ast.children[1]
+
       module_name_ref = ConstRef.from_ast(module_name_ast)
 
       @tree.add_mod(
@@ -696,7 +683,7 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
-      @currently_parsed_method_result_node = Node.new(:method_result)
+      @currently_parsed_method_result_node = add_vertex(Node.new(:method_result))
       @graph.add_vertex(@currently_parsed_method_result_node)
       if method_body
         with_selfie(Selfie.klass_from_scope(current_scope)) do
@@ -704,7 +691,7 @@ module Orbacle
           @graph.add_edge(final_node, @currently_parsed_method_result_node)
         end
       else
-        final_node = Node.new(:nil)
+        final_node = add_vertex(Node.new(:nil))
         @graph.add_vertex(final_node)
         @graph.add_edge(final_node, @currently_parsed_method_result_node)
       end
@@ -717,7 +704,7 @@ module Orbacle
         node_formal_arguments: formal_arguments_nodes,
         scope: current_scope.increase_by_metaklass)
 
-      node = Node.new(:sym, { value: method_name })
+      node = add_vertex(Node.new(:sym, { value: method_name }))
       @graph.add_vertex(node)
 
       return [node, lenv]
@@ -757,7 +744,7 @@ module Orbacle
     def handle_const(ast, lenv)
       const_ref = ConstRef.from_ast(ast)
 
-      node = Node.new(:const, { const_ref: const_ref })
+      node = add_vertex(Node.new(:const, { const_ref: const_ref }))
       @graph.add_vertex(node)
 
       return [node, lenv]
@@ -775,7 +762,7 @@ module Orbacle
       node_left, lenv_after_left = process(expr_left, lenv)
       node_right, lenv_after_right = process(expr_right, lenv_after_left)
 
-      node_or = Node.new(node_type)
+      node_or = add_vertex(Node.new(node_type))
       @graph.add_edge(node_left, node_or)
       @graph.add_edge(node_right, node_or)
 
@@ -792,18 +779,18 @@ module Orbacle
       if expr_iftrue
         node_iftrue, lenv_after_iftrue = process(expr_iftrue, lenv_after_cond)
       else
-        node_iftrue = Node.new(:nil)
+        node_iftrue = add_vertex(Node.new(:nil))
         lenv_after_iftrue = lenv
       end
 
       if expr_iffalse
         node_iffalse, lenv_after_iffalse = process(expr_iffalse, lenv_after_cond)
       else
-        node_iffalse = Node.new(:nil)
+        node_iffalse = add_vertex(Node.new(:nil))
         lenv_after_iffalse = lenv
       end
 
-      node_if_result = Node.new(:if_result)
+      node_if_result = add_vertex(Node.new(:if_result))
       @graph.add_edge(node_iftrue, node_if_result)
       @graph.add_edge(node_iffalse, node_if_result)
 
@@ -814,7 +801,7 @@ module Orbacle
       expr = ast.children[0]
 
       if expr.nil?
-        node_expr = Node.new(:nil)
+        node_expr = add_vertex(Node.new(:nil))
         final_lenv = lenv
       else
         node_expr, final_lenv = process(expr, lenv)
@@ -837,7 +824,7 @@ module Orbacle
     end
 
     def handle_mlhs(ast, lenv)
-      node_mlhs = Node.new(:mlhs)
+      node_mlhs = add_vertex(Node.new(:mlhs))
       @graph.add_vertex(node_mlhs)
 
       final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
@@ -850,7 +837,7 @@ module Orbacle
     end
 
     def handle_alias(ast, lenv)
-      node = Node.new(:nil)
+      node = add_vertex(Node.new(:nil))
       return [node, lenv]
     end
 
@@ -860,14 +847,14 @@ module Orbacle
       call_arg_nodes = []
       final_lenv = arg_exprs.reduce(lenv) do |current_lenv, ast_child|
         ast_child_node, new_lenv = process(ast_child, current_lenv)
-        call_arg_node = Node.new(:call_arg)
+        call_arg_node = add_vertex(Node.new(:call_arg))
         call_arg_nodes << call_arg_node
         @graph.add_vertex(call_arg_node)
         @graph.add_edge(ast_child_node, call_arg_node)
         new_lenv
       end
 
-      call_result_node = Node.new(:call_result)
+      call_result_node = add_vertex(Node.new(:call_result))
       @graph.add_vertex(call_result_node)
 
       super_send = SuperSend.new(call_arg_nodes, call_result_node, nil)
@@ -877,7 +864,7 @@ module Orbacle
     end
 
     def handle_zsuper(ast, lenv)
-      call_result_node = Node.new(:call_result)
+      call_result_node = add_vertex(Node.new(:call_result))
       @graph.add_vertex(call_result_node)
 
       zsuper_send = Super0Send.new(call_result_node, nil)
@@ -893,7 +880,7 @@ module Orbacle
       node_cond, new_lenv = process(expr_cond, lenv)
       node_body, final_lenv = process(expr_body, new_lenv)
 
-      node = Node.new(:nil)
+      node = add_vertex(Node.new(:nil))
       @graph.add_vertex(node)
 
       return [node, final_lenv]
@@ -905,7 +892,7 @@ module Orbacle
 
       node_cond, new_lenv = process(expr_cond, lenv)
 
-      node_case_result = Node.new(:case_result)
+      node_case_result = add_vertex(Node.new(:case_result))
       final_lenv = expr_branches.reduce(new_lenv) do |current_lenv, expr_when|
         node_when, next_lenv = process(expr_when, current_lenv)
         @graph.add_edge(node_when, node_case_result)
@@ -918,13 +905,13 @@ module Orbacle
     def handle_yield(ast, lenv)
       exprs = ast.children
 
-      node_yield = Node.new(:yield)
+      node_yield = add_vertex(Node.new(:yield))
       final_lenv = exprs.reduce(lenv) do |current_lenv, current_expr|
         current_node, next_lenv = process(current_expr, current_lenv)
         @graph.add_edge(current_node, node_yield)
         next_lenv
       end
-      result_node = Node.new(:nil)
+      result_node = add_vertex(Node.new(:nil))
 
       return [result_node, final_lenv]
     end
@@ -965,7 +952,7 @@ module Orbacle
       if rescue_body_expr
         node_rescue_body, final_lenv = process(rescue_body_expr, lenv_after_assignment)
       else
-        node_rescue_body = Node.new(:nil)
+        node_rescue_body = add_vertex(Node.new(:nil))
         final_lenv = lenv
       end
 
@@ -980,12 +967,12 @@ module Orbacle
       if try_expr
         node_try, lenv_after_try = process(try_expr, lenv)
       else
-        node_try = Node.new(:nil)
+        node_try = add_vertex(Node.new(:nil))
         lenv_after_try = lenv
       end
       node_resbody, lenv_after_resbody = process(resbody, lenv_after_try)
 
-      node = Node.new(:rescue)
+      node = add_vertex(Node.new(:rescue))
       @graph.add_edge(node_try, node)
       @graph.add_edge(node_resbody, node)
 
@@ -1019,7 +1006,7 @@ module Orbacle
       raise if klass.nil?
 
       if !klass.nodes.instance_variables[ivar_name]
-        klass.nodes.instance_variables[ivar_name] = Node.new(:ivar_definition)
+        klass.nodes.instance_variables[ivar_name] = add_vertex(Node.new(:ivar_definition))
         @graph.add_vertex(klass.nodes.instance_variables[ivar_name])
       end
 
@@ -1034,7 +1021,7 @@ module Orbacle
       raise if klass.nil?
 
       if !klass.nodes.class_level_instance_variables[ivar_name]
-        klass.nodes.class_level_instance_variables[ivar_name] = Node.new(:ivar_definition)
+        klass.nodes.class_level_instance_variables[ivar_name] = add_vertex(Node.new(:ivar_definition))
         @graph.add_vertex(klass.nodes.class_level_instance_variables[ivar_name])
       end
 
@@ -1049,7 +1036,7 @@ module Orbacle
       raise if klass.nil?
 
       if !klass.nodes.class_variables[cvar_name]
-        klass.nodes.class_variables[cvar_name] = Node.new(:cvar_definition)
+        klass.nodes.class_variables[cvar_name] = add_vertex(Node.new(:cvar_definition))
         @graph.add_vertex(klass.nodes.class_variables[cvar_name])
       end
 
@@ -1058,7 +1045,7 @@ module Orbacle
 
     def get_gvar_definition_node(gvar_name)
       if !@tree.nodes.global_variables[gvar_name]
-        @tree.nodes.global_variables[gvar_name] = Node.new(:gvar_definition)
+        @tree.nodes.global_variables[gvar_name] = add_vertex(Node.new(:gvar_definition))
         @graph.add_vertex(@tree.nodes.global_variables[gvar_name])
       end
 
@@ -1125,6 +1112,11 @@ module Orbacle
       end
 
       final_lenv
+    end
+
+    def add_vertex(node)
+      @graph.add_vertex(node)
+      node
     end
   end
 end
