@@ -28,6 +28,7 @@ module Orbacle
     Super0Send = Struct.new(:send_result, :block)
 
     Block = Struct.new(:args, :result)
+    BlockPass = Struct.new(:node)
     CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
     Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
@@ -152,6 +153,10 @@ module Orbacle
         handle_case(ast, lenv)
       when :yield
         handle_yield(ast, lenv)
+      when :break
+        handle_break(ast, lenv)
+      when :block_pass
+        handle_block_pass(ast, lenv)
       else
         raise ArgumentError.new(ast.type)
       end
@@ -695,16 +700,22 @@ module Orbacle
           inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
           inheritance_nesting: current_nesting.to_primitive,
           line: ast.loc.line)
+
+        return [Node.new(:nil), lenv]
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
           name: const_name_ref.name,
           scope: current_scope.increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
+
+        return [Node.new(:nil), lenv]
       else
         @tree.add_constant(
           name: const_name_ref.name,
           scope: current_scope.increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
+
+        return [Node.new(:nil), lenv]
       end
     end
 
@@ -891,6 +902,18 @@ module Orbacle
       node_body, lenv_after_body = process(expr_body, lenv_after_cond)
 
       return [node_body, lenv_after_body]
+    end
+
+    def handle_break(ast, lenv)
+      return [Node.new(:nil), lenv]
+    end
+
+    def handle_block_pass(ast, lenv)
+      expr = ast.children[0]
+
+      node_block_pass, next_lenv = process(expr, lenv)
+
+      return [node_block_pass, next_lenv]
     end
 
     def expr_is_class_definition?(expr)

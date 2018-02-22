@@ -1325,6 +1325,27 @@ module Orbacle
         node(:yield))
     end
 
+    specify "break" do
+      snippet = <<-END
+      while true
+        break
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:break))
+    end
+
+    specify "passing block" do
+      snippet = <<-END
+        x = Proc.new {|x| x }
+        foo(&x)
+      END
+
+      result = generate_cfg(snippet)
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
