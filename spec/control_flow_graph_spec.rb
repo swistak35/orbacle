@@ -1288,6 +1288,26 @@ module Orbacle
       expect(result.final_node).to eq(node(:nil))
     end
 
+    specify "case-when branching (without else)" do
+      snippet = <<-END
+      case true
+      when :foo then "foo"
+      when :bar then 42
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:bool, { value: true }))
+      expect(result.graph).to include_node(node(:sym, { value: :foo }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:case_result))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:case_result))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)

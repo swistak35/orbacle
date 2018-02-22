@@ -146,6 +146,10 @@ module Orbacle
         handle_zsuper(ast, lenv)
       when :while
         handle_while(ast, lenv)
+      when :when
+        handle_when(ast, lenv)
+      when :case
+        handle_case(ast, lenv)
       else
         raise ArgumentError.new(ast.type)
       end
@@ -845,6 +849,32 @@ module Orbacle
       @graph.add_vertex(node)
 
       return [node, final_lenv]
+    end
+
+    def handle_case(ast, lenv)
+      expr_cond = ast.children[0]
+      expr_branches = ast.children[1..-1].compact
+
+      node_cond, new_lenv = process(expr_cond, lenv)
+
+      node_case_result = Node.new(:case_result)
+      final_lenv = expr_branches.reduce(new_lenv) do |current_lenv, expr_when|
+        node_when, next_lenv = process(expr_when, current_lenv)
+        @graph.add_edge(node_when, node_case_result)
+        next_lenv
+      end
+
+      return [node_case_result, final_lenv]
+    end
+
+    def handle_when(ast, lenv)
+      expr_cond = ast.children[0]
+      expr_body = ast.children[1]
+
+      node_cond, lenv_after_cond = process(expr_cond, lenv)
+      node_body, lenv_after_body = process(expr_body, lenv_after_cond)
+
+      return [node_body, lenv_after_body]
     end
 
     def expr_is_class_definition?(expr)
