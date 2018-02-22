@@ -1121,6 +1121,24 @@ module Orbacle
         node(:cvasgn, { var_name: "@@y" }))
     end
 
+    specify "alias method" do
+      snippet = <<-END
+      class Foo
+        alias :foo :bar
+      end
+      END
+
+      generate_cfg(snippet)
+    end
+
+    specify "alias global variable" do
+      snippet = <<-END
+      alias $foo $bar
+      END
+
+      generate_cfg(snippet)
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)

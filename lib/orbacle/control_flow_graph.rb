@@ -4,6 +4,8 @@ require 'orbacle/nesting'
 
 module Orbacle
   class ControlFlowGraph
+    ProcessError = Class.new(StandardError)
+
     class Node
       def initialize(type, params = {})
         @type = type
@@ -133,8 +135,10 @@ module Orbacle
         handle_masgn(ast, lenv)
       when :mlhs
         handle_mlhs(ast, lenv)
+      when :alias
+        handle_alias(ast, lenv)
       else
-        raise ArgumentError.new(ast)
+        raise ArgumentError.new(ast.type)
       end
     end
 
@@ -782,6 +786,11 @@ module Orbacle
       end
 
       return [node_mlhs, final_lenv]
+    end
+
+    def handle_alias(ast, lenv)
+      node = Node.new(:nil)
+      return [node, lenv]
     end
 
     def expr_is_class_definition?(expr)
