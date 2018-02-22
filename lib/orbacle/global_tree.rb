@@ -64,6 +64,10 @@ module Orbacle
           @scope == other.scope &&
           @line == line
       end
+
+      def full_name
+        [*scope.elems, @name].join("::")
+      end
     end
 
     class Constant
