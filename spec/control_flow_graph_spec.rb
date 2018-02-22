@@ -522,6 +522,20 @@ module Orbacle
         node(:method_result))
     end
 
+    specify "method definition with keyword arguments" do
+      snippet = <<-END
+      def foo(x, bar:)
+        bar
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:formal_kwarg, { var_name: "bar" }),
+        node(:lvar, { var_name: "bar" }))
+    end
+
     specify "private send in class definition" do
       snippet = <<-END
       class Foo
