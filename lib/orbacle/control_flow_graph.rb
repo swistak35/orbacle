@@ -171,10 +171,14 @@ module Orbacle
         handle_break(ast, lenv)
       when :block_pass
         handle_block_pass(ast, lenv)
+
       when :rescue
         handle_rescue(ast, lenv)
       when :resbody
         handle_resbody(ast, lenv)
+      when :retry
+        handle_retry(ast, lenv)
+
       else
         raise ArgumentError.new(ast.type)
       end
@@ -970,6 +974,10 @@ module Orbacle
         @graph.add_edge(node_try, node)
         return [node, lenv_after_resbody]
       end
+    end
+
+    def handle_retry(ast, lenv)
+      return [add_vertex(Node.new(:nil)), lenv]
     end
 
     def expr_is_class_definition?(expr)

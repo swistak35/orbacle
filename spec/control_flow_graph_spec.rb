@@ -1453,6 +1453,23 @@ module Orbacle
           node(:unwrap_array),
           node(:lvasgn, { var_name: "e" }))
       end
+
+      specify "retry keyword" do
+        snippet = <<-END
+        begin
+          42
+        rescue
+          retry
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:rescue))
+        expect(result.final_node).to eq(node(:rescue))
+      end
     end
 
     specify "simple module" do
