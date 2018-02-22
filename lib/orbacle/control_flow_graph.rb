@@ -172,12 +172,10 @@ module Orbacle
       when :block_pass
         handle_block_pass(ast, lenv)
 
-      when :rescue
-        handle_rescue(ast, lenv)
-      when :resbody
-        handle_resbody(ast, lenv)
-      when :retry
-        handle_retry(ast, lenv)
+      when :rescue then handle_rescue(ast, lenv)
+      when :resbody then handle_resbody(ast, lenv)
+      when :retry then handle_retry(ast, lenv)
+      when :ensure then handle_ensure(ast, lenv)
 
       else
         raise ArgumentError.new(ast.type)
@@ -978,6 +976,29 @@ module Orbacle
 
     def handle_retry(ast, lenv)
       return [add_vertex(Node.new(:nil)), lenv]
+    end
+
+    def handle_ensure(ast, lenv)
+      expr_pre = ast.children[0]
+      expr_ensure_body = ast.children[1]
+
+      node_ensure = add_vertex(Node.new(:ensure))
+
+      if expr_pre
+        node_pre, lenv_after_pre = process(expr_pre, lenv)
+        @graph.add_edge(node_pre, node_ensure)
+      else
+        lenv_after_pre = lenv
+      end
+
+      if expr_ensure_body
+        node_ensure_body, lenv_after_ensure_body = process(expr_ensure_body, lenv_after_pre)
+        @graph.add_edge(node_ensure_body, node_ensure)
+      else
+        lenv_after_ensure_body = lenv_after_pre
+      end
+
+      return [node_ensure, lenv_after_ensure_body]
     end
 
     def expr_is_class_definition?(expr)

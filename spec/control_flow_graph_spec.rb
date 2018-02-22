@@ -1470,6 +1470,42 @@ module Orbacle
           node(:rescue))
         expect(result.final_node).to eq(node(:rescue))
       end
+
+      specify "empty ensure" do
+        snippet = <<-END
+        begin
+        ensure
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:ensure))
+      end
+
+      specify "ensure" do
+        snippet = <<-END
+        begin
+          42
+        rescue
+          78
+        else
+          23
+        ensure
+          17
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:rescue),
+          node(:ensure))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 17 }),
+          node(:ensure))
+        expect(result.final_node).to eq(node(:ensure))
+      end
     end
 
     specify "simple module" do
