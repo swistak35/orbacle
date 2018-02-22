@@ -150,6 +150,8 @@ module Orbacle
         handle_when(ast, lenv)
       when :case
         handle_case(ast, lenv)
+      when :yield
+        handle_yield(ast, lenv)
       else
         raise ArgumentError.new(ast.type)
       end
@@ -865,6 +867,20 @@ module Orbacle
       end
 
       return [node_case_result, final_lenv]
+    end
+
+    def handle_yield(ast, lenv)
+      exprs = ast.children
+
+      node_yield = Node.new(:yield)
+      final_lenv = exprs.reduce(lenv) do |current_lenv, current_expr|
+        current_node, next_lenv = process(current_expr, current_lenv)
+        @graph.add_edge(current_node, node_yield)
+        next_lenv
+      end
+      result_node = Node.new(:nil)
+
+      return [result_node, final_lenv]
     end
 
     def handle_when(ast, lenv)

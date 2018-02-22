@@ -1308,6 +1308,23 @@ module Orbacle
         node(:case_result))
     end
 
+    specify "yield" do
+      snippet = <<-END
+      def foo
+        yield 42
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:nil),
+        node(:method_result))
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:yield))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
