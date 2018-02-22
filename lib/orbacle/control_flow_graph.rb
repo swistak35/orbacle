@@ -62,6 +62,8 @@ module Orbacle
     attr_reader :current_nesting, :current_selfie
 
     def process(ast, lenv)
+      return [nil, lenv] if ast.nil?
+
       case ast.type
       when :lvasgn
         handle_lvasgn(ast, lenv)
@@ -984,19 +986,11 @@ module Orbacle
 
       node_ensure = add_vertex(Node.new(:ensure))
 
-      if expr_pre
-        node_pre, lenv_after_pre = process(expr_pre, lenv)
-        @graph.add_edge(node_pre, node_ensure)
-      else
-        lenv_after_pre = lenv
-      end
+      node_pre, lenv_after_pre = process(expr_pre, lenv)
+      @graph.add_edge(node_pre, node_ensure) if node_pre
 
-      if expr_ensure_body
-        node_ensure_body, lenv_after_ensure_body = process(expr_ensure_body, lenv_after_pre)
-        @graph.add_edge(node_ensure_body, node_ensure)
-      else
-        lenv_after_ensure_body = lenv_after_pre
-      end
+      node_ensure_body, lenv_after_ensure_body = process(expr_ensure_body, lenv_after_pre)
+      @graph.add_edge(node_ensure_body, node_ensure) if node_ensure_body
 
       return [node_ensure, lenv_after_ensure_body]
     end
