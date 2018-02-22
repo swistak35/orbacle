@@ -1274,6 +1274,20 @@ module Orbacle
       generate_cfg(snippet)
     end
 
+    specify "while loop" do
+      snippet = <<-END
+      while true
+        42
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:bool, { value: true }))
+      expect(result.graph).to include_node(node(:int, { value: 42 }))
+      expect(result.final_node).to eq(node(:nil))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)

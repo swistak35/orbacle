@@ -144,6 +144,8 @@ module Orbacle
         handle_super(ast, lenv)
       when :zsuper
         handle_zsuper(ast, lenv)
+      when :while
+        handle_while(ast, lenv)
       else
         raise ArgumentError.new(ast.type)
       end
@@ -830,6 +832,19 @@ module Orbacle
       @message_sends << zsuper_send
 
       return [call_result_node, lenv, { message_send: zsuper_send }]
+    end
+
+    def handle_while(ast, lenv)
+      expr_cond = ast.children[0]
+      expr_body = ast.children[1]
+
+      node_cond, new_lenv = process(expr_cond, lenv)
+      node_body, final_lenv = process(expr_body, new_lenv)
+
+      node = Node.new(:nil)
+      @graph.add_vertex(node)
+
+      return [node, final_lenv]
     end
 
     def expr_is_class_definition?(expr)
