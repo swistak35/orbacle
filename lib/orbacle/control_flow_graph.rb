@@ -869,7 +869,7 @@ module Orbacle
     def build_arguments(formal_arguments, lenv)
       formal_arguments_nodes = []
       formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
-        arg_name = arg_ast.children[0].to_s
+        arg_name = arg_ast.children[0]&.to_s
         maybe_arg_default_expr = arg_ast.children[1]
 
         arg_node = if arg_ast.type == :arg

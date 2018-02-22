@@ -575,7 +575,6 @@ module Orbacle
     specify "method definition with keyword args splat" do
       snippet = <<-END
       def foo(x, **kwargs)
-        bar
       end
       END
 
@@ -583,6 +582,18 @@ module Orbacle
 
       expect(result.graph).to include_node(
         node(:formal_kwrestarg, { var_name: "kwargs" }))
+    end
+
+    specify "method definition with unnamed keyword args splat" do
+      snippet = <<-END
+      def foo(x, **)
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(
+        node(:formal_kwrestarg, { var_name: nil }))
     end
 
     specify "private send in class definition" do
@@ -645,6 +656,17 @@ module Orbacle
       expect(result.graph).to include_edge(
         node(:formal_restarg, { var_name: "rest" }),
         node(:lvar, { var_name: "rest" }))
+    end
+
+    specify "method definition with unnamed splat argument" do
+      snippet = <<-END
+      def foo(x, *)
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
     end
 
     specify "method definition, using return with value" do
