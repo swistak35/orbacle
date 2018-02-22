@@ -522,6 +522,23 @@ module Orbacle
         node(:method_result))
     end
 
+    specify "method definition with optional argument" do
+      snippet = <<-END
+      def foo(x = 42)
+        x
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:formal_optarg, { var_name: "x" }))
+      expect(result.graph).to include_edge(
+        node(:formal_optarg, { var_name: "x" }),
+        node(:lvar, { var_name: "x" }))
+    end
+
     specify "method definition with keyword arguments" do
       snippet = <<-END
       def foo(x, bar:, baz:)
