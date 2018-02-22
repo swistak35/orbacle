@@ -24,6 +24,9 @@ module Orbacle
     end
 
     MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
+    SuperSend = Struct.new(:send_args, :send_result, :block)
+    Super0Send = Struct.new(:send_result, :block)
+
     Block = Struct.new(:args, :result)
     CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
@@ -137,6 +140,10 @@ module Orbacle
         handle_mlhs(ast, lenv)
       when :alias
         handle_alias(ast, lenv)
+      when :super
+        handle_super(ast, lenv)
+      when :zsuper
+        handle_zsuper(ast, lenv)
       else
         raise ArgumentError.new(ast.type)
       end
@@ -791,6 +798,38 @@ module Orbacle
     def handle_alias(ast, lenv)
       node = Node.new(:nil)
       return [node, lenv]
+    end
+
+    def handle_super(ast, lenv)
+      arg_exprs = ast.children
+
+      call_arg_nodes = []
+      final_lenv = arg_exprs.reduce(lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        call_arg_node = Node.new(:call_arg)
+        call_arg_nodes << call_arg_node
+        @graph.add_vertex(call_arg_node)
+        @graph.add_edge(ast_child_node, call_arg_node)
+        new_lenv
+      end
+
+      call_result_node = Node.new(:call_result)
+      @graph.add_vertex(call_result_node)
+
+      super_send = SuperSend.new(call_arg_nodes, call_result_node, nil)
+      @message_sends << super_send
+
+      return [call_result_node, final_lenv, { message_send: super_send }]
+    end
+
+    def handle_zsuper(ast, lenv)
+      call_result_node = Node.new(:call_result)
+      @graph.add_vertex(call_result_node)
+
+      zsuper_send = Super0Send.new(call_result_node, nil)
+      @message_sends << zsuper_send
+
+      return [call_result_node, lenv, { message_send: zsuper_send }]
     end
 
     def expr_is_class_definition?(expr)

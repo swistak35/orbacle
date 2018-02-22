@@ -971,6 +971,59 @@ module Orbacle
           node(:call_result)))
     end
 
+    specify "super call without arguments" do
+      snippet = <<-END
+      class Foo
+        def bar
+          super()
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      super_send = result.message_sends[0]
+      expect(super_send).to be_a(ControlFlowGraph::SuperSend)
+      expect(super_send.send_args).to match_array([])
+      expect(super_send.send_result).to eq(node(:call_result))
+      expect(super_send.block).to be_nil
+    end
+
+    specify "super call with arguments" do
+      snippet = <<-END
+      class Foo
+        def bar
+          super(42)
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      super_send = result.message_sends[0]
+      expect(super_send).to be_a(ControlFlowGraph::SuperSend)
+      expect(super_send.send_args).to match_array([node(:call_arg)])
+      expect(super_send.send_result).to eq(node(:call_result))
+      expect(super_send.block).to be_nil
+    end
+
+    specify "super zero-arity call" do
+      snippet = <<-END
+      class Foo
+        def bar
+          super
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      zsuper_send = result.message_sends[0]
+      expect(zsuper_send).to be_a(ControlFlowGraph::Super0Send)
+      expect(zsuper_send.send_result).to eq(node(:call_result))
+      expect(zsuper_send.block).to be_nil
+    end
+
     specify "control flow `and` operator" do
       snippet = <<-END
       false and 42
