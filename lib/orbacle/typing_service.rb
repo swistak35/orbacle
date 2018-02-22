@@ -45,6 +45,7 @@ module Orbacle
       @result = {}
 
       @worklist = Set.new(@graph.original.vertices)
+      @handled_message_sends = Set.new
       while !@worklist.empty?
         current_worklist = @worklist
         @worklist = Set.new
@@ -60,8 +61,9 @@ module Orbacle
         end
 
         message_sends.each do |message_send|
-          if satisfied_message_send?(message_send)
+          if satisfied_message_send?(message_send) && !@handled_message_sends.include?(message_send)
             handle_message_send(message_send, graph)
+            @handled_message_sends << message_send
           end
         end
       end
@@ -92,6 +94,8 @@ module Orbacle
       when :lvasgn then handle_lvasgn(node, sources)
       when :call_obj then handle_call_obj(node, sources)
       when :call_result then handle_call_result(node, sources)
+      when :call_arg then handle_group(node, sources)
+      when :formal_arg then handle_group(node, sources)
       when :block_arg then handle_block_arg(node, sources)
       when :block_result then handle_block_result(node, sources)
       when :primitive_integer_succ then handle_primitive_integer_succ(node, sources)
@@ -238,6 +242,10 @@ module Orbacle
           found_method = @tree.methods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
           formal_argument_nodes = found_method.node_formal_arguments
+          message_send.send_args.each_with_index do |send_arg, i|
+            @graph.add_edge(send_arg, formal_argument_nodes[i])
+            @worklist << formal_argument_nodes[i]
+          end
           method_result_node = found_method.node_result
           if !@graph.original.has_edge?(method_result_node, message_send.send_result)
             @graph.add_edge(method_result_node, message_send.send_result)
