@@ -572,6 +572,19 @@ module Orbacle
         node(:lvar, { var_name: "bar" }))
     end
 
+    specify "method definition with keyword args splat" do
+      snippet = <<-END
+      def foo(x, **kwargs)
+        bar
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(
+        node(:formal_kwrestarg, { var_name: "kwargs" }))
+    end
+
     specify "private send in class definition" do
       snippet = <<-END
       class Foo

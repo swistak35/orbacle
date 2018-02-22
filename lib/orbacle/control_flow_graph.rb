@@ -882,6 +882,8 @@ module Orbacle
           Node.new(:formal_kwarg, { var_name: arg_name })
         elsif arg_ast.type == :kwoptarg
           Node.new(:formal_kwoptarg, { var_name: arg_name })
+        elsif arg_ast.type == :kwrestarg
+          Node.new(:formal_kwrestarg, { var_name: arg_name })
         else raise
         end
 
