@@ -1332,9 +1332,7 @@ module Orbacle
       end
       END
 
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_node(node(:break))
+      generate_cfg(snippet)
     end
 
     specify "passing block" do
