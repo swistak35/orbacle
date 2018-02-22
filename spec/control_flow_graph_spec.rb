@@ -1370,29 +1370,89 @@ module Orbacle
       result = generate_cfg(snippet)
     end
 
-    specify "rescue without assigning error" do
-      snippet = <<-END
-      begin
-      rescue
+    describe "rescue" do
+      specify "rescue without assigning error" do
+        snippet = <<-END
+        begin
+        rescue
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:rescue))
+        expect(result.final_node).to eq(node(:rescue))
       end
-      END
 
-      generate_cfg(snippet)
-    end
+      specify "rescue without else" do
+        snippet = <<-END
+        begin
+          78
+        rescue => e
+          e
+        end
+        END
 
-    specify "rescue" do
-      snippet = <<-END
-      begin
-      rescue => e
-        e
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "e" }),
+          node(:lvar, { var_name: "e" }))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 78 }),
+          node(:rescue))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "e" }),
+          node(:rescue))
+        expect(result.final_node).to eq(node(:rescue))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "rescue with else" do
+        snippet = <<-END
+        begin
+        rescue => e
+          e
+        else
+          42
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "e" }),
-        node(:lvar, { var_name: "e" }))
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:rescue))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "e" }),
+          node(:rescue))
+        expect(result.final_node).to eq(node(:rescue))
+      end
+
+      specify "rescue specific error" do
+        snippet = <<-END
+        begin
+        rescue SomeError, OtherError => e
+          e
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:const, { const_ref: ConstRef.from_full_name("SomeError") }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:const, { const_ref: ConstRef.from_full_name("OtherError") }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:array),
+          node(:unwrap_array))
+        expect(result.graph).to include_edge(
+          node(:unwrap_array),
+          node(:lvasgn, { var_name: "e" }))
+      end
     end
 
     specify "simple module" do

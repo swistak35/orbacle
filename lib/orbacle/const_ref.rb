@@ -44,5 +44,9 @@ module Orbacle
     def relative_name
       @elems.join("::")
     end
+
+    def ==(other)
+      @elems == other.elems && absolute? == other.is_absolute
+    end
   end
 end

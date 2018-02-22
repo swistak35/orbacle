@@ -919,10 +919,21 @@ module Orbacle
       assignment_expr = ast.children[1]
       rescue_body_expr = ast.children[2]
 
-      if assignment_expr
-        node_assignment, lenv_after_assignment = process(assignment_expr, lenv)
+      lenv_after_errors = if error_array_expr
+        node_error_array, lenv_after_errors = process(error_array_expr, lenv)
+        unwrap_node = add_vertex(Node.new(:unwrap_array))
+        @graph.add_edge(node_error_array, unwrap_node)
+        lenv_after_errors
       else
-        lenv_after_assignment = lenv
+        lenv
+      end
+
+      lenv_after_assignment = if assignment_expr
+        node_assignment, lenv_after_assignment = process(assignment_expr, lenv_after_errors)
+        @graph.add_edge(unwrap_node, node_assignment) if unwrap_node
+        lenv_after_assignment
+      else
+        lenv
       end
 
       if rescue_body_expr
@@ -940,19 +951,25 @@ module Orbacle
       resbody = ast.children[1]
       elsebody = ast.children[2]
 
-      if try_expr
-        node_try, lenv_after_try = process(try_expr, lenv)
+      node_try, lenv_after_try = if try_expr
+        process(try_expr, lenv)
       else
-        node_try = add_vertex(Node.new(:nil))
-        lenv_after_try = lenv
+        [add_vertex(Node.new(:nil)), lenv]
       end
+
       node_resbody, lenv_after_resbody = process(resbody, lenv_after_try)
 
       node = add_vertex(Node.new(:rescue))
-      @graph.add_edge(node_try, node)
       @graph.add_edge(node_resbody, node)
 
-      return [node, lenv]
+      if elsebody
+        node_else, lenv_after_else = process(elsebody, lenv_after_try)
+        @graph.add_edge(node_else, node)
+        return [node, merge_lenvs(lenv_after_resbody, lenv_after_else)]
+      else
+        @graph.add_edge(node_try, node)
+        return [node, lenv_after_resbody]
+      end
     end
 
     def expr_is_class_definition?(expr)
