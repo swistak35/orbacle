@@ -47,6 +47,9 @@ module Orbacle
       final_node, final_local_environment = process(ast, initial_local_environment)
 
       return Result.new(@graph, final_local_environment, @message_sends, final_node, @tree)
+    rescue
+      puts "Error processing:\n#{file}"
+      raise
     end
 
     private
@@ -71,6 +74,8 @@ module Orbacle
         handle_self(ast, lenv)
       when :array
         handle_array(ast, lenv)
+      when :splat
+        handle_splat(ast, lenv)
       when :str
         handle_str(ast, lenv)
       when :dstr
@@ -278,6 +283,17 @@ module Orbacle
       end
 
       return [node_array, final_lenv]
+    end
+
+    def handle_splat(ast, lenv)
+      expr = ast.children[0]
+
+      node_expr, lenv_after_expr = process(expr, lenv)
+
+      node_splat = Node.new(:splat_array)
+      @graph.add_edge(node_expr, node_splat)
+
+      return [node_splat, lenv_after_expr]
     end
 
     def handle_regexp(ast, lenv)

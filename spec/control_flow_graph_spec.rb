@@ -99,6 +99,20 @@ module Orbacle
       expect(result.final_node).to eq(node(:array))
     end
 
+    specify "splat in array" do
+      snippet = <<-END
+      foo = [1,2]
+      [*foo, 3]
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.final_node).to eq(node(:array))
+      expect(result.graph).to include_edge(
+        node(:splat_array),
+        node(:array))
+    end
+
     specify "string literal" do
       snippet = <<-END
       "foobar"
@@ -394,7 +408,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.graph).to include_edge(
-        node(:call_result),
+        node(:call_result, { csend: false }),
         node(:method_result))
     end
 
@@ -415,7 +429,7 @@ module Orbacle
           "succ",
           node(:call_obj),
           [],
-          node(:call_result)))
+          node(:call_result, { csend: false })))
     end
 
     specify "method call, with 1 arg" do
@@ -437,7 +451,7 @@ module Orbacle
         msend("floor",
               node(:call_obj),
               [node(:call_arg)],
-              node(:call_result)))
+              node(:call_result, { csend: false })))
     end
 
     specify "method call, with more than one arg" do
@@ -462,7 +476,7 @@ module Orbacle
         msend("floor",
               node(:call_obj),
               [node(:call_arg), node(:call_arg)],
-              node(:call_result)))
+              node(:call_result, { csend: false })))
     end
 
     specify "method call, with block" do
@@ -484,7 +498,7 @@ module Orbacle
         msend("map",
               node(:call_obj),
               [],
-              node(:call_result),
+              node(:call_result, { csend: false }),
               block([node(:block_arg, { var_name: "y" })], node(:block_result))))
     end
 
@@ -910,7 +924,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:call_result))
+      expect(result.final_node).to eq(node(:call_result, { csend: false }))
       expect(result.graph).to include_edge_type(
              node(:const, { const_ref: ConstRef.from_full_name("Foo") }),
         node(:call_obj))
@@ -919,7 +933,7 @@ module Orbacle
         msend("new",
               node(:call_obj),
               [],
-              node(:call_result)))
+              node(:call_result, { csend: false })))
     end
 
     specify "method call, on self" do
@@ -942,7 +956,7 @@ module Orbacle
           "baz",
           node(:call_obj),
           [],
-          node(:call_result)))
+          node(:call_result, { csend: false })))
     end
 
     specify "method call, on implicit self" do
@@ -965,7 +979,7 @@ module Orbacle
           "baz",
           node(:call_obj),
           [],
-          node(:call_result)))
+          node(:call_result, { csend: false })))
     end
 
     specify "super call without arguments" do
