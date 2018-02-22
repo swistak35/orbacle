@@ -533,7 +533,7 @@ module Orbacle
       formal_arguments = ast.children[1]
       method_body = ast.children[2]
 
-      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
+      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
       @currently_parsed_method_result_node = Node.new(:method_result)
       @graph.add_vertex(@currently_parsed_method_result_node)
@@ -639,7 +639,7 @@ module Orbacle
       formal_arguments = ast.children[2]
       method_body = ast.children[3]
 
-      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments)
+      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
       @currently_parsed_method_result_node = Node.new(:method_result)
       @graph.add_vertex(@currently_parsed_method_result_node)
@@ -866,17 +866,26 @@ module Orbacle
       return @tree.nodes.global_variables[gvar_name]
     end
 
-    def build_arguments(formal_arguments)
+    def build_arguments(formal_arguments, lenv)
       formal_arguments_nodes = []
       formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
         arg_name = arg_ast.children[0].to_s
+        maybe_arg_default_expr = arg_ast.children[1]
+
         arg_node = if arg_ast.type == :arg
           Node.new(:formal_arg, { var_name: arg_name })
         elsif arg_ast.type == :restarg
           Node.new(:formal_restarg, { var_name: arg_name })
         elsif arg_ast.type == :kwarg
           Node.new(:formal_kwarg, { var_name: arg_name })
+        elsif arg_ast.type == :kwoptarg
+          Node.new(:formal_kwoptarg, { var_name: arg_name })
         else raise
+        end
+
+        if maybe_arg_default_expr
+          node_arg_default, _lenv = process(maybe_arg_default_expr, lenv)
+          @graph.add_edge(node_arg_default, arg_node)
         end
 
         formal_arguments_nodes << arg_node

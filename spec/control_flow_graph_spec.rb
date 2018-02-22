@@ -524,7 +524,7 @@ module Orbacle
 
     specify "method definition with keyword arguments" do
       snippet = <<-END
-      def foo(x, bar:)
+      def foo(x, bar:, baz:)
         bar
       end
       END
@@ -533,6 +533,25 @@ module Orbacle
 
       expect(result.graph).to include_edge(
         node(:formal_kwarg, { var_name: "bar" }),
+        node(:lvar, { var_name: "bar" }))
+      expect(result.graph).to include_node(
+        node(:formal_kwarg, { var_name: "baz" }))
+    end
+
+    specify "method definition with optional keyword arguments" do
+      snippet = <<-END
+      def foo(x, bar: 42, baz: "foo")
+        bar
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:formal_kwoptarg, { var_name: "bar" }))
+      expect(result.graph).to include_edge(
+        node(:formal_kwoptarg, { var_name: "bar" }),
         node(:lvar, { var_name: "bar" }))
     end
 
