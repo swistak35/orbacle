@@ -1344,16 +1344,29 @@ module Orbacle
       result = generate_cfg(snippet)
     end
 
+    specify "rescue without assigning error" do
+      snippet = <<-END
+      begin
+      rescue
+      end
+      END
+
+      generate_cfg(snippet)
+    end
+
     specify "rescue" do
       snippet = <<-END
       begin
       rescue => e
-        42
+        e
       end
       END
 
       result = generate_cfg(snippet)
 
+      expect(result.graph).to include_edge(
+        node(:lvasgn, { var_name: "e" }),
+        node(:lvar, { var_name: "e" }))
     end
 
     def generate_cfg(snippet)

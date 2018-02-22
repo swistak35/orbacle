@@ -28,7 +28,7 @@ module Orbacle
     end
 
     def index_file
-      @index_file ||= IndexFile.new(db: @db)
+      IndexFile.new(db: @db)
     end
   end
 end

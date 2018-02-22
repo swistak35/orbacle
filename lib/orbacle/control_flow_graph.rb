@@ -336,7 +336,9 @@ module Orbacle
     end
 
     def handle_begin(ast, lenv)
-      final_node, final_lenv = ast.children.reduce([nil, lenv]) do |(current_node, current_lenv), ast_child|
+      final_node, final_lenv = ast.children.reduce([nil, lenv]) do |current, ast_child|
+        current_node = current[0]
+        current_lenv = current[1]
         process(ast_child, current_lenv)
       end
       return [final_node, final_lenv]
@@ -649,6 +651,8 @@ module Orbacle
       with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
         process(module_body, lenv)
       end
+
+      return [Node.new(:nil), lenv]
     end
 
     def handle_sclass(ast, lenv)
@@ -927,7 +931,18 @@ module Orbacle
       assignment_expr = ast.children[1]
       rescue_body_expr = ast.children[2]
 
-      node_rescue_body, final_lenv = process(rescue_body_expr, lenv)
+      if assignment_expr
+        node_assignment, lenv_after_assignment = process(assignment_expr, lenv)
+      else
+        lenv_after_assignment = lenv
+      end
+
+      if rescue_body_expr
+        node_rescue_body, final_lenv = process(rescue_body_expr, lenv_after_assignment)
+      else
+        node_rescue_body = Node.new(:nil)
+        final_lenv = lenv
+      end
 
       return [node_rescue_body, final_lenv]
     end
