@@ -96,6 +96,7 @@ module Orbacle
       when :call_result then handle_call_result(node, sources)
       when :call_arg then handle_group(node, sources)
       when :formal_arg then handle_group(node, sources)
+      when :formal_optarg then handle_group(node, sources)
       when :block_arg then handle_block_arg(node, sources)
       when :block_result then handle_block_result(node, sources)
       when :primitive_integer_succ then handle_primitive_integer_succ(node, sources)

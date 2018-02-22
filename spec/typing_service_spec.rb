@@ -264,6 +264,36 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
+    specify "user-defined method call with optional argument" do
+      snippet = <<-END
+      class Foo
+        def bar(s, x = 42)
+          x.succ
+        end
+      end
+      Foo.new.bar("foo")
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Integer"))
+    end
+
+    specify "user-defined method call with optional argument 2" do
+      snippet = <<-END
+      class Foo
+        def bar(x = 42)
+          x
+        end
+      end
+      Foo.new.bar("foo")
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(union([nominal("Integer"), nominal("String")]))
+    end
+
     specify "method call to self" do
       snippet = <<-END
       class Foo
