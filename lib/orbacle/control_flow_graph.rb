@@ -666,8 +666,10 @@ module Orbacle
         scope: current_scope.increase_by_ref(module_name_ref).decrease,
         line: module_name_ast.loc.line)
 
-      with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
-        process(module_body, lenv)
+      if module_body
+        with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
+          process(module_body, lenv)
+        end
       end
 
       return [Node.new(:nil), lenv]
