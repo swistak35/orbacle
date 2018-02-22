@@ -1059,6 +1059,68 @@ module Orbacle
       expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: "x" }))
     end
 
+    specify "multiple assignment - local variables" do
+      snippet = <<-END
+      x, y = [1,2,3]
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:array),
+        node(:mlhs))
+      expect(result.graph).to include_edge(
+        node(:mlhs),
+        node(:lvasgn, { var_name: "x" }))
+      expect(result.graph).to include_edge(
+        node(:mlhs),
+        node(:lvasgn, { var_name: "y" }))
+    end
+
+    specify "multiple assignment - instance variables" do
+      snippet = <<-END
+      class Foo
+        def foo
+          @x, @y = [1,2,3]
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:array),
+        node(:mlhs))
+      expect(result.graph).to include_edge(
+        node(:mlhs),
+        node(:ivasgn, { var_name: "@x" }))
+      expect(result.graph).to include_edge(
+        node(:mlhs),
+        node(:ivasgn, { var_name: "@y" }))
+    end
+
+    specify "multiple assignment - instance variables" do
+      snippet = <<-END
+      class Foo
+        def foo
+          @@x, @@y = [1,2,3]
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:array),
+        node(:mlhs))
+      expect(result.graph).to include_edge(
+        node(:mlhs),
+        node(:cvasgn, { var_name: "@@x" }))
+      expect(result.graph).to include_edge(
+        node(:mlhs),
+        node(:cvasgn, { var_name: "@@y" }))
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)

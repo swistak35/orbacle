@@ -129,6 +129,10 @@ module Orbacle
         handle_if(ast, lenv)
       when :return
         handle_return(ast, lenv)
+      when :masgn
+        handle_masgn(ast, lenv)
+      when :mlhs
+        handle_mlhs(ast, lenv)
       else
         raise ArgumentError.new(ast)
       end
@@ -141,11 +145,13 @@ module Orbacle
       node_lvasgn = Node.new(:lvasgn, { var_name: var_name })
       @graph.add_vertex(node_lvasgn)
 
-      node_expr, lenv_after_expr = process(expr, lenv)
-
-      @graph.add_edge(node_expr, node_lvasgn)
-
-      final_lenv = lenv_after_expr.merge(var_name => [node_lvasgn])
+      if expr
+        node_expr, lenv_after_expr = process(expr, lenv)
+        @graph.add_edge(node_expr, node_lvasgn)
+        final_lenv = lenv_after_expr.merge(var_name => [node_lvasgn])
+      else
+        final_lenv = lenv.merge(var_name => [node_lvasgn])
+      end
 
       return [node_lvasgn, final_lenv]
     end
@@ -343,8 +349,12 @@ module Orbacle
       node_ivasgn = Node.new(:ivasgn, { var_name: ivar_name })
       @graph.add_vertex(node_ivasgn)
 
-      node_expr, lenv_after_expr = process(expr, lenv)
-      @graph.add_edge(node_expr, node_ivasgn)
+      if expr
+        node_expr, lenv_after_expr = process(expr, lenv)
+        @graph.add_edge(node_expr, node_ivasgn)
+      else
+        lenv_after_expr = lenv
+      end
 
       ivar_definition_node = if current_selfie.klass?
         get_class_level_ivar_definition_node(ivar_name)
@@ -365,8 +375,12 @@ module Orbacle
       node_cvasgn = Node.new(:cvasgn, { var_name: cvar_name })
       @graph.add_vertex(node_cvasgn)
 
-      node_expr, lenv_after_expr = process(expr, lenv)
-      @graph.add_edge(node_expr, node_cvasgn)
+      if expr
+        node_expr, lenv_after_expr = process(expr, lenv)
+        @graph.add_edge(node_expr, node_cvasgn)
+      else
+        lenv_after_expr = lenv
+      end
 
       node_cvar_definition = get_cvar_definition_node(cvar_name)
       @graph.add_edge(node_cvasgn, node_cvar_definition)
@@ -743,6 +757,31 @@ module Orbacle
       @graph.add_edge(node_expr, @currently_parsed_method_result_node)
 
       return [node_expr, final_lenv]
+    end
+
+    def handle_masgn(ast, lenv)
+      mlhs_expr = ast.children[0]
+      rhs_expr = ast.children[1]
+
+      node_mlhs, lenv_after_lhs = process(mlhs_expr, lenv)
+      node_rhs, lenv_after_rhs = process(rhs_expr, lenv_after_lhs)
+
+      @graph.add_edge(node_rhs, node_mlhs)
+
+      return [node_rhs, lenv_after_rhs]
+    end
+
+    def handle_mlhs(ast, lenv)
+      node_mlhs = Node.new(:mlhs)
+      @graph.add_vertex(node_mlhs)
+
+      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        @graph.add_edge(node_mlhs, ast_child_node)
+        new_lenv
+      end
+
+      return [node_mlhs, final_lenv]
     end
 
     def expr_is_class_definition?(expr)
