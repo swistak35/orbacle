@@ -159,6 +159,10 @@ module Orbacle
         handle_break(ast, lenv)
       when :block_pass
         handle_block_pass(ast, lenv)
+      when :rescue
+        handle_rescue(ast, lenv)
+      when :resbody
+        handle_resbody(ast, lenv)
       else
         raise ArgumentError.new(ast.type)
       end
@@ -916,6 +920,36 @@ module Orbacle
       node_block_pass, next_lenv = process(expr, lenv)
 
       return [node_block_pass, next_lenv]
+    end
+
+    def handle_resbody(ast, lenv)
+      error_array_expr = ast.children[0]
+      assignment_expr = ast.children[1]
+      rescue_body_expr = ast.children[2]
+
+      node_rescue_body, final_lenv = process(rescue_body_expr, lenv)
+
+      return [node_rescue_body, final_lenv]
+    end
+
+    def handle_rescue(ast, lenv)
+      try_expr = ast.children[0]
+      resbody = ast.children[1]
+      elsebody = ast.children[2]
+
+      if try_expr
+        node_try, lenv_after_try = process(try_expr, lenv)
+      else
+        node_try = Node.new(:nil)
+        lenv_after_try = lenv
+      end
+      node_resbody, lenv_after_resbody = process(resbody, lenv_after_try)
+
+      node = Node.new(:rescue)
+      @graph.add_edge(node_try, node)
+      @graph.add_edge(node_resbody, node)
+
+      return [node, lenv]
     end
 
     def expr_is_class_definition?(expr)

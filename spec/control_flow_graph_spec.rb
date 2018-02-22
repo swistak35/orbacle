@@ -1346,6 +1346,18 @@ module Orbacle
       result = generate_cfg(snippet)
     end
 
+    specify "rescue" do
+      snippet = <<-END
+      begin
+      rescue => e
+        42
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
