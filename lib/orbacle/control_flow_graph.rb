@@ -95,6 +95,8 @@ module Orbacle
         handle_defined(ast, lenv)
       when :begin
         handle_begin(ast, lenv)
+      when :kwbegin
+        handle_begin(ast, lenv)
       when :lvar
         handle_lvar(ast, lenv)
       when :ivar
