@@ -81,6 +81,9 @@ module Orbacle
       when :hash_keys then handle_hash_keys(node, sources)
       when :hash_values then handle_hash_values(node, sources)
       when :hash then handle_hash(node, sources)
+      when :range_from then handle_group(node, sources)
+      when :range_to then handle_group(node, sources)
+      when :range then handle_range(node, sources)
       when :nil then handle_nil(node, sources)
       when :bool then handle_bool(node, sources)
       when :self then handle_self(node, sources)
@@ -144,6 +147,16 @@ module Orbacle
       hash_keys_node = sources.find {|s| s.type == :hash_keys }
       hash_values_node = sources.find {|s| s.type == :hash_values }
       GenericType.new("Hash", [@result[hash_keys_node], @result[hash_values_node]])
+    end
+
+    def handle_group(node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      build_union(sources_types)
+    end
+
+    def handle_range(node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      GenericType.new("Range", [build_union(sources_types)])
     end
 
     def handle_self(node, sources)

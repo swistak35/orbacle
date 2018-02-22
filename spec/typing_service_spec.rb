@@ -148,6 +148,16 @@ module Orbacle
       expect(result).to eq(generic("Hash", [union([nominal("String"), nominal("Symbol")]), union([nominal("Integer"), nominal("String")])]))
     end
 
+    specify "range" do
+      snippet = <<-END
+      (2..4)
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Range", [nominal("Integer")]))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42
