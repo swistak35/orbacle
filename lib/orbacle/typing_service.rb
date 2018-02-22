@@ -78,6 +78,9 @@ module Orbacle
       when :sym then handle_sym(node, sources)
       when :dsym then handle_sym(node, sources)
       when :regexp then handle_regexp(node, sources)
+      when :hash_keys then handle_hash_keys(node, sources)
+      when :hash_values then handle_hash_values(node, sources)
+      when :hash then handle_hash(node, sources)
       when :nil then handle_nil(node, sources)
       when :bool then handle_bool(node, sources)
       when :self then handle_self(node, sources)
@@ -125,6 +128,22 @@ module Orbacle
 
     def handle_float(*args)
       NominalType.new("Float")
+    end
+
+    def handle_hash_values(_node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      build_union(sources_types)
+    end
+
+    def handle_hash_keys(_node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      build_union(sources_types)
+    end
+
+    def handle_hash(_node, sources)
+      hash_keys_node = sources.find {|s| s.type == :hash_keys }
+      hash_values_node = sources.find {|s| s.type == :hash_values }
+      GenericType.new("Hash", [@result[hash_keys_node], @result[hash_values_node]])
     end
 
     def handle_self(node, sources)

@@ -125,6 +125,29 @@ module Orbacle
       expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
     end
 
+    specify "empty hash" do
+      snippet = <<-END
+      {}
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Hash", [nil, nil]))
+    end
+
+    specify "hash" do
+      snippet = <<-END
+      {
+        "foo" => 42,
+        bar: "nananana",
+      }
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Hash", [union([nominal("String"), nominal("Symbol")]), union([nominal("Integer"), nominal("String")])]))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42
