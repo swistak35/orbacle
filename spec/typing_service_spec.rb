@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 module Orbacle
-  RSpec.describe "ControlFlowGraph" do
-    specify "int primitive" do
+  RSpec.describe TypingService do
+    specify "primitive int" do
       snippet = <<-END
       42
       END
@@ -42,6 +42,89 @@ module Orbacle
       expect(result).to eq(nominal("nil"))
     end
 
+    specify "string literal" do
+      snippet = <<-END
+      "foobar"
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("String"))
+    end
+
+    specify "string with interpolation" do
+      snippet = '
+      bar = 42
+      "foo#{bar}baz"
+      '
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("String"))
+    end
+
+    specify "symbol literal" do
+      snippet = <<-END
+      :foobar
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Symbol"))
+    end
+
+    specify "symbol with interpolation" do
+      snippet = '
+      bar = 42
+      :"foo#{bar}baz"
+      '
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Symbol"))
+    end
+
+    specify "regexp" do
+      snippet = <<-END
+      /foobar/
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Regexp"))
+    end
+
+    specify "regexp with interpolation" do
+      snippet = '
+      bar = 42
+      /foo#{bar}/
+      '
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(nominal("Regexp"))
+    end
+
+    specify "empty array" do
+      snippet = <<-END
+      []
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [nil]))
+    end
+
+    specify "simple (primitive) literal array" do
+      snippet = <<-END
+      [1, "foobar"]
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
+    end
+
     specify "local variable assignment" do
       snippet = <<-END
       x = 42
@@ -71,36 +154,6 @@ module Orbacle
       result = type_snippet(snippet)
 
       expect(result).to eq(generic("Array", [nominal("Integer")]))
-    end
-
-    specify "string literal" do
-      snippet = <<-END
-      "foobar"
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("String"))
-    end
-
-    specify "symbol literal" do
-      snippet = <<-END
-      :foobar
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Symbol"))
-    end
-
-    specify "simple (primitive) literal array" do
-      snippet = <<-END
-      [1, "foobar"]
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
     end
 
     specify "Integer#succ" do

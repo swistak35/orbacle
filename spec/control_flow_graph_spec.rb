@@ -254,10 +254,7 @@ module Orbacle
 
     specify "empty hash" do
       snippet = <<-END
-      {
-        "foo" => 42,
-        bar: "nananana",
-      }
+      {}
       END
 
       result = generate_cfg(snippet)

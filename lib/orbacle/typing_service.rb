@@ -74,7 +74,10 @@ module Orbacle
       when :int then handle_int(node, sources)
       when :float then handle_float(node, sources)
       when :str then handle_str(node, sources)
+      when :dstr then handle_str(node, sources)
       when :sym then handle_sym(node, sources)
+      when :dsym then handle_sym(node, sources)
+      when :regexp then handle_regexp(node, sources)
       when :nil then handle_nil(node, sources)
       when :bool then handle_bool(node, sources)
       when :self then handle_self(node, sources)
@@ -106,6 +109,10 @@ module Orbacle
 
     def handle_sym(_node, _sources)
       NominalType.new("Symbol")
+    end
+
+    def handle_regexp(_node, _sources)
+      NominalType.new("Regexp")
     end
 
     def handle_nil(_node, _sources)
