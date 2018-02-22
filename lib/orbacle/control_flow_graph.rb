@@ -112,7 +112,9 @@ module Orbacle
       when :gvasgn
         handle_gvasgn(ast, lenv)
       when :send
-        handle_send(ast, lenv)
+        handle_send(ast, lenv, false)
+      when :csend
+        handle_send(ast, lenv, true)
       when :block
         handle_block(ast, lenv)
       when :def
@@ -458,7 +460,7 @@ module Orbacle
       return [node, lenv]
     end
 
-    def handle_send(ast, lenv)
+    def handle_send(ast, lenv, csend)
       obj_expr = ast.children[0]
       message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
@@ -487,7 +489,7 @@ module Orbacle
       @graph.add_vertex(call_obj_node)
       @graph.add_edge(obj_node, call_obj_node)
 
-      call_result_node = Node.new(:call_result)
+      call_result_node = Node.new(:call_result, { csend: csend })
       @graph.add_vertex(call_result_node)
 
       message_send = MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
