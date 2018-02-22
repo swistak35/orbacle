@@ -294,6 +294,21 @@ module Orbacle
       expect(result).to eq(union([nominal("Integer"), nominal("String")]))
     end
 
+    specify "user-defined method call with splat argument" do
+      snippet = <<-END
+      class Foo
+        def bar(*args)
+          args
+        end
+      end
+      Foo.new.bar("foo", 42)
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
+    end
+
     specify "method call to self" do
       snippet = <<-END
       class Foo

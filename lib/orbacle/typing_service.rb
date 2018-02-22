@@ -97,6 +97,7 @@ module Orbacle
       when :call_arg then handle_group(node, sources)
       when :formal_arg then handle_group(node, sources)
       when :formal_optarg then handle_group(node, sources)
+      when :formal_restarg then handle_group_into_array(node, sources)
       when :block_arg then handle_block_arg(node, sources)
       when :block_result then handle_block_result(node, sources)
       when :primitive_integer_succ then handle_primitive_integer_succ(node, sources)
@@ -185,6 +186,11 @@ module Orbacle
       GenericType.new("Array", [build_union(sources_types)])
     end
 
+    def handle_group_into_array(_node, sources)
+      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      GenericType.new("Array", [build_union(sources_types)])
+    end
+
     def handle_lvasgn(_node, sources)
       raise if sources.size != 1
       @result[sources.first]
@@ -243,9 +249,22 @@ module Orbacle
           found_method = @tree.methods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
           formal_argument_nodes = found_method.node_formal_arguments
-          message_send.send_args.each_with_index do |send_arg, i|
-            @graph.add_edge(send_arg, formal_argument_nodes[i])
-            @worklist << formal_argument_nodes[i]
+          found_method.node_formal_arguments.each_with_index do |node_formal_arg, i|
+            case node_formal_arg.type
+            when :formal_arg
+              @graph.add_edge(message_send.send_args[i], node_formal_arg)
+              @worklist << node_formal_arg
+            when :formal_optarg
+              if message_send.send_args[i]
+                @graph.add_edge(message_send.send_args[i], node_formal_arg)
+                @worklist << node_formal_arg
+              end
+            when :formal_restarg
+              message_send.send_args[i..-1].each do |send_arg|
+                @graph.add_edge(send_arg, node_formal_arg)
+                @worklist << node_formal_arg
+              end
+            end
           end
           method_result_node = found_method.node_result
           if !@graph.original.has_edge?(method_result_node, message_send.send_result)
