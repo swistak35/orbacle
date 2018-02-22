@@ -44,7 +44,12 @@ module Orbacle
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
 
       initial_local_environment = {}
-      final_node, final_local_environment = process(ast, initial_local_environment)
+      if ast
+        final_node, final_local_environment = process(ast, initial_local_environment)
+      else
+        final_node = nil
+        final_local_environment = initial_local_environment
+      end
 
       return Result.new(@graph, final_local_environment, @message_sends, final_node, @tree)
     rescue

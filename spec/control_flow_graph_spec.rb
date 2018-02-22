@@ -1383,6 +1383,14 @@ module Orbacle
         node(:lvar, { var_name: "e" }))
     end
 
+    specify "nothing" do
+      snippet = ""
+
+      expect do
+        generate_cfg(snippet)
+      end.not_to raise_error
+    end
+
     def generate_cfg(snippet)
       service = ControlFlowGraph.new
       service.process_file(snippet)
