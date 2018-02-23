@@ -249,11 +249,8 @@ module Orbacle
     def handle_dstr(ast, lenv)
       node_dstr = add_vertex(Node.new(:dstr))
 
-      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
-        ast_child_node, new_lenv = process(ast_child, current_lenv)
-        @graph.add_edge(ast_child_node, node_dstr)
-        new_lenv
-      end
+      final_lenv, nodes = fold_lenv(ast.children, lenv)
+      add_edges(nodes, node_dstr)
 
       return [node_dstr, final_lenv]
     end
@@ -268,11 +265,8 @@ module Orbacle
     def handle_dsym(ast, lenv)
       node_dsym = add_vertex(Node.new(:dsym))
 
-      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
-        ast_child_node, new_lenv = process(ast_child, current_lenv)
-        @graph.add_edge(ast_child_node, node_dsym)
-        new_lenv
-      end
+      final_lenv, nodes = fold_lenv(ast.children, lenv)
+      add_edges(nodes, node_dsym)
 
       return [node_dsym, final_lenv]
     end
@@ -280,11 +274,8 @@ module Orbacle
     def handle_array(ast, lenv)
       node_array = add_vertex(Node.new(:array))
 
-      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
-        ast_child_node, new_lenv = process(ast_child, current_lenv)
-        @graph.add_edge(ast_child_node, node_array)
-        new_lenv
-      end
+      final_lenv, nodes = fold_lenv(ast.children, lenv)
+      add_edges(nodes, node_array)
 
       return [node_array, final_lenv]
     end
@@ -306,11 +297,8 @@ module Orbacle
 
       node_regexp = Node.new(:regexp, { regopt: regopt.children })
 
-      final_lenv = expr_nodes.reduce(lenv) do |current_lenv, ast_child|
-        ast_child_node, new_lenv = process(ast_child, current_lenv)
-        @graph.add_edge(ast_child_node, node_regexp)
-        new_lenv
-      end
+      final_lenv, nodes = fold_lenv(expr_nodes, lenv)
+      add_edges(nodes, node_regexp)
 
       return [node_regexp, final_lenv]
     end
@@ -357,12 +345,8 @@ module Orbacle
     end
 
     def handle_begin(ast, lenv)
-      final_node, final_lenv = ast.children.reduce([nil, lenv]) do |current, ast_child|
-        current_node = current[0]
-        current_lenv = current[1]
-        process(ast_child, current_lenv)
-      end
-      return [final_node, final_lenv]
+      final_lenv, nodes = fold_lenv(ast.children, lenv)
+      return [nodes.last, final_lenv]
     end
 
     def handle_lvar(ast, lenv)
