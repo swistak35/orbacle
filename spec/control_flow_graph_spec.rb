@@ -1404,6 +1404,36 @@ module Orbacle
         expect(result.graph).to include_node(node(:int, { value: 42 }))
         expect(result.final_node).to eq(node(:nil))
       end
+
+      specify "break" do
+        snippet = <<-END
+        while true
+          break
+        end
+        END
+
+        generate_cfg(snippet)
+      end
+
+      specify "next" do
+        snippet = <<-END
+        while true
+          next
+        end
+        END
+
+        generate_cfg(snippet)
+      end
+
+      specify "redo" do
+        snippet = <<-END
+        while true
+          redo
+        end
+        END
+
+        generate_cfg(snippet)
+      end
     end
 
     specify "case-when branching (without else)" do
@@ -1441,16 +1471,6 @@ module Orbacle
       expect(result.graph).to include_edge(
         node(:int, { value: 42 }),
         node(:yield))
-    end
-
-    specify "break" do
-      snippet = <<-END
-      while true
-        break
-      end
-      END
-
-      generate_cfg(snippet)
     end
 
     specify "passing block" do

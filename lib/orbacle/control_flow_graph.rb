@@ -175,6 +175,8 @@ module Orbacle
       when :while_post then handle_while(ast, lenv)
       when :until_post then handle_while(ast, lenv)
       when :break then handle_break(ast, lenv)
+      when :next then handle_break(ast, lenv)
+      when :redo then handle_break(ast, lenv)
 
       when :rescue then handle_rescue(ast, lenv)
       when :resbody then handle_resbody(ast, lenv)
