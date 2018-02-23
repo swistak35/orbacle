@@ -1247,66 +1247,148 @@ module Orbacle
       expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: "x" }))
     end
 
-    specify "multiple assignment - local variables" do
-      snippet = <<-END
-      x, y = [1,2,3]
-      END
+    describe "multiple assignment" do
+      specify "multiple assignment - local variables" do
+        snippet = <<-END
+        x, y = [1,2,3]
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:array),
-        node(:mlhs))
-      expect(result.graph).to include_edge(
-        node(:mlhs),
-        node(:lvasgn, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:mlhs),
-        node(:lvasgn, { var_name: "y" }))
-    end
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: "x" })])
 
-    specify "multiple assignment - instance variables" do
-      snippet = <<-END
-      class Foo
-        def foo
-          @x, @y = [1,2,3]
-        end
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:array)])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:lvasgn, { var_name: "y" })])
+
+        expect(result.final_node).to eq(node(:array))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "x" }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "y" }),
+          node(:array))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "multiple assignment - nested local variables" do
+        snippet = <<-END
+        x, (y, z) = [1,[2,3]]
+        END
 
-      expect(result.graph).to include_edge(
-        node(:array),
-        node(:mlhs))
-      expect(result.graph).to include_edge(
-        node(:mlhs),
-        node(:ivasgn, { var_name: "@x" }))
-      expect(result.graph).to include_edge(
-        node(:mlhs),
-        node(:ivasgn, { var_name: "@y" }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "multiple assignment - instance variables" do
-      snippet = <<-END
-      class Foo
-        def foo
-          @@x, @@y = [1,2,3]
-        end
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: "x" })])
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:array)])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:call_obj)])
+
+        msend2 = result.message_sends[2]
+        expect(msend2.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_obj)).to eq([msend1.send_result])
+        expect(msend2.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_args[0])).to eq([node(:int, { value: 0 })])
+        expect(result.graph.adjacent_vertices(msend2.send_result)).to eq([node(:lvasgn, { var_name: "y" })])
+
+        #msend3 is msend1 again
+
+        msend4 = result.message_sends[4]
+        expect(msend4.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend4.send_obj)).to eq([msend1.send_result])
+        expect(msend4.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend4.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend4.send_result)).to eq([node(:lvasgn, { var_name: "z" })])
+
+        expect(result.final_node).to eq(node(:array))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "x" }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:array),
+          node(:array))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "multiple assignment - instance variables" do
+        snippet = <<-END
+        class Foo
+          def foo
+            @x, @y = [1,2,3]
+          end
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:array),
-        node(:mlhs))
-      expect(result.graph).to include_edge(
-        node(:mlhs),
-        node(:cvasgn, { var_name: "@@x" }))
-      expect(result.graph).to include_edge(
-        node(:mlhs),
-        node(:cvasgn, { var_name: "@@y" }))
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:ivasgn, { var_name: "@x" })])
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:array)])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:ivasgn, { var_name: "@y" })])
+
+        expect(result.graph).to include_edge(
+          node(:ivasgn, { var_name: "@x" }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:ivasgn, { var_name: "@y" }),
+          node(:array))
+      end
+
+      specify "multiple assignment - class variables" do
+        snippet = <<-END
+        class Foo
+          def foo
+            @@x, @@y = [1,2,3]
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@x" })])
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:array)])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:cvasgn, { var_name: "@@y" })])
+
+        expect(result.graph).to include_edge(
+          node(:cvasgn, { var_name: "@@x" }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:cvasgn, { var_name: "@@y" }),
+          node(:array))
+      end
     end
 
     specify "alias method" do

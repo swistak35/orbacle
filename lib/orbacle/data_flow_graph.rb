@@ -507,6 +507,10 @@ module Orbacle
       return [call_result_node, final_lenv, { message_send: message_send }]
     end
 
+    def handle_index(ast, lenv)
+      require 'byebug'; byebug
+    end
+
     def handle_changing_visibility(lenv, new_visibility, arg_exprs)
       node = if @currently_analyzed_klass.klass
         if arg_exprs.empty?
@@ -823,12 +827,32 @@ module Orbacle
       mlhs_expr = ast.children[0]
       rhs_expr = ast.children[1]
 
-      node_mlhs, lenv_after_lhs = process(mlhs_expr, lenv)
-      node_rhs, lenv_after_rhs = process(rhs_expr, lenv_after_lhs)
+      node_rhs, lenv_after_rhs = process(rhs_expr, lenv)
 
-      @graph.add_edge(node_rhs, node_mlhs)
+      result_node, result_lenv = handle_mlhs_for_masgn(mlhs_expr, lenv, rhs_expr)
 
-      return [node_rhs, lenv_after_rhs]
+      return [result_node, result_lenv]
+    end
+
+    def handle_mlhs_for_masgn(ast, lenv, rhs_expr)
+      result_node = add_vertex(Node.new(:array))
+
+      i = 0
+      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+        if ast_child.type == :mlhs
+          new_rhs_expr = Parser::AST::Node.new(:send, [rhs_expr, :[], Parser::AST::Node.new(:int, [i])])
+          node_child, lenv_after_child = handle_mlhs_for_masgn(ast_child, current_lenv, new_rhs_expr)
+        else
+          new_ast_child = ast_child.append(Parser::AST::Node.new(:send, [rhs_expr, :[], Parser::AST::Node.new(:int, [i])]))
+          node_child, lenv_after_child = process(new_ast_child, current_lenv)
+        end
+
+        @graph.add_edge(node_child, result_node)
+        i += 1
+        lenv_after_child
+      end
+
+      return [result_node, final_lenv]
     end
 
     def handle_mlhs(ast, lenv)
