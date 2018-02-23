@@ -201,254 +201,245 @@ module Orbacle
       end
     end
 
-    specify "string literal" do
-      snippet = <<-END
-      "foobar"
-      END
+    describe "strings" do
+      specify "string literal" do
+        snippet = <<-END
+        "foobar"
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:str, { value: "foobar" }))
-    end
+        expect(result.final_node).to eq(node(:str, { value: "foobar" }))
+      end
 
-    specify "string heredoc" do
-      snippet = <<-END
+      specify "string heredoc" do
+        snippet = <<-END
         <<-HERE
         foo
         HERE
-      END
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:str, { value: "        foo\n" }))
-    end
-
-    specify "string with interpolation" do
-      snippet = '
-      bar = 42
-      "foo#{bar}baz"
-      '
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:dstr))
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "bar" }),
-        node(:lvar, { var_name: "bar" }))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foo" }),
-        node(:dstr))
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
-        node(:dstr))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "baz" }),
-        node(:dstr))
-    end
-
-    specify "symbol literal" do
-      snippet = <<-END
-      :foobar
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:sym, { value: :foobar }))
-    end
-
-    specify "symbol with interpolation" do
-      snippet = '
-      bar = 42
-      :"foo#{bar}baz"
-      '
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:dsym))
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "bar" }),
-        node(:lvar, { var_name: "bar" }))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foo" }),
-        node(:dsym))
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
-        node(:dsym))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "baz" }),
-        node(:dsym))
-    end
-
-    specify "regexp" do
-      snippet = <<-END
-      /foobar/
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foobar" }),
-        node(:regexp, { regopt: [] }))
-    end
-
-    specify "regexp with options" do
-      snippet = <<-END
-      /foobar/im
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foobar" }),
-        node(:regexp, { regopt: [:i, :m] }))
-    end
-
-    specify "regexp with interpolation" do
-      snippet = '
-      bar = 42
-      /foo#{bar}/
-      '
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foo" }),
-        node(:regexp, { regopt: [] }))
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
-        node(:regexp, { regopt: [] }))
-    end
-
-    specify "regexp-specific global variables" do
-      snippet = <<-END
-      $`
-      $&
-      $'
-      $+
-      $1
-      $9
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_node(node(:backref, { ref: "$`" }))
-      expect(result.graph).to include_node(node(:backref, { ref: "$&" }))
-      expect(result.graph).to include_node(node(:backref, { ref: "$'" }))
-      expect(result.graph).to include_node(node(:backref, { ref: "$+" }))
-
-      expect(result.graph).to include_node(node(:nthref, { ref: "1" }))
-      expect(result.graph).to include_node(node(:nthref, { ref: "9" }))
-    end
-
-    specify "handle defined?" do
-      snippet = <<-END
-      defined?(x)
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:defined))
-      expect(result.graph.edges).to be_empty
-    end
-
-    specify "simple inclusive range" do
-      snippet = <<-END
-      (2..4)
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:range, { inclusive: true }))
-      expect(result.graph).to include_edge(
-        node(:range_from),
-        node(:range, { inclusive: true }))
-      expect(result.graph).to include_edge(
-        node(:range_to),
-        node(:range, { inclusive: true }))
-
-      expect(result.graph).to include_edge(
-        node(:int, { value: 2 }),
-        node(:range_from))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 4 }),
-        node(:range_to))
-    end
-
-    specify "simple exclusive range" do
-      snippet = <<-END
-      (2...4)
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:range, { inclusive: false }))
-      expect(result.graph).to include_edge(
-        node(:range_from),
-        node(:range, { inclusive: false }))
-      expect(result.graph).to include_edge(
-        node(:range_to),
-        node(:range, { inclusive: false }))
-
-      expect(result.graph).to include_edge(
-        node(:int, { value: 2 }),
-        node(:range_from))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 4 }),
-        node(:range_to))
-    end
-
-    specify "local variable assignment" do
-      snippet = <<-END
-      x = 42
-      y = 17
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:lvasgn, { var_name: "y" }))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:lvasgn, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
-        node(:lvasgn, { var_name: "y" }))
-
-      expect(result.final_lenv["x"]).to match_array(node(:lvasgn, { var_name: "x" }))
-      expect(result.final_lenv["y"]).to match_array(node(:lvasgn, { var_name: "y" }))
-    end
-
-    specify "local variable usage" do
-      snippet = <<-END
-      x = 42
-      x
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:lvar, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "x" }),
-        node(:lvar, { var_name: "x" }))
-    end
-
-    specify "local variables defined in class are not present in method body" do
-      snippet = <<-END
-      class Foo
-        x = 42
-        def foo
-          x
-        end
+        expect(result.final_node).to eq(node(:str, { value: "        foo\n" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "string with interpolation" do
+        snippet = '
+        bar = 42
+        "foo#{bar}baz"
+        '
 
-      expect(result.graph).to include_edge(
-        node(:call_result, { csend: false }),
-        node(:method_result))
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:dstr))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "bar" }),
+          node(:lvar, { var_name: "bar" }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:dstr))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:dstr))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "baz" }),
+          node(:dstr))
+      end
+    end
+
+    describe "symbols" do
+      specify "symbol literal" do
+        snippet = <<-END
+        :foobar
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:sym, { value: :foobar }))
+      end
+
+      specify "symbol with interpolation" do
+        snippet = '
+        bar = 42
+        :"foo#{bar}baz"
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:dsym))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "bar" }),
+          node(:lvar, { var_name: "bar" }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:dsym))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:dsym))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "baz" }),
+          node(:dsym))
+      end
+    end
+
+    describe "regexps" do
+      specify "regexp" do
+        snippet = <<-END
+        /foobar/
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foobar" }),
+          node(:regexp, { regopt: [] }))
+      end
+
+      specify "regexp with options" do
+        snippet = <<-END
+        /foobar/im
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foobar" }),
+          node(:regexp, { regopt: [:i, :m] }))
+      end
+
+      specify "regexp with interpolation" do
+        snippet = '
+        bar = 42
+        /foo#{bar}/
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:regexp, { regopt: [] }))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:regexp, { regopt: [] }))
+      end
+    end
+
+    describe "ranges" do
+      specify "simple inclusive range" do
+        snippet = <<-END
+        (2..4)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:range, { inclusive: true }))
+        expect(result.graph).to include_edge(
+          node(:range_from),
+          node(:range, { inclusive: true }))
+        expect(result.graph).to include_edge(
+          node(:range_to),
+          node(:range, { inclusive: true }))
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:range_from))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 4 }),
+          node(:range_to))
+      end
+
+      specify "simple exclusive range" do
+        snippet = <<-END
+        (2...4)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:range, { inclusive: false }))
+        expect(result.graph).to include_edge(
+          node(:range_from),
+          node(:range, { inclusive: false }))
+        expect(result.graph).to include_edge(
+          node(:range_to),
+          node(:range, { inclusive: false }))
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:range_from))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 4 }),
+          node(:range_to))
+      end
+    end
+
+    describe "defined?" do
+      specify "handle defined?" do
+        snippet = <<-END
+        defined?(x)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:defined))
+        expect(result.graph.edges).to be_empty
+      end
+    end
+
+    describe "local variables" do
+      specify "local variable assignment" do
+        snippet = <<-END
+        x = 42
+        y = 17
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: "y" }))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:lvasgn, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 17 }),
+          node(:lvasgn, { var_name: "y" }))
+
+        expect(result.final_lenv["x"]).to match_array(node(:lvasgn, { var_name: "x" }))
+        expect(result.final_lenv["y"]).to match_array(node(:lvasgn, { var_name: "y" }))
+      end
+
+      specify "local variable usage" do
+        snippet = <<-END
+        x = 42
+        x
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:lvar, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
+      end
+
+      specify "local variables defined in class are not present in method body" do
+        snippet = <<-END
+        class Foo
+          x = 42
+          def foo
+            x
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:call_result, { csend: false }),
+          node(:method_result))
+      end
     end
 
     specify "method call, without args" do
@@ -909,55 +900,78 @@ module Orbacle
         node(:cvar_definition))
     end
 
-    specify "usage of global variable" do
-      snippet = <<-END
-      $baz
-      END
+    describe "global variables" do
+      specify "usage of global variable" do
+        snippet = <<-END
+        $baz
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.final_node).to eq(node(:gvar))
-      expect(result.graph).to include_edge(
-        node(:gvar_definition),
-        node(:gvar))
-    end
-
-    specify "assignment of global variable" do
-      snippet = <<-END
-      $baz = 42
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:gvasgn, { var_name: "$baz" }))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:gvasgn, { var_name: "$baz" }))
-      expect(result.graph).to include_edge(
-        node(:gvasgn, { var_name: "$baz" }),
-        node(:gvar_definition))
-    end
-
-    specify "usage and assignment of global variable" do
-      snippet = <<-END
-      class Foo
-        def foo
-          $baz
-        end
+        expect(result.final_node).to eq(node(:gvar))
+        expect(result.graph).to include_edge(
+          node(:gvar_definition),
+          node(:gvar))
       end
-      class Bar
-        def bar
-          $baz = 42
-        end
+
+      specify "regexp-specific global variables" do
+        snippet = <<-END
+        $`
+        $&
+        $'
+        $+
+        $1
+        $9
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:backref, { ref: "$`" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "$&" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "$'" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "$+" }))
+
+        expect(result.graph).to include_node(node(:nthref, { ref: "1" }))
+        expect(result.graph).to include_node(node(:nthref, { ref: "9" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "assignment of global variable" do
+        snippet = <<-END
+        $baz = 42
+        END
 
-      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
-      gvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
-      global_baz = result.graph.adjacent_vertices(gvasgn_to_42).first
-      expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar)])
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:gvasgn, { var_name: "$baz" }))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:gvasgn, { var_name: "$baz" }))
+        expect(result.graph).to include_edge(
+          node(:gvasgn, { var_name: "$baz" }),
+          node(:gvar_definition))
+      end
+
+      specify "usage and assignment of global variable" do
+        snippet = <<-END
+        class Foo
+          def foo
+            $baz
+          end
+        end
+        class Bar
+          def bar
+            $baz = 42
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+        gvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+        global_baz = result.graph.adjacent_vertices(gvasgn_to_42).first
+        expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar)])
+      end
     end
 
     specify "assignment of class variable" do
