@@ -3,7 +3,7 @@ require 'parser/current'
 require 'orbacle/nesting'
 
 module Orbacle
-  class ControlFlowGraph
+  class DataFlowGraph
     ProcessError = Class.new(StandardError)
 
     class Node

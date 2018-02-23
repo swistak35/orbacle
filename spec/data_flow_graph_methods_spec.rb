@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module Orbacle
-  RSpec.describe ControlFlowGraph do
+  RSpec.describe DataFlowGraph do
     specify "simple method in class declaration" do
       file = <<-END
       class Foo
@@ -603,7 +603,7 @@ module Orbacle
 
     def parse_file_methods
       ->(file) {
-        service = ControlFlowGraph.new
+        service = DataFlowGraph.new
         result = service.process_file(file)
         {
           methods: result.tree.methods.map {|m| [m.scope.to_s, m.name, { line: m.line }] },
@@ -619,7 +619,7 @@ module Orbacle
     end
 
     def compute_graph(file)
-      service = ControlFlowGraph.new
+      service = DataFlowGraph.new
       service.process_file(file)
     end
 

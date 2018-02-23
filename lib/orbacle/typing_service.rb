@@ -309,7 +309,7 @@ module Orbacle
       end
       return if already_handled
 
-      node = ControlFlowGraph::Node.new(:constructor, { name: type.name })
+      node = DataFlowGraph::Node.new(:constructor, { name: type.name })
       @graph.add_vertex(node)
       @graph.add_edge(message_send.send_obj, node)
       @worklist << node
@@ -323,7 +323,7 @@ module Orbacle
       end
       return if already_handled
 
-      node = ControlFlowGraph::Node.new(:primitive_integer_succ)
+      node = DataFlowGraph::Node.new(:primitive_integer_succ)
       @graph.add_vertex(node)
       @graph.add_edge(message_send.send_obj, node)
       @worklist << node
@@ -337,7 +337,7 @@ module Orbacle
       end
       return if already_handled
 
-      node = ControlFlowGraph::Node.new(:primitive_integer_to_s)
+      node = DataFlowGraph::Node.new(:primitive_integer_to_s)
       @graph.add_vertex(node)
       @graph.add_edge(message_send.send_obj, node)
       @worklist << node
@@ -353,14 +353,14 @@ module Orbacle
 
       raise if message_send.block.nil?
 
-      unwrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_1)
+      unwrapping_node = DataFlowGraph::Node.new(:primitive_array_map_1)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist << unwrapping_node
       @graph.add_edge(unwrapping_node, message_send.block.args.first)
       @worklist << message_send.block.args.first
 
-      wrapping_node = ControlFlowGraph::Node.new(:primitive_array_map_2)
+      wrapping_node = DataFlowGraph::Node.new(:primitive_array_map_2)
       @graph.add_vertex(wrapping_node)
       @graph.add_edge(message_send.block.result, wrapping_node)
       @worklist << wrapping_node

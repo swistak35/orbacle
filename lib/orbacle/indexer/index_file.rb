@@ -6,7 +6,7 @@ module Orbacle
       end
 
       def call(path:, content:)
-        parser = ControlFlowGraph.new
+        parser = DataFlowGraph.new
         result = parser.process_file(content)
         result.tree.constants.each do |c|
           @db.add_constant(

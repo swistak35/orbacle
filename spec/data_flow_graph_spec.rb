@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'support/graph_matchers'
 
 module Orbacle
-  RSpec.describe "ControlFlowGraph" do
+  RSpec.describe "DataFlowGraph" do
     describe "primitives" do
       specify "nothing" do
         snippet = ""
@@ -1006,7 +1006,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       super_send = result.message_sends[0]
-      expect(super_send).to be_a(ControlFlowGraph::SuperSend)
+      expect(super_send).to be_a(DataFlowGraph::SuperSend)
       expect(super_send.send_args).to match_array([])
       expect(super_send.send_result).to eq(node(:call_result))
       expect(super_send.block).to be_nil
@@ -1024,7 +1024,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       super_send = result.message_sends[0]
-      expect(super_send).to be_a(ControlFlowGraph::SuperSend)
+      expect(super_send).to be_a(DataFlowGraph::SuperSend)
       expect(super_send.send_args).to match_array([node(:call_arg)])
       expect(super_send.send_result).to eq(node(:call_result))
       expect(super_send.block).to be_nil
@@ -1042,7 +1042,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       zsuper_send = result.message_sends[0]
-      expect(zsuper_send).to be_a(ControlFlowGraph::Super0Send)
+      expect(zsuper_send).to be_a(DataFlowGraph::Super0Send)
       expect(zsuper_send.send_result).to eq(node(:call_result))
       expect(zsuper_send.block).to be_nil
     end
@@ -1632,20 +1632,20 @@ module Orbacle
     end
 
     def generate_cfg(snippet)
-      service = ControlFlowGraph.new
+      service = DataFlowGraph.new
       service.process_file(snippet)
     end
 
     def node(type, params = {})
-      Orbacle::ControlFlowGraph::Node.new(type, params)
+      Orbacle::DataFlowGraph::Node.new(type, params)
     end
 
     def msend(message_send, call_obj, call_args, call_result, block = nil)
-      ControlFlowGraph::MessageSend.new(message_send, call_obj, call_args, call_result, block)
+      DataFlowGraph::MessageSend.new(message_send, call_obj, call_args, call_result, block)
     end
 
     def block(args_node, result_node)
-      ControlFlowGraph::Block.new(args_node, result_node)
+      DataFlowGraph::Block.new(args_node, result_node)
     end
   end
 end
