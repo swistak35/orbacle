@@ -1832,6 +1832,34 @@ module Orbacle
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
       end
 
+      specify "for send, usage of +=" do
+        snippet = <<-END
+        class Foo
+          @b.a += 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("a")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(msend0.send_args.size).to eq(0)
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:call_result, { csend: false })])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:call_arg)])
+
+        msend2 = result.message_sends[2]
+        expect(msend2.message_send).to eq("a=")
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_obj)).to eq([node(:ivar)])
+        expect(msend2.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_args[0])).to eq([node(:call_result, { csend: false })])
+      end
+
       # Pending because currently body of constants is not evaluated
       xspecify "for const, usage of +=" do
         snippet = <<-END
