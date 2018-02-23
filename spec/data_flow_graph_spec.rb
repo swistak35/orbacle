@@ -1877,6 +1877,208 @@ module Orbacle
         expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
       end
+
+      specify "for lvar, usage of ||=" do
+        snippet = <<-END
+        a = 42
+        a ||= 1
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
+
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "a" }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:or),
+          node(:lvasgn, { var_name: "a" }))
+      end
+
+      specify "for ivar, usage of ||=" do
+        snippet = <<-END
+        class Foo
+          @a ||= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:ivar),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:or),
+          node(:ivasgn, { var_name: "@a" }))
+      end
+
+      specify "for cvar, usage of ||=" do
+        snippet = <<-END
+        class Foo
+          @@a ||= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:cvar),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:or),
+          node(:cvasgn, { var_name: "@@a" }))
+      end
+
+      specify "for send, usage of ||=" do
+        snippet = <<-END
+        class Foo
+          @b.a ||= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("a")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(msend0.send_args.size).to eq(0)
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:or)])
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("a=")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:ivar)])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:or)])
+      end
+
+      # Pending because currently body of constants is not evaluated
+      xspecify "for const, usage of ||=" do
+        snippet = <<-END
+        class Foo
+          Bar ||= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+      end
+
+      specify "for lvar, usage of &&=" do
+        snippet = <<-END
+        a = 42
+        a &&= 1
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
+
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "a" }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:and),
+          node(:lvasgn, { var_name: "a" }))
+      end
+
+      specify "for ivar, usage of &&=" do
+        snippet = <<-END
+        class Foo
+          @a &&= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:ivar),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:and),
+          node(:ivasgn, { var_name: "@a" }))
+      end
+
+      specify "for cvar, usage of &&=" do
+        snippet = <<-END
+        class Foo
+          @@a &&= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:cvar),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:and),
+          node(:cvasgn, { var_name: "@@a" }))
+      end
+
+      specify "for send, usage of &&=" do
+        snippet = <<-END
+        class Foo
+          @b.a &&= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("a")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(msend0.send_args.size).to eq(0)
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:and)])
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("a=")
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:ivar)])
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:and)])
+      end
+
+      # Pending because currently body of constants is not evaluated
+      xspecify "for const, usage of &&=" do
+        snippet = <<-END
+        class Foo
+          Bar &&= 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+      end
     end
 
     def generate_cfg(snippet)
