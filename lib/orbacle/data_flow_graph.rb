@@ -752,7 +752,12 @@ module Orbacle
           scope: current_scope.increase_by_ref(const_name_ref).decrease,
           line: ast.loc.line)
 
-        return [Node.new(:nil), lenv]
+        node_expr, final_lenv = process(expr, lenv)
+
+        final_node = Node.new(:casgn, { const_ref: const_name_ref })
+        @graph.add_edge(node_expr, final_node)
+
+        return [final_node, final_lenv]
       end
     end
 

@@ -954,6 +954,18 @@ module Orbacle
         node(:cvar_definition))
     end
 
+    specify "assignment to constant" do
+      snippet = <<-END
+      Foo = 42
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_edge(
+        node(:int, { value: 42 }),
+        node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }))
+    end
+
     specify "calling constructor" do
       snippet = <<-END
       class Foo
@@ -1860,8 +1872,7 @@ module Orbacle
         expect(result.graph.reverse.adjacent_vertices(msend2.send_args[0])).to eq([node(:call_result, { csend: false })])
       end
 
-      # Pending because currently body of constants is not evaluated
-      xspecify "for const, usage of +=" do
+      specify "for const, usage of +=" do
         snippet = <<-END
         class Foo
           Bar += 1
@@ -1872,10 +1883,10 @@ module Orbacle
 
         msend0 = result.message_sends[0]
         expect(msend0.message_send).to eq("+")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:const, { const_ref: ConstRef.from_full_name("Bar") })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:casgn, { const_ref: ConstRef.from_full_name("Bar") })])
       end
 
       specify "for lvar, usage of ||=" do
@@ -1961,8 +1972,7 @@ module Orbacle
         expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:or)])
       end
 
-      # Pending because currently body of constants is not evaluated
-      xspecify "for const, usage of ||=" do
+      specify "for const, usage of ||=" do
         snippet = <<-END
         class Foo
           Bar ||= 1
@@ -1971,12 +1981,15 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
-        expect(msend0.message_send).to eq("+")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
-        expect(msend0.send_args.size).to eq(1)
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+        expect(result.graph).to include_edge(
+          node(:const, { const_ref: ConstRef.from_full_name("Bar") }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:or),
+          node(:casgn, { const_ref: ConstRef.from_full_name("Bar") }))
       end
 
       specify "for lvar, usage of &&=" do
@@ -2062,8 +2075,7 @@ module Orbacle
         expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:and)])
       end
 
-      # Pending because currently body of constants is not evaluated
-      xspecify "for const, usage of &&=" do
+      specify "for const, usage of &&=" do
         snippet = <<-END
         class Foo
           Bar &&= 1
@@ -2072,12 +2084,15 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
-        expect(msend0.message_send).to eq("+")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
-        expect(msend0.send_args.size).to eq(1)
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+        expect(result.graph).to include_edge(
+          node(:const, { const_ref: ConstRef.from_full_name("Bar") }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:and),
+          node(:casgn, { const_ref: ConstRef.from_full_name("Bar") }))
       end
     end
 
