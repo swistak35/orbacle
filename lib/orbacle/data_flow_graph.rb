@@ -825,11 +825,8 @@ module Orbacle
         node_expr, final_lenv = process(exprs[0], lenv)
       else
         node_expr = add_vertex(Node.new(:array))
-        final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
-          ast_child_node, new_lenv = process(ast_child, current_lenv)
-          @graph.add_edge(ast_child_node, node_expr)
-          new_lenv
-        end
+        final_lenv, nodes = fold_lenv(ast.children, lenv)
+        add_edges(nodes, node_expr)
       end
       @graph.add_edge(node_expr, @currently_parsed_method_result_node)
 
@@ -1298,6 +1295,24 @@ module Orbacle
     def add_vertex(node)
       @graph.add_vertex(node)
       node
+    end
+
+    def fold_lenv(exprs, lenv)
+      nodes = []
+      final_lenv = exprs.reduce(lenv) do |current_lenv, ast_child|
+        ast_child_node, new_lenv = process(ast_child, current_lenv)
+        nodes << ast_child_node
+        new_lenv
+      end
+      return final_lenv, nodes
+    end
+
+    def add_edges(nodes_source, nodes_target)
+      Array(nodes_source).each do |source|
+        Array(nodes_target).each do |target|
+          @graph.add_edge(source, target)
+        end
+      end
     end
   end
 end
