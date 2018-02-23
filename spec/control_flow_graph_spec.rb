@@ -1300,18 +1300,58 @@ module Orbacle
       generate_cfg(snippet)
     end
 
-    specify "while loop" do
-      snippet = <<-END
-      while true
-        42
+    describe "loops" do
+      specify "empty while loop" do
+        snippet = <<-END
+        while true
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.final_node).to eq(node(:nil))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "simple while loop" do
+        snippet = <<-END
+        while true
+          42
+        end
+        END
 
-      expect(result.graph).to include_node(node(:bool, { value: true }))
-      expect(result.graph).to include_node(node(:int, { value: 42 }))
-      expect(result.final_node).to eq(node(:nil))
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:int, { value: 42 }))
+        expect(result.final_node).to eq(node(:nil))
+      end
+
+      specify "empty until loop" do
+        snippet = <<-END
+        until true
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.final_node).to eq(node(:nil))
+      end
+
+      specify "simple until loop" do
+        snippet = <<-END
+        until true
+          42
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:int, { value: 42 }))
+        expect(result.final_node).to eq(node(:nil))
+      end
     end
 
     specify "case-when branching (without else)" do

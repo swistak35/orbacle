@@ -161,18 +161,18 @@ module Orbacle
         handle_super(ast, lenv)
       when :zsuper
         handle_zsuper(ast, lenv)
-      when :while
-        handle_while(ast, lenv)
       when :when
         handle_when(ast, lenv)
       when :case
         handle_case(ast, lenv)
       when :yield
         handle_yield(ast, lenv)
-      when :break
-        handle_break(ast, lenv)
       when :block_pass
         handle_block_pass(ast, lenv)
+
+      when :while then handle_while(ast, lenv)
+      when :until then handle_until(ast, lenv)
+      when :break then handle_break(ast, lenv)
 
       when :rescue then handle_rescue(ast, lenv)
       when :resbody then handle_resbody(ast, lenv)
@@ -855,6 +855,18 @@ module Orbacle
     end
 
     def handle_while(ast, lenv)
+      expr_cond = ast.children[0]
+      expr_body = ast.children[1]
+
+      node_cond, new_lenv = process(expr_cond, lenv)
+      node_body, final_lenv = process(expr_body, new_lenv)
+
+      node = add_vertex(Node.new(:nil))
+
+      return [node, final_lenv]
+    end
+
+    def handle_until(ast, lenv)
       expr_cond = ast.children[0]
       expr_body = ast.children[1]
 
