@@ -817,13 +817,19 @@ module Orbacle
     end
 
     def handle_return(ast, lenv)
-      expr = ast.children[0]
+      exprs = ast.children
 
-      if expr.nil?
-        node_expr = add_vertex(Node.new(:nil))
-        final_lenv = lenv
+      if exprs.size == 0
+        node_expr, final_lenv = add_vertex(Node.new(:nil)), lenv
+      elsif exprs.size == 1
+        node_expr, final_lenv = process(exprs[0], lenv)
       else
-        node_expr, final_lenv = process(expr, lenv)
+        node_expr = add_vertex(Node.new(:array))
+        final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+          ast_child_node, new_lenv = process(ast_child, current_lenv)
+          @graph.add_edge(ast_child_node, node_expr)
+          new_lenv
+        end
       end
       @graph.add_edge(node_expr, @currently_parsed_method_result_node)
 

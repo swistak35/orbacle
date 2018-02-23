@@ -719,40 +719,63 @@ module Orbacle
       expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
     end
 
-    specify "method definition, using return with value" do
-      snippet = <<-END
-      def foo(x)
-        return 42
-        17
+    describe "returning" do
+      specify "method definition, using return with value" do
+        snippet = <<-END
+        def foo(x)
+          return 42
+          17
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:method_result))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 17 }),
+          node(:method_result))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition, using empty return" do
+        snippet = <<-END
+        def foo(x)
+          return
+          17
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:method_result))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
-        node(:method_result))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition, using empty return" do
-      snippet = <<-END
-      def foo(x)
-        return
-        17
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:method_result))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 17 }),
+          node(:method_result))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition, multiple-value return" do
+        snippet = <<-END
+        def foo(x)
+          return 3, 7
+          17
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:nil),
-        node(:method_result))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
-        node(:method_result))
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 3 }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 7 }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:array),
+          node(:method_result))
+      end
     end
 
     specify "usage of instance variable" do
