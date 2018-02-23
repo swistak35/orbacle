@@ -1779,6 +1779,78 @@ module Orbacle
       expect(result.final_node).to eq(node(:nil))
     end
 
+    describe "operator assginments" do
+      specify "for lvar, usage of +=" do
+        snippet = <<-END
+        a = 42
+        a += 1
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:lvar, { var_name: "a" })])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: "a" })])
+      end
+
+      specify "for ivar, usage of +=" do
+        snippet = <<-END
+        class Foo
+          @a += 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:ivasgn, { var_name: "@a" })])
+      end
+
+      specify "for cvar, usage of +=" do
+        snippet = <<-END
+        class Foo
+          @@a += 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+      end
+
+      # Pending because currently body of constants is not evaluated
+      xspecify "for const, usage of +=" do
+        snippet = <<-END
+        class Foo
+          Bar += 1
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+      end
+    end
+
     def generate_cfg(snippet)
       service = DataFlowGraph.new
       service.process_file(snippet)

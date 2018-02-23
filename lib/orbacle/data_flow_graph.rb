@@ -153,8 +153,6 @@ module Orbacle
         handle_return(ast, lenv)
       when :masgn
         handle_masgn(ast, lenv)
-      when :mlhs
-        handle_mlhs(ast, lenv)
       when :alias
         handle_alias(ast, lenv)
       when :super
@@ -182,6 +180,8 @@ module Orbacle
       when :resbody then handle_resbody(ast, lenv)
       when :retry then handle_retry(ast, lenv)
       when :ensure then handle_ensure(ast, lenv)
+
+      when :op_asgn then handle_op_asgn(ast, lenv)
 
       else
         raise ArgumentError.new(ast.type)
@@ -855,18 +855,6 @@ module Orbacle
       return [result_node, final_lenv]
     end
 
-    def handle_mlhs(ast, lenv)
-      node_mlhs = add_vertex(Node.new(:mlhs))
-
-      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
-        ast_child_node, new_lenv = process(ast_child, current_lenv)
-        @graph.add_edge(node_mlhs, ast_child_node)
-        new_lenv
-      end
-
-      return [node_mlhs, final_lenv]
-    end
-
     def handle_alias(ast, lenv)
       node = add_vertex(Node.new(:nil))
       return [node, lenv]
@@ -1040,6 +1028,37 @@ module Orbacle
       @graph.add_edge(node_ensure_body, node_ensure) if node_ensure_body
 
       return [node_ensure, lenv_after_ensure_body]
+    end
+
+    def handle_op_asgn(ast, lenv)
+      expr_partial_asgn = ast.children[0]
+      method_name = ast.children[1]
+      expr_argument = ast.children[2]
+
+      expr_full_rhs = case expr_partial_asgn.type
+      when :lvasgn
+        var_name = expr_partial_asgn.children[0]
+        Parser::AST::Node.new(:send,
+                              [Parser::AST::Node.new(:lvar, [var_name]), method_name, expr_argument])
+      when :ivasgn
+        var_name = expr_partial_asgn.children[0]
+        Parser::AST::Node.new(:send,
+                              [Parser::AST::Node.new(:ivar, [var_name]), method_name, expr_argument])
+      when :cvasgn
+        var_name = expr_partial_asgn.children[0]
+        Parser::AST::Node.new(:send,
+                              [Parser::AST::Node.new(:cvar, [var_name]), method_name, expr_argument])
+      when :casgn
+        scope = expr_partial_asgn.children[0]
+        var_name = expr_partial_asgn.children[1]
+        Parser::AST::Node.new(:send,
+                              [Parser::AST::Node.new(:const, [scope, var_name]), method_name, expr_argument])
+      else raise ArgumentError
+      end
+      expr_full_asgn = expr_partial_asgn.append(expr_full_rhs)
+      final_node, final_lenv = process(expr_full_asgn, lenv)
+
+      return [final_node, final_lenv]
     end
 
     def expr_is_class_definition?(expr)
