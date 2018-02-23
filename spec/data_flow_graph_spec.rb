@@ -1389,6 +1389,45 @@ module Orbacle
           node(:cvasgn, { var_name: "@@y" }),
           node(:array))
       end
+
+      specify "multiple assignment - self send assignment" do
+        snippet = <<-END
+        self.x, self.y = [1, 2]
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends[0]
+        expect(msend0.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:call_arg)])
+
+        msend1 = result.message_sends[1]
+        expect(msend1.message_send).to eq("x=")
+        expect(msend1.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:call_result, { csend: false })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:array)])
+
+        msend2 = result.message_sends[2]
+        expect(msend2.message_send).to eq("[]")
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_obj)).to eq([node(:array)])
+        expect(msend2.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend2.send_result)).to eq([node(:call_arg)])
+
+        msend3 = result.message_sends[3]
+        expect(msend3.message_send).to eq("y=")
+        expect(msend3.send_args.size).to eq(1)
+        expect(result.graph.reverse.adjacent_vertices(msend3.send_args[0])).to eq([node(:call_result, { csend: false })])
+        expect(result.graph.adjacent_vertices(msend3.send_result)).to eq([node(:array)])
+
+        expect(result.final_node).to eq(node(:array))
+        expect(result.graph).to include_edge(
+          node(:call_result, { csend: false }),
+          node(:array))
+      end
     end
 
     specify "alias method" do
