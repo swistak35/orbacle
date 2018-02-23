@@ -125,6 +125,82 @@ module Orbacle
       end
     end
 
+    describe "hashes" do
+      specify "empty hash" do
+        snippet = <<-END
+        {}
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:hash))
+        expect(result.graph).to include_edge(
+          node(:hash_keys),
+          node(:hash))
+        expect(result.graph).to include_edge(
+          node(:hash_values),
+          node(:hash))
+      end
+
+      specify "hash" do
+        snippet = <<-END
+        {
+          "foo" => 42,
+          bar: "nananana",
+        }
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:hash))
+        expect(result.graph).to include_edge(
+          node(:hash_keys),
+          node(:hash))
+        expect(result.graph).to include_edge(
+          node(:hash_values),
+          node(:hash))
+
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:hash_keys))
+        expect(result.graph).to include_edge(
+          node(:sym, { value: :bar }),
+          node(:hash_keys))
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:hash_values))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "nananana" }),
+          node(:hash_values))
+      end
+
+      specify "hash with kwsplat" do
+        snippet = <<-END
+        other = { bar: 1 }
+        { foo: 42, **other }
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:hash))
+
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "other" }),
+          node(:unwrap_hash_keys))
+        expect(result.graph).to include_edge(
+          node(:unwrap_hash_keys),
+          node(:hash_keys))
+
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "other" }),
+          node(:unwrap_hash_values))
+        expect(result.graph).to include_edge(
+          node(:unwrap_hash_values),
+          node(:hash_values))
+      end
+    end
+
     specify "string literal" do
       snippet = <<-END
       "foobar"
@@ -276,55 +352,6 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:defined))
       expect(result.graph.edges).to be_empty
-    end
-
-    specify "empty hash" do
-      snippet = <<-END
-      {}
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:hash))
-      expect(result.graph).to include_edge(
-        node(:hash_keys),
-        node(:hash))
-      expect(result.graph).to include_edge(
-        node(:hash_values),
-        node(:hash))
-    end
-
-    specify "hash" do
-      snippet = <<-END
-      {
-        "foo" => 42,
-        bar: "nananana",
-      }
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node).to eq(node(:hash))
-      expect(result.graph).to include_edge(
-        node(:hash_keys),
-        node(:hash))
-      expect(result.graph).to include_edge(
-        node(:hash_values),
-        node(:hash))
-
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foo" }),
-        node(:hash_keys))
-      expect(result.graph).to include_edge(
-        node(:sym, { value: :bar }),
-        node(:hash_keys))
-
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:hash_values))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "nananana" }),
-        node(:hash_values))
     end
 
     specify "simple inclusive range" do

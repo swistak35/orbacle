@@ -603,12 +603,31 @@ module Orbacle
       @graph.add_edge(node_hash_values, node_hash)
 
       final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
-        hash_key, hash_value = ast_child.children
-        hash_key_node, lenv_for_value = process(hash_key, current_lenv)
-        hash_value_node, new_lenv = process(hash_value, lenv_for_value)
-        @graph.add_edge(hash_key_node, node_hash_keys)
-        @graph.add_edge(hash_value_node, node_hash_values)
-        new_lenv
+        case ast_child.type
+        when :pair
+          hash_key, hash_value = ast_child.children
+          hash_key_node, lenv_for_value = process(hash_key, current_lenv)
+          hash_value_node, new_lenv = process(hash_value, lenv_for_value)
+          @graph.add_edge(hash_key_node, node_hash_keys)
+          @graph.add_edge(hash_value_node, node_hash_values)
+          new_lenv
+        when :kwsplat
+          kwsplat_expr = ast_child.children[0]
+
+          node_kwsplat, lenv_after_kwsplat = process(kwsplat_expr, lenv)
+
+          node_unwrap_hash_keys = Node.new(:unwrap_hash_keys)
+          node_unwrap_hash_values = Node.new(:unwrap_hash_values)
+
+          @graph.add_edge(node_kwsplat, node_unwrap_hash_keys)
+          @graph.add_edge(node_kwsplat, node_unwrap_hash_values)
+
+          @graph.add_edge(node_unwrap_hash_keys, node_hash_keys)
+          @graph.add_edge(node_unwrap_hash_values, node_hash_values)
+
+          lenv_after_kwsplat
+        else raise ArgumentError.new(ast)
+        end
       end
 
       return [node_hash, final_lenv]
