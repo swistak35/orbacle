@@ -301,6 +301,17 @@ module Orbacle
         expect(result).to eq(nil)
       end
 
+      specify "assignment and usage of global variable" do
+        snippet = <<-END
+        $baz = 42
+        $baz
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
       specify "nth-ref global variables" do
         snippet = <<-END
         $1

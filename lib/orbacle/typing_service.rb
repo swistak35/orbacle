@@ -108,6 +108,7 @@ module Orbacle
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_method_result(node, sources)
 
+      when :gvasgn then handle_group(node, sources)
       when :gvar_definition then handle_group(node, sources)
       when :gvar then handle_pass1(node, sources)
       when :backref then handle_just_string(node, sources)
