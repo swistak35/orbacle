@@ -352,14 +352,6 @@ module Orbacle
       @worklist << message_send.send_result
     end
 
-    def handle_primitive_integer_succ(_node, _sources)
-      NominalType.new("Integer")
-    end
-
-    def handle_primitive_integer_to_s(_node, _sources)
-      NominalType.new("String")
-    end
-
     def handle_primitive_array_map_1(_node, sources)
       raise if sources.size != 1
       source = sources.first
