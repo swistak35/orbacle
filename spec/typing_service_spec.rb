@@ -2,191 +2,207 @@ require 'spec_helper'
 
 module Orbacle
   RSpec.describe TypingService do
-    specify "primitive int" do
-      snippet = <<-END
-      42
-      END
+    describe "primitives" do
+      specify "primitive int" do
+        snippet = <<-END
+        42
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("Integer"))
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "primitive float" do
+        snippet = <<-END
+        42.0
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Float"))
+      end
+
+      specify "primitive bool" do
+        snippet = <<-END
+        true
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "primitive nil" do
+        snippet = <<-END
+        nil
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("nil"))
+      end
     end
 
-    specify "primitive float" do
-      snippet = <<-END
-      42.0
-      END
+    describe "strings" do
+      specify "string literal" do
+        snippet = <<-END
+        "foobar"
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("Float"))
+        expect(result).to eq(nominal("String"))
+      end
+
+      specify "string with interpolation" do
+        snippet = '
+        bar = 42
+        "foo#{bar}baz"
+        '
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
     end
 
-    specify "primitive bool" do
-      snippet = <<-END
-      true
-      END
+    describe "symbols" do
+      specify "symbol literal" do
+        snippet = <<-END
+        :foobar
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("Boolean"))
+        expect(result).to eq(nominal("Symbol"))
+      end
+
+      specify "symbol with interpolation" do
+        snippet = '
+        bar = 42
+        :"foo#{bar}baz"
+        '
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Symbol"))
+      end
     end
 
-    specify "primitive nil" do
-      snippet = <<-END
-      nil
-      END
+    describe "regexps" do
+      specify "regexp" do
+        snippet = <<-END
+        /foobar/
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("nil"))
+        expect(result).to eq(nominal("Regexp"))
+      end
+
+      specify "regexp with interpolation" do
+        snippet = '
+        bar = 42
+        /foo#{bar}/
+        '
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Regexp"))
+      end
     end
 
-    specify "string literal" do
-      snippet = <<-END
-      "foobar"
-      END
+    describe "arrays" do
+      specify "empty array" do
+        snippet = <<-END
+        []
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("String"))
+        expect(result).to eq(generic("Array", [nil]))
+      end
+
+      specify "simple (primitive) literal array" do
+        snippet = <<-END
+        [1, 2]
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "(primitive) heterogenous literal array" do
+        snippet = <<-END
+        [1, "foobar"]
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
+      end
     end
 
-    specify "string with interpolation" do
-      snippet = '
-      bar = 42
-      "foo#{bar}baz"
-      '
+    describe "hashes" do
+      specify "empty hash" do
+        snippet = <<-END
+        {}
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("String"))
+        expect(result).to eq(generic("Hash", [nil, nil]))
+      end
+
+      specify "hash" do
+        snippet = <<-END
+        {
+          "foo" => 42,
+          bar: "nananana",
+        }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Hash", [union([nominal("String"), nominal("Symbol")]), union([nominal("Integer"), nominal("String")])]))
+      end
     end
 
-    specify "symbol literal" do
-      snippet = <<-END
-      :foobar
-      END
+    describe "ranges" do
+      specify "range" do
+        snippet = <<-END
+        (2..4)
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("Symbol"))
+        expect(result).to eq(generic("Range", [nominal("Integer")]))
+      end
     end
 
-    specify "symbol with interpolation" do
-      snippet = '
-      bar = 42
-      :"foo#{bar}baz"
-      '
+    describe "local variables" do
+      specify "local variable assignment" do
+        snippet = <<-END
+        x = 42
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("Symbol"))
-    end
+        expect(result).to eq(nominal("Integer"))
+      end
 
-    specify "regexp" do
-      snippet = <<-END
-      /foobar/
-      END
+      specify "simple lvar reference" do
+        snippet = <<-END
+        x = 42
+        x
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(nominal("Regexp"))
-    end
-
-    specify "regexp with interpolation" do
-      snippet = '
-      bar = 42
-      /foo#{bar}/
-      '
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Regexp"))
-    end
-
-    specify "empty array" do
-      snippet = <<-END
-      []
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Array", [nil]))
-    end
-
-    specify "simple (primitive) literal array" do
-      snippet = <<-END
-      [1, "foobar"]
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
-    end
-
-    specify "empty hash" do
-      snippet = <<-END
-      {}
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Hash", [nil, nil]))
-    end
-
-    specify "hash" do
-      snippet = <<-END
-      {
-        "foo" => 42,
-        bar: "nananana",
-      }
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Hash", [union([nominal("String"), nominal("Symbol")]), union([nominal("Integer"), nominal("String")])]))
-    end
-
-    specify "range" do
-      snippet = <<-END
-      (2..4)
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Range", [nominal("Integer")]))
-    end
-
-    specify "local variable assignment" do
-      snippet = <<-END
-      x = 42
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
-    end
-
-    specify "simple lvar reference" do
-      snippet = <<-END
-      x = 42
-      x
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
-    end
-
-    specify "simple (primitive) literal array" do
-      snippet = <<-END
-      [1, 2]
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(generic("Array", [nominal("Integer")]))
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     specify "Integer#succ" do
