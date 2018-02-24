@@ -110,6 +110,8 @@ module Orbacle
 
       when :gvar_definition then handle_group(node, sources)
       when :gvar then handle_pass1(node, sources)
+      when :backref then handle_just_string(node, sources)
+      when :nthref then handle_just_string(node, sources)
 
       else raise ArgumentError.new(node.type)
       end
@@ -168,6 +170,10 @@ module Orbacle
       raise if sources.size != 1
       source = sources.first
       @result[source]
+    end
+
+    def handle_just_string(node, sources)
+      NominalType.new("String")
     end
 
     def handle_range(node, sources)

@@ -215,6 +215,26 @@ module Orbacle
 
         expect(result).to eq(nil)
       end
+
+      specify "nth-ref global variables" do
+        snippet = <<-END
+        $1
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+      specify "back-ref global variables" do
+        snippet = <<-END
+        $`
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
     end
 
     specify "Integer#succ" do
@@ -362,6 +382,11 @@ module Orbacle
       typing_result[result.final_node]
     end
 
+    def full_type_snippet(snippet)
+      result = DataFlowGraph.new.process_file(snippet)
+      TypingService.new.(result.graph, result.message_sends, result.tree)
+    end
+
     def nominal(*args)
       TypingService::NominalType.new(*args)
     end
@@ -372,6 +397,10 @@ module Orbacle
 
     def generic(*args)
       TypingService::GenericType.new(*args)
+    end
+
+    def find_by_node(result, node_type, node_params)
+      result.find {|k,v| k.type == node_type && k.params == node_params }.last
     end
   end
 end
