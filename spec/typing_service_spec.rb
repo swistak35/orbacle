@@ -333,6 +333,18 @@ module Orbacle
       end
     end
 
+    describe "defined?" do
+      specify "handle defined?" do
+        snippet = <<-END
+        defined?(x)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("nil")]))
+      end
+    end
+
     specify "Integer#succ" do
       snippet = <<-END
       x = 42

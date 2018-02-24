@@ -90,6 +90,8 @@ module Orbacle
       when :hash_values then handle_group(node, sources)
       when :hash then handle_hash(node, sources)
 
+      when :defined then handle_maybe_string(node, sources)
+
       when :range_from then handle_group(node, sources)
       when :range_to then handle_group(node, sources)
       when :range then handle_range(node, sources)
@@ -150,6 +152,10 @@ module Orbacle
 
     def handle_just_string(node, sources)
       NominalType.new("String")
+    end
+
+    def handle_maybe_string(node, sources)
+      build_union([NominalType.new("String"), NominalType.new("nil")])
     end
 
     def handle_just_symbol(node, sources)

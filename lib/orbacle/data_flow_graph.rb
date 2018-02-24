@@ -339,7 +339,7 @@ module Orbacle
     def handle_defined(ast, lenv)
       _expr = ast.children[0]
 
-      node = Node.new(:defined)
+      node = add_vertex(Node.new(:defined))
 
       return [node, lenv]
     end
