@@ -234,21 +234,24 @@ module Orbacle
         else
           found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
-          found_method.nodes.args.each_with_index do |node_formal_arg, i|
-            case node_formal_arg.type
-            when :formal_arg
+          found_method.args.args.each_with_index do |formal_arg, i|
+            node_formal_arg = found_method.nodes.args[formal_arg.name]
+
+            case formal_arg
+            when GlobalTree::Method::ArgumentsTree::Regular
               @graph.add_edge(message_send.send_args[i], node_formal_arg)
               @worklist << node_formal_arg
-            when :formal_optarg
+            when GlobalTree::Method::ArgumentsTree::Optional
               if message_send.send_args[i]
                 @graph.add_edge(message_send.send_args[i], node_formal_arg)
                 @worklist << node_formal_arg
               end
-            when :formal_restarg
+            when GlobalTree::Method::ArgumentsTree::Splat
               message_send.send_args[i..-1].each do |send_arg|
                 @graph.add_edge(send_arg, node_formal_arg)
                 @worklist << node_formal_arg
               end
+            else raise
             end
           end
 

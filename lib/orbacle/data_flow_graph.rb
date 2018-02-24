@@ -556,20 +556,21 @@ module Orbacle
       formal_arguments = ast.children[1]
       method_body = ast.children[2]
 
-      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
+      arguments_tree, arguments_lenv, arguments_nodes = build_def_arguments(formal_arguments.children, lenv)
 
       metod = @tree.add_method(
         GlobalTree::Method.new(
           scope: current_scope,
           name: method_name.to_s,
           line: ast.loc.line,
+          args: arguments_tree,
           visibility: @currently_analyzed_klass.method_visibility,
-          nodes: GlobalTree::Method::Nodes.new(formal_arguments_nodes, add_vertex(Node.new(:method_result)), [])))
+          nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
       switch_currently_analyzed_method(metod) do
         if method_body
           with_selfie(Selfie.instance_from_scope(current_scope)) do
-            final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+            final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
             @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
           end
         else
@@ -681,20 +682,21 @@ module Orbacle
       formal_arguments = ast.children[2]
       method_body = ast.children[3]
 
-      formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
+      arguments_tree, arguments_lenv, arguments_nodes = build_def_arguments(formal_arguments.children, lenv)
 
       metod = @tree.add_method(
         GlobalTree::Method.new(
           scope: current_scope.increase_by_metaklass,
           name: method_name.to_s,
           line: ast.loc.line,
+          args: arguments_tree,
           visibility: @currently_analyzed_klass.method_visibility,
-          nodes: GlobalTree::Method::Nodes.new(formal_arguments_nodes, add_vertex(Node.new(:method_result)), [])))
+          nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
       switch_currently_analyzed_method(metod) do
         if method_body
           with_selfie(Selfie.klass_from_scope(current_scope)) do
-            final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+            final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
             @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
           end
         else
@@ -1259,6 +1261,85 @@ module Orbacle
         h[arg_name] = [arg_node]
       end
       return [formal_arguments_hash, formal_arguments_nodes]
+    end
+
+    def build_def_arguments(formal_arguments, lenv)
+      args = []
+      kwargs = []
+      blockarg = nil
+
+      nodes = {}
+
+      final_lenv = formal_arguments.reduce(lenv) do |current_lenv, arg_ast|
+        arg_name = arg_ast.children[0]&.to_s
+        maybe_arg_default_expr = arg_ast.children[1]
+
+        case arg_ast.type
+        when :arg
+          args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+          nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
+          current_lenv.merge(arg_name => [nodes[arg_name]])
+        when :optarg
+          args << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
+          arg_node, next_lenv = process(maybe_arg_default_expr, current_lenv)
+          nodes[arg_name] = add_vertex(Node.new(:formal_optarg, { var_name: arg_name }))
+          @graph.add_edge(arg_node, nodes[arg_name])
+          next_lenv.merge(arg_name => [nodes[arg_name]])
+        when :restarg
+          args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
+          nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
+          current_lenv.merge(arg_name => [nodes[arg_name]])
+        when :kwarg
+          kwargs << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+          nodes[arg_name] = add_vertex(Node.new(:formal_kwarg, { var_name: arg_name }))
+          current_lenv.merge(arg_name => [nodes[arg_name]])
+        when :kwoptarg
+          kwargs << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
+          arg_node, next_lenv = process(maybe_arg_default_expr, current_lenv)
+          nodes[arg_name] = add_vertex(Node.new(:formal_kwoptarg, { var_name: arg_name }))
+          @graph.add_edge(arg_node, nodes[arg_name])
+          next_lenv.merge(arg_name => [nodes[arg_name]])
+        when :kwrestarg
+          kwargs << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
+          nodes[arg_name] = add_vertex(Node.new(:formal_kwrestarg, { var_name: arg_name }))
+          current_lenv.merge(arg_name => [nodes[arg_name]])
+        when :mlhs
+          mlhs_node = add_vertex(Node.new(:formal_mlhs))
+          nested_arg, next_lenv = build_def_arguments_nested(arg_ast.children, nodes, current_lenv, mlhs_node)
+          args << nested_arg
+          next_lenv
+        else raise
+        end
+      end
+
+      return GlobalTree::Method::ArgumentsTree.new(args, kwargs, blockarg), final_lenv, nodes
+    end
+
+    def build_def_arguments_nested(arg_asts, nodes, lenv, mlhs_node)
+      args = []
+
+      final_lenv = arg_asts.reduce(lenv) do |current_lenv, arg_ast|
+        arg_name = arg_ast.children[0]&.to_s
+
+        case arg_ast.type
+        when :arg
+          args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+          nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
+          current_lenv.merge(arg_name => [nodes[arg_name]])
+        when :restarg
+          args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
+          nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
+          current_lenv.merge(arg_name => [nodes[arg_name]])
+        when :mlhs
+          mlhs_node = add_vertex(Node.new(:formal_mlhs))
+          nested_arg, next_lenv = build_def_arguments_nested(arg_ast.children, nodes, current_lenv, mlhs_node)
+          args << nested_arg
+          next_lenv
+        else raise
+        end
+      end
+
+      return ArgumentsTree::Nested.new(args), final_lenv
     end
 
     def with_new_nesting(new_nesting)

@@ -3,17 +3,25 @@ module Orbacle
     class Method
       Nodes = Struct.new(:args, :result, :yields)
 
-      def initialize(scope:, name:, line:, visibility:, nodes:)
+      class ArgumentsTree < Struct.new(:args, :kwargs, :blockarg)
+        Regular = Struct.new(:name)
+        Optional = Struct.new(:name)
+        Splat = Struct.new(:name)
+        Nested = Struct.new(:args)
+      end
+
+      def initialize(scope:, name:, line:, visibility:, args:, nodes:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @name = name
         @line = line
         @visibility = visibility
+        @args = args
         @nodes = nodes
         @scope = scope
       end
 
-      attr_reader :name, :line, :scope, :nodes
+      attr_reader :name, :line, :scope, :args, :nodes
       attr_accessor :visibility
     end
 
