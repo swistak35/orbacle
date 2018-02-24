@@ -107,6 +107,10 @@ module Orbacle
       when :const then handle_const(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_method_result(node, sources)
+
+      when :gvar_definition then handle_group(node, sources)
+      when :gvar then handle_pass1(node, sources)
+
       else raise ArgumentError.new(node.type)
       end
     end
@@ -158,6 +162,12 @@ module Orbacle
     def handle_group(node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
       build_union(sources_types)
+    end
+
+    def handle_pass1(node, sources)
+      raise if sources.size != 1
+      source = sources.first
+      @result[source]
     end
 
     def handle_range(node, sources)

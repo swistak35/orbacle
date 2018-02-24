@@ -205,6 +205,18 @@ module Orbacle
       end
     end
 
+    describe "global variables" do
+      specify "usage of global variable" do
+        snippet = <<-END
+        $baz
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nil)
+      end
+    end
+
     specify "Integer#succ" do
       snippet = <<-END
       x = 42

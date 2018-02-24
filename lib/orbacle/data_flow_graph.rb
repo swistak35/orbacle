@@ -493,10 +493,6 @@ module Orbacle
       return [call_result_node, final_lenv, { message_send: message_send }]
     end
 
-    def handle_index(ast, lenv)
-      require 'byebug'; byebug
-    end
-
     def handle_changing_visibility(lenv, new_visibility, arg_exprs)
       node = if @currently_analyzed_klass.klass
         if arg_exprs.empty?
