@@ -16,7 +16,7 @@ module Orbacle
             path: path,
             line: c.line)
         end
-        result.tree.methods.each do |m|
+        result.tree.metods.each do |m|
           @db.add_metod(
             name: m.name,
             file: path,

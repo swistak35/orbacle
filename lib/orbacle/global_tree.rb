@@ -96,11 +96,11 @@ module Orbacle
 
     def initialize
       @constants = []
-      @methods = []
+      @metods = []
       @nodes = Nodes.new
     end
 
-    attr_reader :methods, :constants, :nodes
+    attr_reader :metods, :constants, :nodes
 
     def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:)
       method = Method.new(
@@ -111,7 +111,7 @@ module Orbacle
         node_result: node_result,
         node_formal_arguments: node_formal_arguments,
         nodes_yields: [])
-      @methods << method
+      @metods << method
       method
     end
 

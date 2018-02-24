@@ -502,7 +502,7 @@ module Orbacle
           methods_to_change_visibility = arg_exprs.map do |arg_expr|
             [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
           end.compact
-          @tree.methods.each do |m|
+          @tree.metods.each do |m|
             if m.scope == current_scope && methods_to_change_visibility.include?(m.name)
               m.visibility = new_visibility
             end

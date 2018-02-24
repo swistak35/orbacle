@@ -232,7 +232,7 @@ module Orbacle
         if primitive_send?(possible_type, message_send.message_send)
           handle_primitive(possible_type, message_send, graph)
         else
-          found_method = @tree.methods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
+          found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
           formal_argument_nodes = found_method.node_formal_arguments
           found_method.node_formal_arguments.each_with_index do |node_formal_arg, i|
