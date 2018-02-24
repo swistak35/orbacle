@@ -501,6 +501,24 @@ module Orbacle
 
         expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(nominal("Integer"))
       end
+
+      specify "method with more than one yield" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42
+            yield "foo"
+          end
+        end
+        Foo.new.bar do |x|
+          x
+        end
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(union([nominal("Integer"), nominal("String")]))
+      end
     end
 
     def type_snippet(snippet)
