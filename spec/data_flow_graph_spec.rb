@@ -1655,21 +1655,40 @@ module Orbacle
         node(:case_result))
     end
 
-    specify "yield" do
-      snippet = <<-END
-      def foo
-        yield 42
+    describe "yielding" do
+      specify "empty yield" do
+        snippet = <<-END
+        def foo
+          yield
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:method_result))
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:yield))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "simple yield" do
+        snippet = <<-END
+        def foo
+          yield 42
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:nil),
-        node(:method_result))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:yield))
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:method_result))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:yield))
+      end
     end
 
     specify "passing block" do

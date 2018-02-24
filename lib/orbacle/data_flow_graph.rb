@@ -911,10 +911,15 @@ module Orbacle
       exprs = ast.children
 
       node_yield = add_vertex(Node.new(:yield))
-      final_lenv = exprs.reduce(lenv) do |current_lenv, current_expr|
-        current_node, next_lenv = process(current_expr, current_lenv)
-        @graph.add_edge(current_node, node_yield)
-        next_lenv
+      final_lenv = if exprs.empty?
+        @graph.add_edge(Node.new(:nil), node_yield)
+        lenv
+      else
+        exprs.reduce(lenv) do |current_lenv, current_expr|
+          current_node, next_lenv = process(current_expr, current_lenv)
+          @graph.add_edge(current_node, node_yield)
+          next_lenv
+        end
       end
       result_node = add_vertex(Node.new(:nil))
 
