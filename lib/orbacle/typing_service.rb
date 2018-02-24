@@ -115,6 +115,8 @@ module Orbacle
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
 
+      when :yield then handle_group(node, sources)
+
       when :gvasgn then handle_group(node, sources)
       when :gvar_definition then handle_group(node, sources)
       when :gvar then handle_pass1(node, sources)
@@ -251,6 +253,12 @@ module Orbacle
             end
           end
           method_result_node = found_method.node_result
+          if !found_method.nodes_yields.empty?
+            found_method.nodes_yields.each do |node_yield|
+              @graph.add_edge(node_yield, message_send.block.args[0])
+              @worklist << message_send.block.args[0]
+            end
+          end
           if !@graph.original.has_edge?(method_result_node, message_send.send_result)
             @graph.add_edge(method_result_node, message_send.send_result)
             @worklist << message_send.send_result
