@@ -390,98 +390,100 @@ module Orbacle
       expect(result).to eq(nominal("Foo"))
     end
 
-    specify "simple user-defined method call" do
-      snippet = <<-END
-      class Foo
-        def bar
-          42
+    describe "user-defined methods" do
+      specify "simple user-defined method call" do
+        snippet = <<-END
+        class Foo
+          def bar
+            42
+          end
         end
+        Foo.new.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
       end
-      Foo.new.bar
-      END
 
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
-    end
-
-    specify "user-defined method call with argument" do
-      snippet = <<-END
-      class Foo
-        def bar(x)
-          x.succ
+      specify "user-defined method call with argument" do
+        snippet = <<-END
+        class Foo
+          def bar(x)
+            x.succ
+          end
         end
+        Foo.new.bar(42)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
       end
-      Foo.new.bar(42)
-      END
 
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
-    end
-
-    specify "user-defined method call with optional argument" do
-      snippet = <<-END
-      class Foo
-        def bar(s, x = 42)
-          x.succ
+      specify "user-defined method call with optional argument" do
+        snippet = <<-END
+        class Foo
+          def bar(s, x = 42)
+            x.succ
+          end
         end
+        Foo.new.bar("foo")
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
       end
-      Foo.new.bar("foo")
-      END
 
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
-    end
-
-    specify "user-defined method call with optional argument 2" do
-      snippet = <<-END
-      class Foo
-        def bar(x = 42)
-          x
+      specify "user-defined method call with optional argument 2" do
+        snippet = <<-END
+        class Foo
+          def bar(x = 42)
+            x
+          end
         end
+        Foo.new.bar("foo")
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Integer"), nominal("String")]))
       end
-      Foo.new.bar("foo")
-      END
 
-      result = type_snippet(snippet)
-
-      expect(result).to eq(union([nominal("Integer"), nominal("String")]))
-    end
-
-    specify "user-defined method call with splat argument" do
-      snippet = <<-END
-      class Foo
-        def bar(*args)
-          args
+      specify "user-defined method call with splat argument" do
+        snippet = <<-END
+        class Foo
+          def bar(*args)
+            args
+          end
         end
+        Foo.new.bar("foo", 42)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
       end
-      Foo.new.bar("foo", 42)
-      END
 
-      result = type_snippet(snippet)
+      specify "method call to self" do
+        snippet = <<-END
+        class Foo
+          def bar
+            self.baz
+          end
 
-      expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
-    end
-
-    specify "method call to self" do
-      snippet = <<-END
-      class Foo
-        def bar
-          self.baz
+          def baz
+            42
+          end
         end
+        Foo.new.bar
+        END
 
-        def baz
-          42
-        end
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
       end
-      Foo.new.bar
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
     end
 
     def type_snippet(snippet)
