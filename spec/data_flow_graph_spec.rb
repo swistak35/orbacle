@@ -769,104 +769,106 @@ module Orbacle
       end
     end
 
-    specify "usage of instance variable" do
-      snippet = <<-END
-      class Foo
-        def bar
-          @baz
-        end
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:ivar_definition),
-        node(:ivar))
-    end
-
-    specify "usage of instance variable in nested class" do
-      snippet = <<-END
-      class Fizz
+    describe "instance variables" do
+      specify "usage of instance variable" do
+        snippet = <<-END
         class Foo
           def bar
             @baz
           end
         end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:ivar_definition),
+          node(:ivar))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "usage of instance variable in nested class" do
+        snippet = <<-END
+        class Fizz
+          class Foo
+            def bar
+              @baz
+            end
+          end
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:ivar_definition),
-        node(:ivar))
-    end
+        result = generate_cfg(snippet)
 
-    specify "assignment of instance variable" do
-      snippet = <<-END
-      class Foo
-        def bar
+        expect(result.graph).to include_edge(
+          node(:ivar_definition),
+          node(:ivar))
+      end
+
+      specify "assignment of instance variable" do
+        snippet = <<-END
+        class Foo
+          def bar
+            @baz = 42
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:ivasgn, { var_name: "@baz" }))
+        expect(result.graph).to include_edge(
+          node(:ivasgn, { var_name: "@baz" }),
+          node(:ivar_definition))
+      end
+
+      specify "distinguish instance variables from class level instance variables" do
+        snippet = <<-END
+        class Fizz
           @baz = 42
+
+          def setting_baz
+            @baz = 57
+          end
+
+          def getting_baz
+            @baz
+          end
         end
+        END
+
+        result = generate_cfg(snippet)
+
+        int_57 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 57 }
+        ivasgn_to_57 = result.graph.adjacent_vertices(int_57).first
+        instance_level_baz = result.graph.adjacent_vertices(ivasgn_to_57).first
+        expect(result.graph.adjacent_vertices(instance_level_baz)).to match_array([node(:ivar)])
+
+        int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+        ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+        class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
+        expect(result.graph.adjacent_vertices(class_level_baz)).to be_empty
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "usage of instance variable inside selfed method" do
+        snippet = <<-END
+        class Foo
+          @baz = 42
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:ivasgn, { var_name: "@baz" }))
-      expect(result.graph).to include_edge(
-        node(:ivasgn, { var_name: "@baz" }),
-        node(:ivar_definition))
-    end
-
-    specify "distinguish instance variables from class level instance variables" do
-      snippet = <<-END
-      class Fizz
-        @baz = 42
-
-        def setting_baz
-          @baz = 57
+          def self.bar
+            @baz
+          end
         end
+        END
 
-        def getting_baz
-          @baz
-        end
+        result = generate_cfg(snippet)
+
+        int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+        ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+        class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
+        expect(result.graph.adjacent_vertices(class_level_baz)).to match_array([node(:ivar)])
       end
-      END
-
-      result = generate_cfg(snippet)
-
-      int_57 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 57 }
-      ivasgn_to_57 = result.graph.adjacent_vertices(int_57).first
-      instance_level_baz = result.graph.adjacent_vertices(ivasgn_to_57).first
-      expect(result.graph.adjacent_vertices(instance_level_baz)).to match_array([node(:ivar)])
-
-      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
-      ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
-      class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
-      expect(result.graph.adjacent_vertices(class_level_baz)).to be_empty
-    end
-
-    specify "usage of instance variable inside selfed method" do
-      snippet = <<-END
-      class Foo
-        @baz = 42
-
-        def self.bar
-          @baz
-        end
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
-      ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
-      class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
-      expect(result.graph.adjacent_vertices(class_level_baz)).to match_array([node(:ivar)])
     end
 
     specify "usage of class variable" do

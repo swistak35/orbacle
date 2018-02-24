@@ -205,6 +205,91 @@ module Orbacle
       end
     end
 
+    describe "instance variables" do
+      specify "usage of uninitialized instance variable" do
+        snippet = <<-END
+        class Foo
+          def bar
+            @baz
+          end
+        end
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar)).to eq(nil)
+      end
+
+      specify "assignment of instance variable" do
+        snippet = <<-END
+        class Foo
+          def bar
+            @baz = 42
+          end
+        end
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+      end
+
+      specify "usage of instance variable" do
+        snippet = <<-END
+        class Foo
+          def foo
+            @baz = 42
+          end
+
+          def bar
+            @baz
+          end
+        end
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar)).to eq(nominal("Integer"))
+      end
+
+      specify "distinguish instance variables from class level instance variables" do
+        snippet = <<-END
+        class Fizz
+          @baz = 42
+
+          def setting_baz
+            @baz = "foo"
+          end
+
+          def getting_baz
+            @baz
+          end
+        end
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar_definition)).to eq(nominal("String"))
+        expect(find_by_node(result, :clivar_definition)).to eq(nominal("Integer"))
+      end
+
+      specify "usage of instance variable inside selfed method" do
+        snippet = <<-END
+        class Foo
+          @baz = 42
+
+          def self.bar
+            @baz
+          end
+        end
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar)).to eq(nominal("Integer"))
+      end
+    end
+
     describe "global variables" do
       specify "usage of global variable" do
         snippet = <<-END
@@ -399,7 +484,7 @@ module Orbacle
       TypingService::GenericType.new(*args)
     end
 
-    def find_by_node(result, node_type, node_params)
+    def find_by_node(result, node_type, node_params = {})
       result.find {|k,v| k.type == node_type && k.params == node_params }.last
     end
   end

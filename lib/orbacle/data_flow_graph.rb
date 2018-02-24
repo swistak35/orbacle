@@ -1182,7 +1182,7 @@ module Orbacle
       raise if klass.nil?
 
       if !klass.nodes.class_level_instance_variables[ivar_name]
-        klass.nodes.class_level_instance_variables[ivar_name] = add_vertex(Node.new(:ivar_definition))
+        klass.nodes.class_level_instance_variables[ivar_name] = add_vertex(Node.new(:clivar_definition))
       end
 
       return klass.nodes.class_level_instance_variables[ivar_name]

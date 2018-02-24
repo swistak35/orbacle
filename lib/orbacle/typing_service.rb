@@ -113,6 +113,11 @@ module Orbacle
       when :backref then handle_just_string(node, sources)
       when :nthref then handle_just_string(node, sources)
 
+      when :ivasgn then handle_group(node, sources)
+      when :ivar_definition then handle_group(node, sources)
+      when :clivar_definition then handle_group(node, sources)
+      when :ivar then handle_pass1(node, sources)
+
       else raise ArgumentError.new(node.type)
       end
     end
