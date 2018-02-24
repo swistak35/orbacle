@@ -75,38 +75,43 @@ module Orbacle
       case node.type
       when :int then handle_int(node, sources)
       when :float then handle_float(node, sources)
-      when :str then handle_str(node, sources)
-      when :dstr then handle_str(node, sources)
-      when :sym then handle_sym(node, sources)
-      when :dsym then handle_sym(node, sources)
+      when :nil then handle_nil(node, sources)
+      when :bool then handle_bool(node, sources)
+
+      when :str then handle_just_string(node, sources)
+      when :dstr then handle_just_string(node, sources)
+
+      when :sym then handle_just_symbol(node, sources)
+      when :dsym then handle_just_symbol(node, sources)
+
       when :regexp then handle_regexp(node, sources)
-      when :hash_keys then handle_hash_keys(node, sources)
-      when :hash_values then handle_hash_values(node, sources)
+
+      when :hash_keys then handle_group(node, sources)
+      when :hash_values then handle_group(node, sources)
       when :hash then handle_hash(node, sources)
+
       when :range_from then handle_group(node, sources)
       when :range_to then handle_group(node, sources)
       when :range then handle_range(node, sources)
-      when :nil then handle_nil(node, sources)
-      when :bool then handle_bool(node, sources)
       when :self then handle_self(node, sources)
-      when :lvar then handle_lvar(node, sources)
-      when :array then handle_array(node, sources)
-      when :lvasgn then handle_lvasgn(node, sources)
-      when :call_obj then handle_call_obj(node, sources)
-      when :call_result then handle_call_result(node, sources)
+      when :lvar then handle_group(node, sources)
+      when :array then handle_group_into_array(node, sources)
+      when :lvasgn then handle_pass1(node, sources)
+      when :call_obj then handle_pass1(node, sources)
+      when :call_result then handle_pass_lte1(node, sources)
       when :call_arg then handle_group(node, sources)
       when :formal_arg then handle_group(node, sources)
       when :formal_optarg then handle_group(node, sources)
       when :formal_restarg then handle_group_into_array(node, sources)
-      when :block_arg then handle_block_arg(node, sources)
-      when :block_result then handle_block_result(node, sources)
-      when :primitive_integer_succ then handle_primitive_integer_succ(node, sources)
-      when :primitive_integer_to_s then handle_primitive_integer_to_s(node, sources)
+      when :block_arg then handle_pass_lte1(node, sources)
+      when :block_result then handle_pass_lte1(node, sources)
+      when :primitive_integer_succ then handle_int(node, sources)
+      when :primitive_integer_to_s then handle_just_string(node, sources)
       when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
       when :const then handle_const(node, sources)
       when :constructor then handle_constructor(node, sources)
-      when :method_result then handle_method_result(node, sources)
+      when :method_result then handle_group(node, sources)
 
       when :gvasgn then handle_group(node, sources)
       when :gvar_definition then handle_group(node, sources)
@@ -127,14 +132,6 @@ module Orbacle
       NominalType.new("Integer")
     end
 
-    def handle_str(_node, _sources)
-      NominalType.new("String")
-    end
-
-    def handle_sym(_node, _sources)
-      NominalType.new("Symbol")
-    end
-
     def handle_regexp(_node, _sources)
       NominalType.new("Regexp")
     end
@@ -151,20 +148,12 @@ module Orbacle
       NominalType.new("Float")
     end
 
-    def handle_hash_values(_node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      build_union(sources_types)
+    def handle_just_string(node, sources)
+      NominalType.new("String")
     end
 
-    def handle_hash_keys(_node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      build_union(sources_types)
-    end
-
-    def handle_hash(_node, sources)
-      hash_keys_node = sources.find {|s| s.type == :hash_keys }
-      hash_values_node = sources.find {|s| s.type == :hash_values }
-      GenericType.new("Hash", [@result[hash_keys_node], @result[hash_values_node]])
+    def handle_just_symbol(node, sources)
+      NominalType.new("Symbol")
     end
 
     def handle_group(node, sources)
@@ -178,8 +167,10 @@ module Orbacle
       @result[source]
     end
 
-    def handle_just_string(node, sources)
-      NominalType.new("String")
+    def handle_hash(_node, sources)
+      hash_keys_node = sources.find {|s| s.type == :hash_keys }
+      hash_values_node = sources.find {|s| s.type == :hash_values }
+      GenericType.new("Hash", [@result[hash_keys_node], @result[hash_values_node]])
     end
 
     def handle_range(node, sources)
@@ -198,49 +189,14 @@ module Orbacle
       end
     end
 
-    def handle_lvar(_node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      build_union(sources_types)
-    end
-
-    def handle_array(_node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      GenericType.new("Array", [build_union(sources_types)])
-    end
-
     def handle_group_into_array(_node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
       GenericType.new("Array", [build_union(sources_types)])
     end
 
-    def handle_lvasgn(_node, sources)
-      raise if sources.size != 1
-      @result[sources.first]
-    end
-
-    def handle_call_obj(_node, sources)
-      raise if sources.size != 1
-      @result[sources.first]
-    end
-
-    def handle_call_result(_node, sources)
+    def handle_pass_lte1(_node, sources)
       raise if sources.size > 1
       @result[sources.first]
-    end
-
-    def handle_block_arg(_node, sources)
-      raise if sources.size > 1
-      @result[sources.first]
-    end
-
-    def handle_block_result(_node, sources)
-      raise if sources.size > 1
-      @result[sources.first]
-    end
-
-    def handle_method_result(node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      build_union(sources_types)
     end
 
     def build_union(sources_types)
