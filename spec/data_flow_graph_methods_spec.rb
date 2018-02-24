@@ -108,6 +108,32 @@ module Orbacle
       expect(meth.visibility).to eq(:public)
     end
 
+    specify "method with one yield" do
+      file = <<-END
+      def bar
+        yield
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(result.tree.methods[0].nodes_yields.size).to eq(1)
+    end
+
+    specify "method with more yields" do
+      file = <<-END
+      def bar
+        yield
+        yield
+        yield
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(result.tree.methods[0].nodes_yields.size).to eq(3)
+    end
+
     specify do
       file = <<-END
       class Foo

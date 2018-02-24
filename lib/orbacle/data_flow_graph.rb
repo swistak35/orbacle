@@ -924,6 +924,9 @@ module Orbacle
           next_lenv
         end
       end
+      if @currently_analyzed_method
+        @currently_analyzed_method.nodes_yields << node_yield
+      end
       result_node = add_vertex(Node.new(:nil))
 
       return [result_node, final_lenv]
