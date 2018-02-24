@@ -42,6 +42,7 @@ module Orbacle
       @current_selfie = Selfie.main
       @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
+      @currently_analyzed_method = nil
 
       initial_local_environment = {}
       if ast
@@ -557,24 +558,25 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
-      @currently_parsed_method_result_node = add_vertex(Node.new(:method_result))
-      if method_body
-        with_selfie(Selfie.instance_from_scope(current_scope)) do
-          final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
-          @graph.add_edge(final_node, @currently_parsed_method_result_node)
-        end
-      else
-        final_node = add_vertex(Node.new(:nil))
-        @graph.add_edge(final_node, @currently_parsed_method_result_node)
-      end
-
-      @tree.add_method(
+      metod = @tree.add_method(
         name: method_name.to_s,
         line: ast.loc.line,
         visibility: @currently_analyzed_klass.method_visibility,
-        node_result: @currently_parsed_method_result_node,
+        node_result: add_vertex(Node.new(:method_result)),
         node_formal_arguments: formal_arguments_nodes,
         scope: current_scope)
+
+      switch_currently_analyzed_method(metod) do
+        if method_body
+          with_selfie(Selfie.instance_from_scope(current_scope)) do
+            final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+            @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+          end
+        else
+          final_node = add_vertex(Node.new(:nil))
+          @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+        end
+      end
 
       node = add_vertex(Node.new(:sym, { value: method_name }))
 
@@ -681,24 +683,25 @@ module Orbacle
 
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
-      @currently_parsed_method_result_node = add_vertex(Node.new(:method_result))
-      if method_body
-        with_selfie(Selfie.klass_from_scope(current_scope)) do
-          final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
-          @graph.add_edge(final_node, @currently_parsed_method_result_node)
-        end
-      else
-        final_node = add_vertex(Node.new(:nil))
-        @graph.add_edge(final_node, @currently_parsed_method_result_node)
-      end
-
-      @tree.add_method(
+      metod = @tree.add_method(
         name: method_name.to_s,
         line: ast.loc.line,
         visibility: @currently_analyzed_klass.method_visibility,
-        node_result: @currently_parsed_method_result_node,
+        node_result: add_vertex(Node.new(:method_result)),
         node_formal_arguments: formal_arguments_nodes,
         scope: current_scope.increase_by_metaklass)
+
+      switch_currently_analyzed_method(metod) do
+        if method_body
+          with_selfie(Selfie.klass_from_scope(current_scope)) do
+            final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
+            @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+          end
+        else
+          final_node = add_vertex(Node.new(:nil))
+          @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+        end
+      end
 
       node = add_vertex(Node.new(:sym, { value: method_name }))
 
@@ -808,7 +811,7 @@ module Orbacle
         final_lenv, nodes = fold_lenv(ast.children, lenv)
         add_edges(nodes, node_expr)
       end
-      @graph.add_edge(node_expr, @currently_parsed_method_result_node)
+      @graph.add_edge(node_expr, @currently_analyzed_method.node_result)
 
       return [node_expr, final_lenv]
     end
@@ -1163,6 +1166,13 @@ module Orbacle
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(klass, :public)
       yield
       @currently_analyzed_klass = previous
+    end
+
+    def switch_currently_analyzed_method(metod)
+      previous = @currently_analyzed_method
+      @currently_analyzed_method = metod
+      yield
+      @currently_analyzed_method = previous
     end
 
     def get_ivar_definition_node(ivar_name)

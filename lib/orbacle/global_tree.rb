@@ -1,7 +1,7 @@
 module Orbacle
   class GlobalTree
     class Method
-      def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:)
+      def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:, nodes_yields:, scope:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @name = name
@@ -9,6 +9,7 @@ module Orbacle
         @visibility = visibility
         @node_result = node_result
         @node_formal_arguments = node_formal_arguments
+        @nodes_yields = nodes_yields
         @scope = scope
       end
 
@@ -108,8 +109,10 @@ module Orbacle
         scope: scope,
         visibility: visibility,
         node_result: node_result,
-        node_formal_arguments: node_formal_arguments)
+        node_formal_arguments: node_formal_arguments,
+        nodes_yields: [])
       @methods << method
+      method
     end
 
     def add_klass(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
