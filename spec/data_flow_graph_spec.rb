@@ -546,7 +546,7 @@ module Orbacle
       expect(result.final_node).to eq(node(:sym, { value: :foo }))
     end
 
-    specify "simple method definition" do
+    specify "method definition with 1 arg" do
       snippet = <<-END
       def foo(x)
         x
@@ -637,34 +637,6 @@ module Orbacle
         node(:formal_kwrestarg, { var_name: nil }))
     end
 
-    specify "private send in class definition" do
-      snippet = <<-END
-      class Foo
-        private
-        def foo
-        end
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      nodes = result.graph.vertices.select {|v| v.type == :class }
-      expect(nodes.size).to eq(1)
-      expect(nodes.first.params.fetch(:klass).name).to eq("Foo")
-    end
-
-    specify "private send outside class definition" do
-      snippet = <<-END
-      private
-      def foo
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_node(node(:nil))
-    end
-
     specify "method definition with splat argument" do
       snippet = <<-END
       def foo(x, *rest)
@@ -708,6 +680,34 @@ module Orbacle
       result = generate_cfg(snippet)
 
       expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
+    end
+
+    specify "private send in class definition" do
+      snippet = <<-END
+      class Foo
+        private
+        def foo
+        end
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      nodes = result.graph.vertices.select {|v| v.type == :class }
+      expect(nodes.size).to eq(1)
+      expect(nodes.first.params.fetch(:klass).name).to eq("Foo")
+    end
+
+    specify "private send outside class definition" do
+      snippet = <<-END
+      private
+      def foo
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      expect(result.graph).to include_node(node(:nil))
     end
 
     describe "returning" do
