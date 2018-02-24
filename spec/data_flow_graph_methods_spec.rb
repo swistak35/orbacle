@@ -117,7 +117,7 @@ module Orbacle
 
       result = compute_graph(file)
 
-      expect(result.tree.metods[0].nodes_yields.size).to eq(1)
+      expect(result.tree.metods[0].nodes.yields.size).to eq(1)
     end
 
     specify "method with more yields" do
@@ -131,7 +131,7 @@ module Orbacle
 
       result = compute_graph(file)
 
-      expect(result.tree.metods[0].nodes_yields.size).to eq(3)
+      expect(result.tree.metods[0].nodes.yields.size).to eq(3)
     end
 
     specify do

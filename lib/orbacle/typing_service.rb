@@ -234,8 +234,7 @@ module Orbacle
         else
           found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
-          formal_argument_nodes = found_method.node_formal_arguments
-          found_method.node_formal_arguments.each_with_index do |node_formal_arg, i|
+          found_method.nodes.args.each_with_index do |node_formal_arg, i|
             case node_formal_arg.type
             when :formal_arg
               @graph.add_edge(message_send.send_args[i], node_formal_arg)
@@ -252,13 +251,15 @@ module Orbacle
               end
             end
           end
-          method_result_node = found_method.node_result
-          if !found_method.nodes_yields.empty?
-            found_method.nodes_yields.each do |node_yield|
+
+          if !found_method.nodes.yields.empty?
+            found_method.nodes.yields.each do |node_yield|
               @graph.add_edge(node_yield, message_send.block.args[0])
               @worklist << message_send.block.args[0]
             end
           end
+
+          method_result_node = found_method.nodes.result
           if !@graph.original.has_edge?(method_result_node, message_send.send_result)
             @graph.add_edge(method_result_node, message_send.send_result)
             @worklist << message_send.send_result

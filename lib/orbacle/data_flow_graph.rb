@@ -559,22 +559,22 @@ module Orbacle
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
       metod = @tree.add_method(
-        name: method_name.to_s,
-        line: ast.loc.line,
-        visibility: @currently_analyzed_klass.method_visibility,
-        node_result: add_vertex(Node.new(:method_result)),
-        node_formal_arguments: formal_arguments_nodes,
-        scope: current_scope)
+        GlobalTree::Method.new(
+          scope: current_scope,
+          name: method_name.to_s,
+          line: ast.loc.line,
+          visibility: @currently_analyzed_klass.method_visibility,
+          nodes: GlobalTree::Method::Nodes.new(formal_arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
       switch_currently_analyzed_method(metod) do
         if method_body
           with_selfie(Selfie.instance_from_scope(current_scope)) do
             final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
-            @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+            @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
           end
         else
           final_node = add_vertex(Node.new(:nil))
-          @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+          @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
         end
       end
 
@@ -684,22 +684,22 @@ module Orbacle
       formal_arguments_hash, formal_arguments_nodes = build_arguments(formal_arguments, lenv)
 
       metod = @tree.add_method(
-        name: method_name.to_s,
-        line: ast.loc.line,
-        visibility: @currently_analyzed_klass.method_visibility,
-        node_result: add_vertex(Node.new(:method_result)),
-        node_formal_arguments: formal_arguments_nodes,
-        scope: current_scope.increase_by_metaklass)
+        GlobalTree::Method.new(
+          scope: current_scope.increase_by_metaklass,
+          name: method_name.to_s,
+          line: ast.loc.line,
+          visibility: @currently_analyzed_klass.method_visibility,
+          nodes: GlobalTree::Method::Nodes.new(formal_arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
       switch_currently_analyzed_method(metod) do
         if method_body
           with_selfie(Selfie.klass_from_scope(current_scope)) do
             final_node, _result_lenv = process(method_body, lenv.merge(formal_arguments_hash))
-            @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+            @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
           end
         else
           final_node = add_vertex(Node.new(:nil))
-          @graph.add_edge(final_node, @currently_analyzed_method.node_result)
+          @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
         end
       end
 
@@ -811,7 +811,7 @@ module Orbacle
         final_lenv, nodes = fold_lenv(ast.children, lenv)
         add_edges(nodes, node_expr)
       end
-      @graph.add_edge(node_expr, @currently_analyzed_method.node_result)
+      @graph.add_edge(node_expr, @currently_analyzed_method.nodes.result)
 
       return [node_expr, final_lenv]
     end
@@ -925,7 +925,7 @@ module Orbacle
         end
       end
       if @currently_analyzed_method
-        @currently_analyzed_method.nodes_yields << node_yield
+        @currently_analyzed_method.nodes.yields << node_yield
       end
       result_node = add_vertex(Node.new(:nil))
 

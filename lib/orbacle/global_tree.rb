@@ -1,19 +1,19 @@
 module Orbacle
   class GlobalTree
     class Method
-      def initialize(name:, line:, visibility:, node_result:, node_formal_arguments:, nodes_yields:, scope:)
+      Nodes = Struct.new(:args, :result, :yields)
+
+      def initialize(scope:, name:, line:, visibility:, nodes:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @name = name
         @line = line
         @visibility = visibility
-        @node_result = node_result
-        @node_formal_arguments = node_formal_arguments
-        @nodes_yields = nodes_yields
+        @nodes = nodes
         @scope = scope
       end
 
-      attr_reader :name, :line, :node_result, :node_formal_arguments, :scope, :nodes_yields
+      attr_reader :name, :line, :scope, :nodes
       attr_accessor :visibility
     end
 
@@ -102,17 +102,9 @@ module Orbacle
 
     attr_reader :metods, :constants, :nodes
 
-    def add_method(name:, line:, visibility:, node_result:, node_formal_arguments:, scope:)
-      method = Method.new(
-        name: name,
-        line: line,
-        scope: scope,
-        visibility: visibility,
-        node_result: node_result,
-        node_formal_arguments: node_formal_arguments,
-        nodes_yields: [])
-      @metods << method
-      method
+    def add_method(metod)
+      @metods << metod
+      return metod
     end
 
     def add_klass(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
