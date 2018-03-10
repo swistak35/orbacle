@@ -105,12 +105,14 @@ module Orbacle
       when :formal_arg then handle_group(node, sources)
       when :formal_optarg then handle_group(node, sources)
       when :formal_restarg then handle_group_into_array(node, sources)
+      when :formal_kwarg then handle_group(node, sources)
       when :block_arg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
       when :primitive_integer_succ then handle_int(node, sources)
       when :primitive_integer_to_s then handle_just_string(node, sources)
       when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
+      when :unwrap_hash_value then handle_unwrap_hash_value(node, sources)
       when :const then handle_const(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
@@ -162,6 +164,11 @@ module Orbacle
 
     def handle_just_symbol(node, sources)
       NominalType.new("Symbol")
+    end
+
+    def handle_unwrap_hash_value(node, sources)
+      raise if sources.size > 1
+      @result[sources.first]&.parameters&.at(1)
     end
 
     def handle_group(node, sources)
@@ -234,24 +241,54 @@ module Orbacle
         else
           found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
           raise "Method not found" if found_method.nil?
+          if found_method.args.kwargs.empty?
+            regular_args = message_send.send_args[0..-1]
+            kwarg_arg = nil
+          else
+            regular_args = message_send.send_args[0..-2]
+            kwarg_arg = message_send.send_args[-1]
+          end
           found_method.args.args.each_with_index do |formal_arg, i|
             node_formal_arg = found_method.nodes.args[formal_arg.name]
 
             case formal_arg
             when GlobalTree::Method::ArgumentsTree::Regular
-              @graph.add_edge(message_send.send_args[i], node_formal_arg)
+              @graph.add_edge(regular_args[i], node_formal_arg)
               @worklist << node_formal_arg
             when GlobalTree::Method::ArgumentsTree::Optional
-              if message_send.send_args[i]
-                @graph.add_edge(message_send.send_args[i], node_formal_arg)
+              if regular_args[i]
+                @graph.add_edge(regular_args[i], node_formal_arg)
                 @worklist << node_formal_arg
               end
             when GlobalTree::Method::ArgumentsTree::Splat
-              message_send.send_args[i..-1].each do |send_arg|
+              regular_args[i..-1].each do |send_arg|
                 @graph.add_edge(send_arg, node_formal_arg)
                 @worklist << node_formal_arg
               end
             else raise
+            end
+          end
+
+          if kwarg_arg
+            unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_value)
+            @graph.add_vertex(unwrapping_node)
+            @graph.add_edge(kwarg_arg, unwrapping_node)
+            @worklist << unwrapping_node
+
+            found_method.args.kwargs.each do |formal_kwarg|
+              node_formal_kwarg = found_method.nodes.args[formal_kwarg.name]
+
+              case formal_kwarg
+              when GlobalTree::Method::ArgumentsTree::Regular
+                @graph.add_edge(unwrapping_node, node_formal_kwarg)
+                @worklist << node_formal_kwarg
+              when GlobalTree::Method::ArgumentsTree::Optional
+                @graph.add_edge(unwrapping_node, node_formal_kwarg)
+                @worklist << node_formal_kwarg
+              when GlobalTree::Method::ArgumentsTree::Splat
+                @graph.add_edge(kwarg_arg, node_formal_kwarg)
+              else raise
+              end
             end
           end
 
