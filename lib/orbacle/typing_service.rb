@@ -92,6 +92,8 @@ module Orbacle
 
       when :defined then handle_maybe_string(node, sources)
 
+      when :casgn then handle_group(node, sources)
+
       when :range_from then handle_group(node, sources)
       when :range_to then handle_group(node, sources)
       when :range then handle_range(node, sources)

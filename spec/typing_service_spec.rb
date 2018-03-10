@@ -370,6 +370,29 @@ module Orbacle
       end
     end
 
+    describe "constants" do
+      specify "assignment to constant" do
+        snippet = <<-END
+        Foo = 42
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      xspecify "constant reference" do
+        snippet = <<-END
+        Foo = 42
+        Foo
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+    end
+
     specify "Integer#succ" do
       snippet = <<-END
       x = 42
