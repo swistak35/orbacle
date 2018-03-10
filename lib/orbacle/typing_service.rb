@@ -107,6 +107,7 @@ module Orbacle
       when :formal_optarg then handle_group(node, sources)
       when :formal_restarg then handle_group_into_array(node, sources)
       when :formal_kwarg then handle_group(node, sources)
+      when :formal_kwoptarg then handle_group(node, sources)
       when :block_arg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
       when :primitive_integer_succ then handle_int(node, sources)
