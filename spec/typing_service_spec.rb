@@ -506,6 +506,21 @@ module Orbacle
         expect(result).to eq(nominal("Integer"))
       end
 
+      specify "user-defined method call with 2 named arguments" do
+        snippet = <<-END
+        class Foo
+          def bar(x:, y:)
+            y
+          end
+        end
+        Foo.new.bar(x: 42, y: "foo")
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Integer"), nominal("String")]))
+      end
+
       specify "user-defined method call with named optional argument" do
         snippet = <<-END
         class Foo
