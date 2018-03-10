@@ -179,6 +179,20 @@ module Orbacle
 
         expect(result).to eq(generic("Hash", [union([nominal("String"), nominal("Symbol")]), union([nominal("Integer"), nominal("String")])]))
       end
+
+      specify "hash with kwsplat" do
+        snippet = <<-END
+        x = { "foo" => 42 }
+        {
+          bar: "nananana",
+          **x,
+        }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Hash", [union([nominal("Symbol"), nominal("String")]), union([nominal("String"), nominal("Integer")])]))
+      end
     end
 
     describe "ranges" do

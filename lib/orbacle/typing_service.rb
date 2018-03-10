@@ -113,7 +113,8 @@ module Orbacle
       when :primitive_integer_to_s then handle_just_string(node, sources)
       when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
-      when :unwrap_hash_value then handle_unwrap_hash_value(node, sources)
+      when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
+      when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
       when :const then handle_const(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
@@ -167,7 +168,12 @@ module Orbacle
       NominalType.new("Symbol")
     end
 
-    def handle_unwrap_hash_value(node, sources)
+    def handle_unwrap_hash_keys(node, sources)
+      raise if sources.size > 1
+      @result[sources.first]&.parameters&.at(0)
+    end
+
+    def handle_unwrap_hash_values(node, sources)
       raise if sources.size > 1
       @result[sources.first]&.parameters&.at(1)
     end
@@ -276,7 +282,7 @@ module Orbacle
           end
 
           if kwarg_arg
-            unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_value)
+            unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values)
             @graph.add_vertex(unwrapping_node)
             @graph.add_edge(kwarg_arg, unwrapping_node)
             @worklist << unwrapping_node
