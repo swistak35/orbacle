@@ -263,6 +263,7 @@ module Orbacle
             kwarg_arg = message_send.send_args[-1]
           end
           found_method.args.args.each_with_index do |formal_arg, i|
+            next if formal_arg.name.nil?
             node_formal_arg = found_method.nodes.args[formal_arg.name]
 
             case formal_arg
@@ -290,6 +291,7 @@ module Orbacle
             @worklist << unwrapping_node
 
             found_method.args.kwargs.each do |formal_kwarg|
+              next if formal_kwarg.name.nil?
               node_formal_kwarg = found_method.nodes.args[formal_kwarg.name]
 
               case formal_kwarg

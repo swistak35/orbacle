@@ -491,6 +491,48 @@ module Orbacle
         expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
       end
 
+      specify "user-defined method call with unnamed splat" do
+        snippet = <<-END
+        class Foo
+          def bar(*)
+          end
+        end
+        Foo.new.bar("foo", 42)
+        END
+
+        expect do
+          type_snippet(snippet)
+        end.not_to raise_error
+      end
+
+      specify "user-defined method call with unnamed keyword splat" do
+        snippet = <<-END
+        class Foo
+          def bar(**)
+          end
+        end
+        Foo.new.bar(x: 42)
+        END
+
+        expect do
+          type_snippet(snippet)
+        end.not_to raise_error
+      end
+
+      specify "user-defined method call with unnamed splat and keyword splat" do
+        snippet = <<-END
+        class Foo
+          def bar(*, **)
+          end
+        end
+        Foo.new.bar("foo", 42, x: 42)
+        END
+
+        expect do
+          type_snippet(snippet)
+        end.not_to raise_error
+      end
+
       specify "user-defined method call with named argument" do
         snippet = <<-END
         class Foo
