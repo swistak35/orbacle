@@ -533,6 +533,23 @@ module Orbacle
         end.not_to raise_error
       end
 
+      specify "user-defined method call with regular and named argument" do
+        snippet = <<-END
+        class Foo
+          def bar(y, x:)
+            y
+            x
+          end
+        end
+        Foo.new.bar("foo", x: 42)
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :lvar, { var_name: "y" })).to eq(nominal("String"))
+        expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(nominal("Integer"))
+      end
+
       specify "user-defined method call with named argument" do
         snippet = <<-END
         class Foo
