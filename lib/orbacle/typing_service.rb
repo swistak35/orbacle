@@ -98,6 +98,7 @@ module Orbacle
       when :self then handle_self(node, sources)
       when :lvar then handle_group(node, sources)
       when :array then handle_group_into_array(node, sources)
+      when :splat_array then handle_unwrap_array(node, sources)
       when :lvasgn then handle_pass1(node, sources)
       when :call_obj then handle_pass1(node, sources)
       when :call_result then handle_pass_lte1(node, sources)
@@ -207,6 +208,11 @@ module Orbacle
     def handle_group_into_array(_node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
       GenericType.new("Array", [build_union(sources_types)])
+    end
+
+    def handle_unwrap_array(node, sources)
+      types_inside_arrays = sources.select {|s| @result[s] && @result[s].name == "Array" }.map {|s| @result[s].parameters.first }.uniq
+      build_union(types_inside_arrays)
     end
 
     def handle_pass_lte1(_node, sources)

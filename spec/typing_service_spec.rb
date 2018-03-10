@@ -143,6 +143,17 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
       end
+
+      specify "array with splat" do
+        snippet = <<-END
+        foo = [1,2]
+        [*foo, "foobar"]
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
+      end
     end
 
     describe "hashes" do
