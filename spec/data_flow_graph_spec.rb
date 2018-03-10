@@ -976,23 +976,6 @@ module Orbacle
       end
     end
 
-    specify "assignment of class variable" do
-      snippet = <<-END
-      class Foo
-        @@baz = 42
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:cvasgn, { var_name: "@@baz" }))
-      expect(result.graph).to include_edge(
-        node(:cvasgn, { var_name: "@@baz" }),
-        node(:cvar_definition))
-    end
-
     specify "assignment to constant" do
       snippet = <<-END
       Foo = 42
