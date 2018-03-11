@@ -7,10 +7,9 @@ module Orbacle
       specify "no result" do
         tree = GlobalTree.new
 
-        const_ref = ConstRef.from_full_name("Foo")
-        nesting = Nesting.new
+        const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
 
-        expect(tree.solve_reference(const_ref, nesting)).to eq(nil)
+        expect(tree.solve_reference(const_ref)).to eq(nil)
       end
 
       specify "simple reference" do
@@ -21,12 +20,11 @@ module Orbacle
             scope: Scope.empty,
             line: 42,
             inheritance_name: nil,
-            inheritance_nesting: Nesting.new))
+            inheritance_nesting: Nesting.empty))
 
-        const_ref = ConstRef.from_full_name("Foo")
-        nesting = Nesting.new
+        const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
 
-        expect(tree.solve_reference(const_ref, nesting)).to eq(klass)
+        expect(tree.solve_reference(const_ref)).to eq(klass)
       end
 
       specify "simple reference of a nested class" do
@@ -34,15 +32,14 @@ module Orbacle
         klass = tree.add_klass(
           GlobalTree::Klass.new(
             name: "Bar",
-            scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo")),
+            scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             line: 42,
             inheritance_name: nil,
-            inheritance_nesting: Nesting.new))
+            inheritance_nesting: Nesting.empty))
 
-        const_ref = ConstRef.from_full_name("Foo::Bar")
-        nesting = Nesting.new
+        const_ref = ConstRef.from_full_name("Foo::Bar", Nesting.empty)
 
-        expect(tree.solve_reference(const_ref, nesting)).to eq(klass)
+        expect(tree.solve_reference(const_ref)).to eq(klass)
       end
 
       specify "reference of a nested class from inside class" do
@@ -50,16 +47,16 @@ module Orbacle
         klass = tree.add_klass(
           GlobalTree::Klass.new(
             name: "Bar",
-            scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo")),
+            scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             line: 42,
             inheritance_name: nil,
-            inheritance_nesting: Nesting.new))
+            inheritance_nesting: Nesting.empty))
 
-        const_ref = ConstRef.from_full_name("Bar")
-        nesting = Nesting.new
-          .increase_nesting_const(ConstRef.from_full_name("Foo"))
+        nesting = Nesting.empty
+          .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        const_ref = ConstRef.from_full_name("Bar", nesting)
 
-        expect(tree.solve_reference(const_ref, nesting)).to eq(klass)
+        expect(tree.solve_reference(const_ref)).to eq(klass)
       end
     end
   end

@@ -38,7 +38,7 @@ module Orbacle
 
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
-      @current_nesting = Nesting.new
+      @current_nesting = Nesting.empty
       @current_selfie = Selfie.main
       @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
@@ -624,7 +624,7 @@ module Orbacle
 
     def handle_class(ast, lenv)
       klass_name_ast, parent_klass_name_ast, klass_body = ast.children
-      klass_name_ref = ConstRef.from_ast(klass_name_ast)
+      klass_name_ref = ConstRef.from_ast(klass_name_ast, current_nesting)
 
       klass = @tree.add_klass(
         GlobalTree::Klass.new(
@@ -653,7 +653,7 @@ module Orbacle
       module_name_ast = ast.children[0]
       module_body = ast.children[1]
 
-      module_name_ref = ConstRef.from_ast(module_name_ast)
+      module_name_ref = ConstRef.from_ast(module_name_ast, current_nesting)
 
       @tree.add_mod(
         GlobalTree::Mod.new(
@@ -714,7 +714,7 @@ module Orbacle
 
     def handle_casgn(ast, lenv)
       const_prename, const_name, expr = ast.children
-      const_name_ref = ConstRef.from_full_name(AstUtils.const_prename_and_name_to_string(const_prename, const_name))
+      const_name_ref = ConstRef.from_full_name(AstUtils.const_prename_and_name_to_string(const_prename, const_name), current_nesting)
 
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
@@ -756,7 +756,7 @@ module Orbacle
     end
 
     def handle_const(ast, lenv)
-      const_ref = ConstRef.from_ast(ast)
+      const_ref = ConstRef.from_ast(ast, current_nesting)
 
       node = add_vertex(Node.new(:const, { const_ref: const_ref, nesting: current_nesting }))
 

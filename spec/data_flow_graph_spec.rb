@@ -984,8 +984,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        const_ref = ConstRef.from_full_name("Foo")
-        nesting = Nesting.new
+        nesting = Nesting.empty
+        const_ref = ConstRef.from_full_name("Foo", nesting)
 
         expect(result.final_node).to eq(node(:casgn, { const_ref: const_ref, nesting: nesting }))
         expect(result.graph).to include_edge(
@@ -1008,7 +1008,7 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:call_result, { csend: false }))
       expect(result.graph).to include_edge_type(
-             node(:const, { const_ref: ConstRef.from_full_name("Foo") }),
+        node(:const, { const_ref: ConstRef.from_full_name("Foo", Nesting.empty) }),
         node(:call_obj))
 
       expect(result.message_sends).to include(
@@ -1762,9 +1762,9 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        some_error_ref = ConstRef.from_full_name("SomeError")
-        other_error_ref = ConstRef.from_full_name("OtherError")
-        nesting = Nesting.new
+        nesting = Nesting.empty
+        some_error_ref = ConstRef.from_full_name("SomeError", nesting)
+        other_error_ref = ConstRef.from_full_name("OtherError", nesting)
 
         expect(result.graph).to include_edge(
           node(:const, { const_ref: some_error_ref, nesting: nesting }),
@@ -1935,8 +1935,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        const_ref = ConstRef.from_full_name("Bar")
-        nesting = Nesting.new.increase_nesting_const(ConstRef.from_full_name("Foo"))
+        nesting = Nesting.empty.increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        const_ref = ConstRef.from_full_name("Bar", nesting)
 
         msend0 = result.message_sends[0]
         expect(msend0.message_send).to eq("+")
@@ -2038,8 +2038,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        const_ref = ConstRef.from_full_name("Bar")
-        nesting = Nesting.new.increase_nesting_const(ConstRef.from_full_name("Foo"))
+        nesting = Nesting.empty.increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        const_ref = ConstRef.from_full_name("Bar", nesting)
 
         expect(result.graph).to include_edge(
           node(:const, { const_ref: const_ref, nesting: nesting }),
@@ -2144,8 +2144,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        const_ref = ConstRef.from_full_name("Bar")
-        nesting = Nesting.new.increase_nesting_const(ConstRef.from_full_name("Foo"))
+        nesting = Nesting.empty.increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        const_ref = ConstRef.from_full_name("Bar", nesting)
 
         expect(result.graph).to include_edge(
           node(:const, { const_ref: const_ref, nesting: nesting }),

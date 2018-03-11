@@ -6,7 +6,7 @@ module Orbacle
     def process_file(file, line, character)
       ast = Parser::CurrentRuby.parse(file)
 
-      @current_nesting = Nesting.new
+      @current_nesting = Nesting.empty
       @searched_line = line
       @searched_character = character
 
@@ -29,7 +29,7 @@ module Orbacle
 
     def on_module(ast)
       ast_name, _ = ast.children
-      const_ref = ConstRef.from_ast(ast_name)
+      const_ref = ConstRef.from_ast(ast_name, current_nesting)
 
       with_new_nesting(current_nesting.increase_nesting_const(const_ref)) do
         super(ast)
@@ -38,7 +38,7 @@ module Orbacle
 
     def on_class(ast)
       ast_name, _ = ast.children
-      const_ref = ConstRef.from_ast(ast_name)
+      const_ref = ConstRef.from_ast(ast_name, current_nesting)
 
       with_new_nesting(current_nesting.increase_nesting_const(const_ref)) do
         super(ast)

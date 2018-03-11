@@ -28,7 +28,11 @@ module Orbacle
       end
     end
 
-    def initialize(levels = [])
+    def self.empty
+      new([])
+    end
+
+    def initialize(levels)
       @levels = levels
     end
 
