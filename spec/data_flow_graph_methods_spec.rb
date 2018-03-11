@@ -14,10 +14,10 @@ module Orbacle
 
       meth = find_method(result, "Foo", "bar")
       expect(meth.visibility).to eq(:public)
-      expect(meth.line).to eq(2)
+      expect(meth.position.line).to eq(2)
 
       klass = find_constant(result, "", "Foo")
-      expect(klass.line).to eq(1)
+      expect(klass.position.line).to eq(1)
       expect(klass.inheritance_ref).to eq(nil)
     end
 
@@ -33,7 +33,7 @@ module Orbacle
       result = compute_graph(file)
       meth = find_method(result, "Foo", "bar")
       expect(meth.visibility).to eq(:private)
-      expect(meth.line).to eq(3)
+      expect(meth.position.line).to eq(3)
     end
 
     specify "rechanging visibility of methods in class declaration" do
@@ -147,10 +147,10 @@ module Orbacle
       result = compute_graph(file)
 
       meth = find_method(result, "Foo", "bar")
-      expect(meth.line).to eq(2)
+      expect(meth.position.line).to eq(2)
 
       meth = find_method(result, "Foo", "baz")
-      expect(meth.line).to eq(5)
+      expect(meth.position.line).to eq(5)
     end
 
     it do
@@ -457,7 +457,7 @@ module Orbacle
       result = compute_graph(file)
 
       meth = find_method(result, "Foo", "baz")
-      expect(meth.line).to eq(3)
+      expect(meth.position.line).to eq(3)
     end
 
     specify do
@@ -631,7 +631,7 @@ module Orbacle
         service = DataFlowGraph.new
         result = service.process_file(file, nil)
         {
-          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.line }] },
+          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.position.line }] },
           constants: result.tree.constants.map do |c|
             if c.is_a?(GlobalTree::Klass)
               [c.class, c.scope.absolute_str, c.name, c.inheritance_ref&.full_name, c.inheritance_ref&.nesting&.to_primitive || []]

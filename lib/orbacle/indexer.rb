@@ -36,13 +36,13 @@ module Orbacle
           name: c.name,
           type: type_of(c),
           path: path,
-          line: c.line)
+          line: c.position.line)
       end
       result.tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
           file: path,
-          line: m.line)
+          line: m.position.line)
       end
       klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
       klasslikes.each do |kl|

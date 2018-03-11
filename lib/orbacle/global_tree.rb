@@ -10,18 +10,18 @@ module Orbacle
         Nested = Struct.new(:args)
       end
 
-      def initialize(scope:, name:, line:, visibility:, args:, nodes:)
+      def initialize(scope:, name:, position:, visibility:, args:, nodes:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @name = name
-        @line = line
+        @position = position
         @visibility = visibility
         @args = args
         @nodes = nodes
         @scope = scope
       end
 
-      attr_reader :name, :line, :scope, :args, :nodes
+      attr_reader :name, :position, :scope, :args, :nodes
       attr_accessor :visibility
     end
 
@@ -35,21 +35,21 @@ module Orbacle
         attr_accessor :instance_variables, :class_variables, :class_level_instance_variables
       end
 
-      def initialize(name:, scope:, line:, inheritance_ref:, nodes: Nodes.new)
+      def initialize(name:, scope:, position:, inheritance_ref:, nodes: Nodes.new)
         @name = name
         @scope = scope
-        @line = line
+        @position = position
         @inheritance_ref = inheritance_ref
         @nodes = nodes
       end
 
-      attr_reader :name, :scope, :line, :inheritance_ref, :nodes
+      attr_reader :name, :scope, :position, :inheritance_ref, :nodes
 
       def ==(other)
         @name == other.name &&
           @scope == other.scope &&
           @inheritance_ref == other.inheritance_ref &&
-          @line == line
+          @position == position
       end
 
       def full_name
@@ -58,18 +58,18 @@ module Orbacle
     end
 
     class Mod
-      def initialize(name:, scope:, line:)
+      def initialize(name:, scope:, position:)
         @name = name
         @scope = scope
-        @line = line
+        @position = position
       end
 
-      attr_reader :name, :scope, :line
+      attr_reader :name, :scope, :position
 
       def ==(other)
         @name == other.name &&
           @scope == other.scope &&
-          @line == line
+          @position == position
       end
 
       def full_name
@@ -78,18 +78,18 @@ module Orbacle
     end
 
     class Constant
-      def initialize(name:, scope:, line:)
+      def initialize(name:, scope:, position:)
         @name = name
         @scope = scope
-        @line = line
+        @position = position
       end
 
-      attr_reader :name, :scope, :line
+      attr_reader :name, :scope, :position
 
       def ==(other)
         @name == other.name &&
           @scope == other.scope &&
-          @line == line
+          @position == position
       end
 
       def full_name

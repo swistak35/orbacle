@@ -33,6 +33,8 @@ module Orbacle
 
     Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
 
+    Position = Struct.new(:path, :line)
+
     def initialize
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
@@ -41,6 +43,7 @@ module Orbacle
 
     def process_file(file, filepath)
       ast = Parser::CurrentRuby.parse(file)
+      @filepath = filepath
 
       @current_nesting = Nesting.empty
       @current_selfie = Selfie.main
@@ -572,7 +575,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope,
           name: method_name.to_s,
-          line: ast.loc.line,
+          position: Position.new(@filepath, ast.loc.line),
           args: arguments_tree,
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
@@ -642,7 +645,7 @@ module Orbacle
           name: klass_name_ref.name,
           scope: current_scope.increase_by_ref(klass_name_ref).decrease,
           inheritance_ref: parent_name_ref,
-          line: klass_name_ast.loc.line))
+          position: Position.new(@filepath, klass_name_ast.loc.line)))
 
       switch_currently_analyzed_klass(klass) do
         with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
@@ -669,7 +672,7 @@ module Orbacle
         GlobalTree::Mod.new(
           name: module_name_ref.name,
           scope: current_scope.increase_by_ref(module_name_ref).decrease,
-          line: module_name_ast.loc.line))
+          position: Position.new(@filepath, module_name_ast.loc.line)))
 
       if module_body
         with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
@@ -700,7 +703,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope.increase_by_metaklass,
           name: method_name.to_s,
-          line: ast.loc.line,
+          position: Position.new(@filepath, ast.loc.line),
           args: arguments_tree,
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
@@ -734,7 +737,7 @@ module Orbacle
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
             inheritance_ref: parent_name_ref,
-            line: ast.loc.line))
+            position: Position.new(@filepath, ast.loc.line)))
 
         return [Node.new(:nil), lenv]
       elsif expr_is_module_definition?(expr)
@@ -742,7 +745,7 @@ module Orbacle
           GlobalTree::Mod.new(
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
-            line: ast.loc.line))
+            position: Position.new(@filepath, ast.loc.line)))
 
         return [Node.new(:nil), lenv]
       else
@@ -750,7 +753,7 @@ module Orbacle
           GlobalTree::Constant.new(
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
-            line: ast.loc.line))
+            position: Position.new(@filepath, ast.loc.line)))
 
         node_expr, final_lenv = process(expr, lenv)
 

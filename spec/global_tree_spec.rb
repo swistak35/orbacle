@@ -18,7 +18,7 @@ module Orbacle
           GlobalTree::Klass.new(
             name: "Foo",
             scope: Scope.empty,
-            line: 42,
+            position: DataFlowGraph::Position.new(nil, 42),
             inheritance_ref: nil))
 
         const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
@@ -32,7 +32,7 @@ module Orbacle
           GlobalTree::Klass.new(
             name: "Bar",
             scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
-            line: 42,
+            position: DataFlowGraph::Position.new(nil, 42),
             inheritance_ref: nil))
 
         const_ref = ConstRef.from_full_name("Foo::Bar", Nesting.empty)
@@ -46,7 +46,7 @@ module Orbacle
           GlobalTree::Klass.new(
             name: "Bar",
             scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
-            line: 42,
+            position: DataFlowGraph::Position.new(nil, 42),
             inheritance_ref: nil))
 
         nesting = Nesting.empty
