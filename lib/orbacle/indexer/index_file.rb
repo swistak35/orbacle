@@ -28,8 +28,8 @@ module Orbacle
             scope: kl.scope.absolute_str,
             name: kl.name,
             type: type_of(kl),
-            inheritance: type_of(kl) == "klass" ? kl.inheritance_name : nil,
-            nesting: type_of(kl) == "klass" ? kl.inheritance_nesting : nil)
+            inheritance: type_of(kl) == "klass" ? kl.inheritance_ref&.full_name : nil,
+            nesting: nil)
         end
       end
 

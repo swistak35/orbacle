@@ -625,13 +625,13 @@ module Orbacle
     def handle_class(ast, lenv)
       klass_name_ast, parent_klass_name_ast, klass_body = ast.children
       klass_name_ref = ConstRef.from_ast(klass_name_ast, current_nesting)
+      parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, current_nesting)
 
       klass = @tree.add_klass(
         GlobalTree::Klass.new(
           name: klass_name_ref.name,
           scope: current_scope.increase_by_ref(klass_name_ref).decrease,
-          inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-          inheritance_nesting: current_nesting.to_primitive,
+          inheritance_ref: parent_name_ref,
           line: klass_name_ast.loc.line))
 
       switch_currently_analyzed_klass(klass) do
@@ -718,12 +718,12 @@ module Orbacle
 
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
+        parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, current_nesting)
         @tree.add_klass(
           GlobalTree::Klass.new(
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
-            inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-            inheritance_nesting: current_nesting.to_primitive,
+            inheritance_ref: parent_name_ref,
             line: ast.loc.line))
 
         return [Node.new(:nil), lenv]

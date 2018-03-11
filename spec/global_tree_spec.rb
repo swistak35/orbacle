@@ -19,8 +19,7 @@ module Orbacle
             name: "Foo",
             scope: Scope.empty,
             line: 42,
-            inheritance_name: nil,
-            inheritance_nesting: Nesting.empty))
+            inheritance_ref: nil))
 
         const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
 
@@ -34,8 +33,7 @@ module Orbacle
             name: "Bar",
             scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             line: 42,
-            inheritance_name: nil,
-            inheritance_nesting: Nesting.empty))
+            inheritance_ref: nil))
 
         const_ref = ConstRef.from_full_name("Foo::Bar", Nesting.empty)
 
@@ -49,8 +47,7 @@ module Orbacle
             name: "Bar",
             scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             line: 42,
-            inheritance_name: nil,
-            inheritance_nesting: Nesting.empty))
+            inheritance_ref: nil))
 
         nesting = Nesting.empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))

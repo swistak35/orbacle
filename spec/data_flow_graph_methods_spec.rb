@@ -18,8 +18,7 @@ module Orbacle
 
       klass = find_constant(result, "", "Foo")
       expect(klass.line).to eq(1)
-      expect(klass.inheritance_name).to eq(nil)
-      expect(klass.inheritance_nesting).to eq([])
+      expect(klass.inheritance_ref).to eq(nil)
     end
 
     specify "private method in class declaration" do
@@ -174,7 +173,7 @@ module Orbacle
       ])
       expect(r[:constants]).to match_array([
         build_module(name: "Some"),
-        build_klass(scope: "Some", name: "Foo", nesting: ["Some"]),
+        build_klass(scope: "Some", name: "Foo"),
       ])
     end
 
@@ -200,8 +199,8 @@ module Orbacle
       ])
       expect(r[:constants]).to match_array([
         build_module(name: "Some"),
-        build_klass(scope: "Some", name: "Foo", nesting: ["Some"]),
-        build_klass(scope: "Some", name: "Bar", nesting: ["Some"]),
+        build_klass(scope: "Some", name: "Foo"),
+        build_klass(scope: "Some", name: "Bar"),
       ])
     end
 
@@ -224,7 +223,7 @@ module Orbacle
       expect(r[:constants]).to match_array([
         build_module(name: "Some"),
         build_module(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some::Foo", name: "Bar", nesting: ["Some", "Foo"]),
+        build_klass(scope: "Some::Foo", name: "Bar"),
       ])
     end
 
@@ -244,7 +243,7 @@ module Orbacle
       ])
       expect(r[:constants]).to match_array([
         build_module(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some::Foo", name: "Bar", nesting: ["Some::Foo"]),
+        build_klass(scope: "Some::Foo", name: "Bar"),
       ])
     end
 
@@ -264,7 +263,7 @@ module Orbacle
       ])
       expect(r[:constants]).to match_array([
         build_module(scope: "Some::Foo", name: "Bar"),
-        build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo::Bar"]),
+        build_klass(scope: "Some::Foo::Bar", name: "Baz"),
       ])
     end
 
@@ -284,7 +283,7 @@ module Orbacle
       ])
       expect(r[:constants]).to match_array([
         build_module(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some::Foo::Bar", name: "Baz", nesting: ["Some::Foo"])
+        build_klass(scope: "Some::Foo::Bar", name: "Baz")
       ])
     end
 
@@ -304,7 +303,7 @@ module Orbacle
       ])
       expect(r[:constants]).to match_array([
         build_klass(name: "Bar"),
-        build_klass(name: "Foo", nesting: ["Bar"])
+        build_klass(name: "Foo")
       ])
     end
 
@@ -635,7 +634,7 @@ module Orbacle
           methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.line }] },
           constants: result.tree.constants.map do |c|
             if c.is_a?(GlobalTree::Klass)
-              [c.class, c.scope.absolute_str, c.name, c.inheritance_name, c.inheritance_nesting]
+              [c.class, c.scope.absolute_str, c.name, c.inheritance_ref&.full_name, c.inheritance_ref&.nesting&.to_primitive || []]
             else
               [c.class, c.scope.absolute_str, c.name]
             end

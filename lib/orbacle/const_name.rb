@@ -20,10 +20,6 @@ module Orbacle
       elems.last
     end
 
-    def prename
-      elems[0..-2]
-    end
-
     def to_string
       elems.join("::")
     end

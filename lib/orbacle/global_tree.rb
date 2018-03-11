@@ -35,22 +35,20 @@ module Orbacle
         attr_accessor :instance_variables, :class_variables, :class_level_instance_variables
       end
 
-      def initialize(name:, scope:, line:, inheritance_name:, inheritance_nesting:, nodes: Nodes.new)
+      def initialize(name:, scope:, line:, inheritance_ref:, nodes: Nodes.new)
         @name = name
         @scope = scope
         @line = line
-        @inheritance_name = inheritance_name
-        @inheritance_nesting = inheritance_nesting
+        @inheritance_ref = inheritance_ref
         @nodes = nodes
       end
 
-      attr_reader :name, :scope, :line, :inheritance_name, :inheritance_nesting, :nodes
+      attr_reader :name, :scope, :line, :inheritance_ref, :nodes
 
       def ==(other)
         @name == other.name &&
           @scope == other.scope &&
-          @inheritance_name == other.inheritance_name &&
-          @inheritance_nesting == other.inheritance_nesting &&
+          @inheritance_ref == other.inheritance_ref &&
           @line == line
       end
 
