@@ -627,11 +627,12 @@ module Orbacle
       klass_name_ref = ConstRef.from_ast(klass_name_ast)
 
       klass = @tree.add_klass(
-        name: klass_name_ref.name,
-        scope: current_scope.increase_by_ref(klass_name_ref).decrease,
-        inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-        inheritance_nesting: current_nesting.to_primitive,
-        line: klass_name_ast.loc.line)
+        GlobalTree::Klass.new(
+          name: klass_name_ref.name,
+          scope: current_scope.increase_by_ref(klass_name_ref).decrease,
+          inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
+          inheritance_nesting: current_nesting.to_primitive,
+          line: klass_name_ast.loc.line))
 
       switch_currently_analyzed_klass(klass) do
         with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
@@ -655,9 +656,10 @@ module Orbacle
       module_name_ref = ConstRef.from_ast(module_name_ast)
 
       @tree.add_mod(
-        name: module_name_ref.name,
-        scope: current_scope.increase_by_ref(module_name_ref).decrease,
-        line: module_name_ast.loc.line)
+        GlobalTree::Mod.new(
+          name: module_name_ref.name,
+          scope: current_scope.increase_by_ref(module_name_ref).decrease,
+          line: module_name_ast.loc.line))
 
       if module_body
         with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
@@ -717,18 +719,20 @@ module Orbacle
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
         @tree.add_klass(
-          name: const_name_ref.name,
-          scope: current_scope.increase_by_ref(const_name_ref).decrease,
-          inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
-          inheritance_nesting: current_nesting.to_primitive,
-          line: ast.loc.line)
+          GlobalTree::Klass.new(
+            name: const_name_ref.name,
+            scope: current_scope.increase_by_ref(const_name_ref).decrease,
+            inheritance_name: parent_klass_name_ast.nil? ? nil : AstUtils.const_to_string(parent_klass_name_ast),
+            inheritance_nesting: current_nesting.to_primitive,
+            line: ast.loc.line))
 
         return [Node.new(:nil), lenv]
       elsif expr_is_module_definition?(expr)
         @tree.add_mod(
-          name: const_name_ref.name,
-          scope: current_scope.increase_by_ref(const_name_ref).decrease,
-          line: ast.loc.line)
+          GlobalTree::Mod.new(
+            name: const_name_ref.name,
+            scope: current_scope.increase_by_ref(const_name_ref).decrease,
+            line: ast.loc.line))
 
         return [Node.new(:nil), lenv]
       else

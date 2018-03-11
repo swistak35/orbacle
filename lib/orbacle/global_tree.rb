@@ -119,15 +119,14 @@ module Orbacle
       return metod
     end
 
-    def add_klass(name:, scope:, line:, inheritance_name:, inheritance_nesting:)
-      klass = Klass.new(name: name, scope: scope, line: line, inheritance_name: inheritance_name, inheritance_nesting: inheritance_nesting)
+    def add_klass(klass)
       @constants << klass
-      klass
+      return klass
     end
 
-    def add_mod(name:, scope:, line:)
-      mod = Mod.new(name: name, scope: scope, line: line)
+    def add_mod(mod)
       @constants << mod
+      return mod
     end
 
     def add_constant(name:, scope:, line:)
