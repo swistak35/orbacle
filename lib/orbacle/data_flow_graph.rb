@@ -33,14 +33,17 @@ module Orbacle
 
     Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
 
+    def initialize
+      @graph = RGL::DirectedAdjacencyGraph.new
+      @message_sends = []
+      @tree = GlobalTree.new
+    end
+
     def process_file(file)
       ast = Parser::CurrentRuby.parse(file)
 
-      @graph = RGL::DirectedAdjacencyGraph.new
-      @message_sends = []
       @current_nesting = Nesting.empty
       @current_selfie = Selfie.main
-      @tree = GlobalTree.new
       @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
       @currently_analyzed_method = nil
 
@@ -52,10 +55,17 @@ module Orbacle
         final_local_environment = initial_local_environment
       end
 
-      return Result.new(@graph, final_local_environment, @message_sends, final_node, @tree)
+      @final_local_environment = final_local_environment
+      @final_node = final_node
+
+      return result
     rescue
       puts "Error processing:\n#{file}"
       raise
+    end
+
+    def result
+      Result.new(@graph, @final_local_environment, @message_sends, @final_node, @tree)
     end
 
     private
