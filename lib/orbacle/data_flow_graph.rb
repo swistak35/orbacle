@@ -544,10 +544,16 @@ module Orbacle
 
       args_ast_nodes = []
       lenv_with_args = args_ast.children.reduce(send_lenv) do |current_lenv, arg_ast|
-        arg_name = arg_ast.children[0].to_s
-        arg_node = add_vertex(Node.new(:block_arg, { var_name: arg_name }))
+        arg_node = add_vertex(Node.new(:block_arg))
         args_ast_nodes << arg_node
-        current_lenv.merge(arg_name => [arg_node])
+        case arg_ast.type
+        when :arg
+          arg_name = arg_ast.children[0].to_s
+          current_lenv.merge(arg_name => [arg_node])
+        when :mlhs
+          handle_mlhs_for_block(arg_ast, current_lenv, arg_node)
+        else raise
+        end
       end
 
       # It's not exactly good - local vars defined in blocks are not available outside (?),
@@ -559,6 +565,24 @@ module Orbacle
       message_send.block = block
 
       return [send_node, block_result_lenv]
+    end
+
+    def handle_mlhs_for_block(ast, lenv, node)
+      unwrap_array_node = Node.new(:unwrap_array)
+      @graph.add_edge(node, unwrap_array_node)
+
+      final_lenv = ast.children.reduce(lenv) do |current_lenv, ast_child|
+        case ast_child.type
+        when :arg
+          arg_name = ast_child.children[0].to_s
+          current_lenv.merge(arg_name => [unwrap_array_node])
+        when :mlhs
+          handle_mlhs_for_block(ast_child, current_lenv, unwrap_array_node)
+        else raise
+        end
+      end
+
+      return final_lenv
     end
 
     def handle_def(ast, lenv)
