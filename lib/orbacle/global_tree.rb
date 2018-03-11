@@ -133,5 +133,19 @@ module Orbacle
       @constants << constant
       return constant
     end
+
+    def solve_reference(const_ref, base_nesting)
+      nesting = base_nesting
+      while !nesting.empty?
+        scope = nesting.to_scope
+        @constants.each do |constant|
+          return constant if scope.increase_by_ref(const_ref) == Scope.empty.increase_by_ref(ConstRef.from_full_name(constant.full_name))
+        end
+        nesting = nesting.decrease_nesting
+      end
+      @constants.find do |constant|
+        const_ref == ConstRef.from_full_name(constant.full_name)
+      end
+    end
   end
 end

@@ -50,6 +50,10 @@ module Orbacle
       Nesting.new(levels[0..-2])
     end
 
+    def empty?
+      levels.empty?
+    end
+
     def to_scope
       levels.inject(Scope.empty) do |scope, nesting_level|
         if nesting_level.metaklass?
