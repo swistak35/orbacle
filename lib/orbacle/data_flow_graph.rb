@@ -747,8 +747,8 @@ module Orbacle
         final_node = Node.new(:casgn, { const_ref: const_name_ref, nesting: current_nesting })
         @graph.add_edge(node_expr, final_node)
 
-        const_ref = current_scope.increase_by_ref(const_name_ref).to_const_ref
-        node_const_definition = get_constant_definition_node(const_ref)
+        const_name = current_scope.increase_by_ref(const_name_ref).to_const_name
+        node_const_definition = get_constant_definition_node(const_name)
         @graph.add_edge(final_node, node_const_definition)
 
         return [final_node, final_lenv]
@@ -1239,8 +1239,8 @@ module Orbacle
       return @tree.nodes.global_variables[gvar_name]
     end
 
-    def get_constant_definition_node(const_ref)
-      name = const_ref.relative_name
+    def get_constant_definition_node(const_name)
+      name = const_name.to_string
       if !@tree.nodes.constants[name]
         @tree.nodes.constants[name] = add_vertex(Node.new(:const_definition))
       end

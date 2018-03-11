@@ -13,9 +13,9 @@ module Orbacle
 
     def increase_by_ref(const_ref)
       if const_ref.absolute?
-        Scope.new(const_ref.elems, false)
+        Scope.new(const_ref.const_name.elems, false)
       else
-        Scope.new(elems + const_ref.elems, metaklass?)
+        Scope.new(elems + const_ref.const_name.elems, metaklass?)
       end
     end
 
@@ -59,8 +59,8 @@ module Orbacle
       absolute_str
     end
 
-    def to_const_ref
-      ConstRef.new(elems, false)
+    def to_const_name
+      ConstName.new(elems)
     end
   end
 end

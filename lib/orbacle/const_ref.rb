@@ -7,34 +7,26 @@ module Orbacle
 
     def self.from_full_name(full_name)
       if full_name.start_with?("::")
-        new(full_name[2..-1].split("::"), true)
+        name = full_name[2..-1]
+        new(ConstName.from_string(name), true)
       else
-        new(full_name.split("::"), false)
+        new(ConstName.from_string(full_name), false)
       end
     end
 
-    def initialize(elems, is_absolute)
-      @elems = elems
+    def initialize(const_name, is_absolute)
+      @const_name = const_name
       @is_absolute = is_absolute
-      raise ArgumentError if elems.empty?
     end
 
-    attr_reader :elems, :is_absolute
+    attr_reader :const_name, :is_absolute
 
     def full_name
       if absolute?
-        "::#{relative_name}"
+        "::#{const_name.to_string}"
       else
-        relative_name
+        const_name.to_string
       end
-    end
-
-    def name
-      @elems.last
-    end
-
-    def prename
-      @elems[0..-2]
     end
 
     def absolute?
@@ -42,11 +34,16 @@ module Orbacle
     end
 
     def relative_name
-      @elems.join("::")
+      const_name.to_string
+    end
+
+    def name
+      const_name.name
     end
 
     def ==(other)
-      @elems == other.elems && absolute? == other.is_absolute
+      const_name == other.const_name &&
+        is_absolute == other.is_absolute
     end
   end
 end

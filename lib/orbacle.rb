@@ -3,6 +3,7 @@ end
 
 require 'orbacle/command_line_interface'
 
+require 'orbacle/const_name'
 require 'orbacle/const_ref'
 require 'orbacle/scope'
 require 'orbacle/nesting'
