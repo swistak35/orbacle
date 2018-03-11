@@ -129,9 +129,9 @@ module Orbacle
       return mod
     end
 
-    def add_constant(name:, scope:, line:)
-      constant = Constant.new(name: name, scope: scope, line: line)
+    def add_constant(constant)
       @constants << constant
+      return constant
     end
   end
 end

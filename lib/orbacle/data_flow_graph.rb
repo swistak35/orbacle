@@ -737,9 +737,10 @@ module Orbacle
         return [Node.new(:nil), lenv]
       else
         @tree.add_constant(
-          name: const_name_ref.name,
-          scope: current_scope.increase_by_ref(const_name_ref).decrease,
-          line: ast.loc.line)
+          GlobalTree::Constant.new(
+            name: const_name_ref.name,
+            scope: current_scope.increase_by_ref(const_name_ref).decrease,
+            line: ast.loc.line))
 
         node_expr, final_lenv = process(expr, lenv)
 
