@@ -688,6 +688,20 @@ module Orbacle
       end
     end
 
+    describe "misbehaviours" do
+      specify "misbehaviour - super call without argument" do
+        snippet = <<-END
+        class Foo
+          def bar
+            super()
+          end
+        end
+        END
+
+        result = full_type_snippet(snippet)
+      end
+    end
+
     def type_snippet(snippet)
       result = DataFlowGraph.new.process_file(snippet)
       typing_result = TypingService.new.(result.graph, result.message_sends, result.tree)
