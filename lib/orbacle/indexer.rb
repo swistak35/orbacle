@@ -21,6 +21,7 @@ module Orbacle
       files.each do |file_path|
         begin
           file_content = File.read(file_path)
+          puts "Processing #{file_path}"
           @parser.process_file(file_content, file_path)
         rescue Parser::SyntaxError
           puts "Warning: Skipped #{file_path} because of syntax error"

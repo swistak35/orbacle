@@ -62,9 +62,6 @@ module Orbacle
       @final_node = final_node
 
       return result
-    rescue
-      puts "Error processing:\n#{file}"
-      raise
     end
 
     def result
