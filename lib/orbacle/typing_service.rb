@@ -243,7 +243,6 @@ module Orbacle
 
     def handle_const(node, sources)
       const_ref = node.params.fetch(:const_ref)
-      nesting = node.params.fetch(:nesting)
       ref_result = @tree.solve_reference(const_ref)
       if !sources.empty?
         handle_group(node, sources)
