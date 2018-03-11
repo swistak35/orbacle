@@ -984,12 +984,15 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }))
+        const_ref = ConstRef.from_full_name("Foo")
+        nesting = Nesting.new
+
+        expect(result.final_node).to eq(node(:casgn, { const_ref: const_ref, nesting: nesting }))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
-          node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }))
+          node(:casgn, { const_ref: const_ref, nesting: nesting }))
         expect(result.graph).to include_edge(
-          node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }),
+          node(:casgn, { const_ref: const_ref, nesting: nesting }),
           node(:const_definition))
       end
     end
@@ -1759,11 +1762,15 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
+        some_error_ref = ConstRef.from_full_name("SomeError")
+        other_error_ref = ConstRef.from_full_name("OtherError")
+        nesting = Nesting.new
+
         expect(result.graph).to include_edge(
-          node(:const, { const_ref: ConstRef.from_full_name("SomeError") }),
+          node(:const, { const_ref: some_error_ref, nesting: nesting }),
           node(:array))
         expect(result.graph).to include_edge(
-          node(:const, { const_ref: ConstRef.from_full_name("OtherError") }),
+          node(:const, { const_ref: other_error_ref, nesting: nesting }),
           node(:array))
         expect(result.graph).to include_edge(
           node(:array),
@@ -1928,12 +1935,15 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
+        const_ref = ConstRef.from_full_name("Bar")
+        nesting = Nesting.new.increase_nesting_const(ConstRef.from_full_name("Foo"))
+
         msend0 = result.message_sends[0]
         expect(msend0.message_send).to eq("+")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:const, { const_ref: ConstRef.from_full_name("Bar") })])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:const, { const_ref: const_ref, nesting: nesting })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:casgn, { const_ref: ConstRef.from_full_name("Bar") })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:casgn, { const_ref: const_ref, nesting: nesting })])
       end
 
       specify "for lvar, usage of ||=" do
@@ -2028,15 +2038,18 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
+        const_ref = ConstRef.from_full_name("Bar")
+        nesting = Nesting.new.increase_nesting_const(ConstRef.from_full_name("Foo"))
+
         expect(result.graph).to include_edge(
-          node(:const, { const_ref: ConstRef.from_full_name("Bar") }),
+          node(:const, { const_ref: const_ref, nesting: nesting }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:or),
-          node(:casgn, { const_ref: ConstRef.from_full_name("Bar") }))
+          node(:casgn, { const_ref: const_ref, nesting: nesting }))
       end
 
       specify "for lvar, usage of &&=" do
@@ -2131,15 +2144,18 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
+        const_ref = ConstRef.from_full_name("Bar")
+        nesting = Nesting.new.increase_nesting_const(ConstRef.from_full_name("Foo"))
+
         expect(result.graph).to include_edge(
-          node(:const, { const_ref: ConstRef.from_full_name("Bar") }),
+          node(:const, { const_ref: const_ref, nesting: nesting }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:and),
-          node(:casgn, { const_ref: ConstRef.from_full_name("Bar") }))
+          node(:casgn, { const_ref: const_ref, nesting: nesting }))
       end
     end
 

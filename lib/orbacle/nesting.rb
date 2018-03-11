@@ -32,6 +32,11 @@ module Orbacle
       @levels = levels
     end
 
+    def ==(other)
+      levels.size == other.levels.size &&
+        levels.zip(other.levels).all? {|l1, l2| l1 == l2 }
+    end
+
     attr_reader :levels
 
     def to_primitive

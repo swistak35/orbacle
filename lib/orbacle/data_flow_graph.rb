@@ -744,7 +744,7 @@ module Orbacle
 
         node_expr, final_lenv = process(expr, lenv)
 
-        final_node = Node.new(:casgn, { const_ref: const_name_ref })
+        final_node = Node.new(:casgn, { const_ref: const_name_ref, nesting: current_nesting })
         @graph.add_edge(node_expr, final_node)
 
         const_ref = current_scope.increase_by_ref(const_name_ref).to_const_ref
@@ -758,7 +758,7 @@ module Orbacle
     def handle_const(ast, lenv)
       const_ref = ConstRef.from_ast(ast)
 
-      node = add_vertex(Node.new(:const, { const_ref: const_ref }))
+      node = add_vertex(Node.new(:const, { const_ref: const_ref, nesting: current_nesting }))
 
       return [node, lenv]
     end

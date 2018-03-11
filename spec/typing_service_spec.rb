@@ -381,7 +381,7 @@ module Orbacle
         expect(result).to eq(nominal("Integer"))
       end
 
-      xspecify "constant reference" do
+      specify "constant reference" do
         snippet = <<-END
         Foo = 42
         Foo

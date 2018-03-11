@@ -241,8 +241,22 @@ module Orbacle
       end
     end
 
-    def handle_const(node, _sources)
-      ClassType.new(node.params.fetch(:const_ref).full_name)
+    def handle_const(node, sources)
+      const_ref = node.params.fetch(:const_ref)
+      nesting = node.params.fetch(:nesting)
+      ref_result = @tree.solve_reference(const_ref, nesting)
+      if !sources.empty?
+        handle_group(node, sources)
+      else
+        if ref_result && @tree.nodes.constants[ref_result.full_name]
+          const_definition_node = @tree.nodes.constants[ref_result.full_name]
+          @graph.add_edge(const_definition_node, node)
+          @worklist << const_definition_node
+          @result[const_definition_node]
+        else
+          ClassType.new(const_ref.full_name)
+        end
+      end
     end
 
     def satisfied_message_send?(message_send)
