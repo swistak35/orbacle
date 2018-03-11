@@ -58,5 +58,9 @@ module Orbacle
     def to_s
       absolute_str
     end
+
+    def to_const_ref
+      ConstRef.new(elems, false)
+    end
   end
 end

@@ -976,16 +976,22 @@ module Orbacle
       end
     end
 
-    specify "assignment to constant" do
-      snippet = <<-END
-      Foo = 42
-      END
+    describe "constants" do
+      specify "assignment to constant" do
+        snippet = <<-END
+        Foo = 42
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }))
+        expect(result.final_node).to eq(node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }))
+        expect(result.graph).to include_edge(
+          node(:casgn, { const_ref: ConstRef.from_full_name("Foo") }),
+          node(:const_definition))
+      end
     end
 
     specify "calling constructor" do

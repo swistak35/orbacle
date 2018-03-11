@@ -120,6 +120,7 @@ module Orbacle
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
       when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
       when :const then handle_const(node, sources)
+      when :const_definition then handle_group(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
 
