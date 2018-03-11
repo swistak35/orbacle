@@ -16,32 +16,32 @@ module Orbacle
       @db.create_table_klasslikes
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
+      @parser = DataFlowGraph.new
 
       files.each do |file_path|
         begin
           file_content = File.read(file_path)
-          index_file(path: file_path, content: file_content)
+          @parser.process_file(file_content, file_path)
         rescue Parser::SyntaxError
           puts "Warning: Skipped #{file_path} because of syntax error"
         end
       end
+      store_result(@parser.result)
     end
 
-    def index_file(path:, content:)
-      @parser = DataFlowGraph.new
-      result = @parser.process_file(content, path)
+    def store_result(result)
       result.tree.constants.each do |c|
         @db.add_constant(
           scope: c.scope.absolute_str,
           name: c.name,
           type: type_of(c),
-          path: path,
+          path: c.position.path,
           line: c.position.line)
       end
       result.tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
-          file: path,
+          file: m.position.path,
           line: m.position.line)
       end
       klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
