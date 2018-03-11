@@ -12,7 +12,6 @@ require 'orbacle/global_tree'
 
 require 'orbacle/call_definition'
 require 'orbacle/lang_server'
-require 'orbacle/indexer/index_file'
 require 'orbacle/indexer'
 require 'orbacle/definition_processor'
 require 'orbacle/sql_database_adapter'
