@@ -2161,7 +2161,7 @@ module Orbacle
 
     def generate_cfg(snippet)
       service = DataFlowGraph.new
-      service.process_file(snippet)
+      service.process_file(snippet, "")
     end
 
     def node(type, params = {})

@@ -39,7 +39,7 @@ module Orbacle
       @tree = GlobalTree.new
     end
 
-    def process_file(file)
+    def process_file(file, filepath)
       ast = Parser::CurrentRuby.parse(file)
 
       @current_nesting = Nesting.empty

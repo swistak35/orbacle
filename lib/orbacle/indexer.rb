@@ -28,8 +28,8 @@ module Orbacle
     end
 
     def index_file(path:, content:)
-      parser = DataFlowGraph.new
-      result = parser.process_file(content)
+      @parser = DataFlowGraph.new
+      result = @parser.process_file(content, path)
       result.tree.constants.each do |c|
         @db.add_constant(
           scope: c.scope.absolute_str,

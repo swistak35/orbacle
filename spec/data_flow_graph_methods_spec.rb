@@ -629,7 +629,7 @@ module Orbacle
     def parse_file_methods
       ->(file) {
         service = DataFlowGraph.new
-        result = service.process_file(file)
+        result = service.process_file(file, nil)
         {
           methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.line }] },
           constants: result.tree.constants.map do |c|
@@ -645,7 +645,7 @@ module Orbacle
 
     def compute_graph(file)
       service = DataFlowGraph.new
-      service.process_file(file)
+      service.process_file(file, nil)
     end
 
     def find_methods(result, scope, name)
