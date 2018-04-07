@@ -1,0 +1,106 @@
+<html>
+<head>
+  <script type="text/javascript" src="http://localhost:5000/data.js"></script>
+  <script>
+    function showFile(uri) {
+      found_element = window.orbacleFiles.find(function(elem) { return (elem[0] == uri) })
+      filetext = atob(found_element[1]);
+	  window.currentRawText = filetext;
+      code = document.getElementById('code')
+      code.innerHTML = window.currentRawText
+
+      const nodelist = document.getElementById('nodelist');
+      const nodesForFile = orbacleNodes.filter(function(node) { return (node[2] == uri)});
+      nodelist.innerHTML = nodesForFile.map(function(node) { return (`<tr onclick='highlight(${node[3]}, ${node[4]}, ${node[5]}, ${node[6]}, "${node[1]}")'><td>${node[3]}:${node[4]} - ${node[5]}:${node[6]}</td><td>${node[0]}</td><td>${node[1]}</td></tr>`)}).join("\n");
+    }
+
+    function highlight(startLine, startCharacter, endLine, endCharacter, type) {
+      oldLines = window.currentRawText.split("\n")
+	  code = document.getElementById('code')
+if (startLine == endLine) {
+  startLineContent = oldLines[startLine - 1];
+  newStartLineContent = startLineContent.substr(0, startCharacter - 1) + '<b>' + startLineContent.substr(startCharacter - 1, endCharacter - startCharacter) + '</b>' + startLineContent.substr(endCharacter - 1);
+  oldLines[startLine - 1] = newStartLineContent;
+} else {
+  startLineContent = oldLines[startLine - 1];
+  newStartLineContent = startLineContent.substr(0, startCharacter - 1) + '<b>' + startLineContent.substr(startCharacter - 1);
+  oldLines[startLine - 1] = newStartLineContent;
+
+  endLineContent = oldLines[endLine - 1];
+  newEndLineContent = endLineContent.substr(0, endCharacter - 1) + '</b>' + endLineContent.substr(endCharacter - 1);
+  oldLines[endLine - 1] = newEndLineContent;
+}
+code.innerHTML = oldLines.join("\n");
+
+const typeNode = document.getElementById('type')
+typeNode.innerHTML = `Type of selected element: <b>${type}<b>`;
+    }
+
+    window.onload = function(e){ 
+	  const filesList = document.getElementById('fileslist');
+      const filePaths = orbacleFiles.map(function(file) { return file[0]; });
+      filesList.innerHTML = filePaths.map(function(file) { return (`<a href='#' onclick='showFile("${file}");'>${file}</a>`) }).join(" | ");
+    }
+  </script>
+  <style>
+    #code b {
+      background-color: red;
+    }
+
+    #files, #left, #type, #code, #nodes {
+      border: black 1px solid;
+      display: block;
+    }
+
+    #files  {
+      width: 100%;
+    }
+
+    #left {
+      float: left;
+      width: 700px;
+    }
+
+    #type {
+      float: left;
+        width: 100%;
+      height: 50px;
+      text-align: center;
+    }
+
+    #code {
+      float: left;
+      width: 100%;
+      font-family: "Courier New", Courier, monospace;
+      white-space: pre-wrap;
+      max-height: 700px;
+      overflow-y: scroll;
+    }
+
+	#nodes {
+	  width: 700px;
+      float: left;
+      max-height: 700px;
+      overflow-y: scroll;
+	}
+
+  </style>
+</head>
+<body>
+  <div id="files">
+    <ul id="fileslist">
+      <li><a onclick="showFile('data_flow_graph.rb')">data_flow_graph.rb</a></li>
+    </ul>
+  </div>
+  <div id="left">
+    <div id="type">Unknown</div>
+    <div id="code">
+      Load some file on the left
+    </div>
+  </div>
+  <div id="nodes">
+    <table id="nodelist">
+    </table>
+  </div>
+</body>
+</html>

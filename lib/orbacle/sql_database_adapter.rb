@@ -115,11 +115,17 @@ class SQLDatabaseAdapter
 
   def add_node(gnode, type)
     node = Node.new(
-      gnode.type.to_s, gnode.params.to_s, type.to_s,
+      gnode.type.to_s, gnode.params.to_s, type&.pretty,
       gnode.location&.uri,
       gnode.location&.start&.line, gnode.location&.start&.character,
       gnode.location&.end&.line, gnode.location&.end&.character)
     @db.execute("insert into nodes values (?, ?, ?, ?, ?, ?, ?, ?)", node.to_a)
+  end
+
+  def find_all_nodes
+    db.execute("select * from nodes").map do |node_data|
+      Node.new(*node_data)
+    end
   end
 
   private

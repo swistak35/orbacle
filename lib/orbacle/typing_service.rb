@@ -25,14 +25,26 @@ module Orbacle
       def each_possible_type
         yield self
       end
+
+      def pretty
+        name
+      end
     end
     class ClassType < Struct.new(:name)
       def each_possible_type
         yield self
       end
+
+      def pretty
+        "class(#{name})"
+      end
     end
     class MainType
       def each_possible_type
+      end
+
+      def pretty
+        "main"
       end
     end
     class UnionType < Struct.new(:types)
@@ -41,10 +53,18 @@ module Orbacle
           yield type
         end
       end
+
+      def pretty
+        "Union(#{types.map {|t| t.nil? ? "nil" : t.pretty }.join(" or ")})"
+      end
     end
     class GenericType < Struct.new(:name, :parameters)
       def each_possible_type
         yield self
+      end
+
+      def pretty
+        "generic(#{name}, [#{parameters.map {|t| t.nil? ? "nil" : t.pretty }.join(", ")}])"
       end
     end
 
@@ -477,6 +497,10 @@ module Orbacle
 
     def handle_constructor(node, sources)
       NominalType.new(node.params.fetch(:name))
+    end
+
+    def warn(msg)
+      puts "Warning: #{msg}"
     end
   end
 end
