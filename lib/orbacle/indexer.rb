@@ -37,14 +37,14 @@ module Orbacle
           scope: c.scope.absolute_str,
           name: c.name,
           type: type_of(c),
-          path: c.position.path,
-          line: c.position.line)
+          path: c.position.uri,
+          line: c.position.position_range.start.line)
       end
       result.tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
-          file: m.position.path,
-          line: m.position.line)
+          file: m.position.uri,
+          line: m.position.position_range.start.line)
       end
       klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
       klasslikes.each do |kl|
