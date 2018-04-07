@@ -7,12 +7,14 @@ module Orbacle
     ProcessError = Class.new(StandardError)
 
     class Node
-      def initialize(type, params = {})
+      def initialize(type, params = {}, location = nil)
         @type = type
         @params = params
+        @location = location
       end
 
       attr_reader :type, :params
+      attr_accessor :location
 
       def ==(other)
         @type == other.type && @params == other.params
@@ -78,7 +80,7 @@ module Orbacle
     def process(ast, lenv)
       return [nil, lenv] if ast.nil?
 
-      case ast.type
+      process_result = case ast.type
       when :lvasgn
         handle_lvasgn(ast, lenv)
       when :int
@@ -202,6 +204,15 @@ module Orbacle
       else
         raise ArgumentError.new(ast.type)
       end
+
+      if process_result[0] && ast.loc
+        process_result[0].location = Location.new(
+          @filepath,
+          PositionRange.new(
+            Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
+            Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
+      end
+      process_result
     end
 
     def handle_lvasgn(ast, lenv)
@@ -729,6 +740,8 @@ module Orbacle
       with_new_nesting(current_nesting.increase_nesting_self) do
         process(sklass_body, lenv)
       end
+
+      return [Node.new(:nil), lenv]
     end
 
     def handle_defs(ast, lenv)
