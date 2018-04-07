@@ -114,12 +114,24 @@ class SQLDatabaseAdapter
   end
 
   def add_node(gnode, type)
+    @db.execute("insert into nodes values (?, ?, ?, ?, ?, ?, ?, ?)", build_node(gnode, type).to_a)
+  end
+
+  def bulk_add_nodes(dataset)
+    dataset.to_a.each_slice(1000) do |slice|
+      q_str = Array.new(slice.size, "(?, ?, ?, ?, ?, ?, ?, ?)").join(", ")
+      nodes = slice.map {|gnode, type| build_node(gnode, type) }
+      sql_data = nodes.map(&:to_a).flatten(1)
+      @db.execute("insert into nodes values #{q_str}", sql_data)
+    end
+  end
+
+  def build_node(gnode, type)
     node = Node.new(
       gnode.type.to_s, gnode.params.to_s, type&.pretty,
       gnode.location&.uri,
       gnode.location&.start&.line, gnode.location&.start&.character,
       gnode.location&.end&.line, gnode.location&.end&.character)
-    @db.execute("insert into nodes values (?, ?, ?, ?, ?, ?, ?, ?)", node.to_a)
   end
 
   def find_all_nodes

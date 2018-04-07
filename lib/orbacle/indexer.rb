@@ -37,6 +37,7 @@ module Orbacle
     end
 
     def store_result(result, typing_result)
+      puts "Saving constants..."
       result.tree.constants.each do |c|
         @db.add_constant(
           scope: c.scope.absolute_str,
@@ -45,12 +46,14 @@ module Orbacle
           path: c.position.uri,
           line: c.position.position_range.start.line)
       end
+      puts "Saving methods..."
       result.tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
           file: m.position.uri,
           line: m.position.position_range.start.line)
       end
+      puts "Saving klasslikes..."
       klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
       klasslikes.each do |kl|
         @db.add_klasslike(
@@ -60,9 +63,8 @@ module Orbacle
           inheritance: type_of(kl) == "klass" ? kl.inheritance_ref&.full_name : nil,
           nesting: nil)
       end
-      typing_result.each do |gnode, type|
-        @db.add_node(gnode, type)
-      end
+      puts "Saving typings..."
+      @db.bulk_add_nodes(typing_result)
     end
 
     def type_of(c)
