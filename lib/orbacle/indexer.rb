@@ -27,6 +27,7 @@ module Orbacle
           puts "Warning: Skipped #{file_path} because of syntax error"
         end
       end
+      typing_result = TypingService.new.(@parser.result.graph, @parser.result.message_sends, @parser.result.tree)
       store_result(@parser.result)
     end
 

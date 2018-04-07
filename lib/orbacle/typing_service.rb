@@ -31,7 +31,17 @@ module Orbacle
         yield self
       end
     end
-    UnionType = Struct.new(:types)
+    class MainType
+      def each_possible_type
+      end
+    end
+    class UnionType < Struct.new(:types)
+      def each_possible_type
+        types.each do |type|
+          yield type
+        end
+      end
+    end
     class GenericType < Struct.new(:name, :parameters)
       def each_possible_type
         yield self
@@ -101,7 +111,7 @@ module Orbacle
       when :lvar then handle_group(node, sources)
       when :array then handle_group_into_array(node, sources)
       when :splat_array then handle_unwrap_array(node, sources)
-      when :lvasgn then handle_pass1(node, sources)
+      when :lvasgn then handle_pass_lte1(node, sources)
       when :call_obj then handle_pass1(node, sources)
       when :call_result then handle_pass_lte1(node, sources)
       when :call_arg then handle_group(node, sources)
@@ -136,6 +146,22 @@ module Orbacle
       when :ivar_definition then handle_group(node, sources)
       when :clivar_definition then handle_group(node, sources)
       when :ivar then handle_pass1(node, sources)
+
+
+      # below not really tested
+      when :if_result then handle_group(node, sources)
+
+      when :case_result then handle_group(node, sources)
+
+      when :and then handle_bool(node, sources)
+      when :or then handle_bool(node, sources)
+
+      when :class then handle_nil(node, sources)
+
+      when :unwrap_array then handle_primitive_array_map_1(node, sources)
+      when :rescue then handle_nil(node, sources)
+
+      when :lambda then handle_nil(node, sources)
 
       else raise ArgumentError.new(node.type)
       end
@@ -212,7 +238,7 @@ module Orbacle
       elsif selfie.instance?
         NominalType.new(selfie.scope.absolute_str)
       else
-        raise
+        MainType.new
       end
     end
 
@@ -270,72 +296,75 @@ module Orbacle
           handle_primitive(possible_type, message_send, graph)
         else
           found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
-          raise "Method not found" if found_method.nil?
-          if found_method.args.kwargs.empty?
-            regular_args = message_send.send_args[0..-1]
-            kwarg_arg = nil
+          if found_method.nil?
+            warn("Method #{message_name} not found\n")
           else
-            regular_args = message_send.send_args[0..-2]
-            kwarg_arg = message_send.send_args[-1]
-          end
-          found_method.args.args.each_with_index do |formal_arg, i|
-            next if formal_arg.name.nil?
-            node_formal_arg = found_method.nodes.args[formal_arg.name]
+            if found_method.args.kwargs.empty?
+              regular_args = message_send.send_args[0..-1]
+              kwarg_arg = nil
+            else
+              regular_args = message_send.send_args[0..-2]
+              kwarg_arg = message_send.send_args[-1]
+            end
+            found_method.args.args.each_with_index do |formal_arg, i|
+              next if formal_arg.name.nil?
+              node_formal_arg = found_method.nodes.args[formal_arg.name]
 
-            case formal_arg
-            when GlobalTree::Method::ArgumentsTree::Regular
-              @graph.add_edge(regular_args[i], node_formal_arg)
-              @worklist << node_formal_arg
-            when GlobalTree::Method::ArgumentsTree::Optional
-              if regular_args[i]
+              case formal_arg
+              when GlobalTree::Method::ArgumentsTree::Regular
                 @graph.add_edge(regular_args[i], node_formal_arg)
                 @worklist << node_formal_arg
-              end
-            when GlobalTree::Method::ArgumentsTree::Splat
-              regular_args[i..-1].each do |send_arg|
-                @graph.add_edge(send_arg, node_formal_arg)
-                @worklist << node_formal_arg
-              end
-            else raise
-            end
-          end
-
-          if kwarg_arg
-            unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values)
-            @graph.add_vertex(unwrapping_node)
-            @graph.add_edge(kwarg_arg, unwrapping_node)
-            @worklist << unwrapping_node
-
-            found_method.args.kwargs.each do |formal_kwarg|
-              next if formal_kwarg.name.nil?
-              node_formal_kwarg = found_method.nodes.args[formal_kwarg.name]
-
-              case formal_kwarg
-              when GlobalTree::Method::ArgumentsTree::Regular
-                @graph.add_edge(unwrapping_node, node_formal_kwarg)
-                @worklist << node_formal_kwarg
               when GlobalTree::Method::ArgumentsTree::Optional
-                @graph.add_edge(unwrapping_node, node_formal_kwarg)
-                @worklist << node_formal_kwarg
+                if regular_args[i]
+                  @graph.add_edge(regular_args[i], node_formal_arg)
+                  @worklist << node_formal_arg
+                end
               when GlobalTree::Method::ArgumentsTree::Splat
-                @graph.add_edge(kwarg_arg, node_formal_kwarg)
-                @worklist << node_formal_kwarg
+                regular_args[i..-1].each do |send_arg|
+                  @graph.add_edge(send_arg, node_formal_arg)
+                  @worklist << node_formal_arg
+                end
               else raise
               end
             end
-          end
 
-          if !found_method.nodes.yields.empty?
-            found_method.nodes.yields.each do |node_yield|
-              @graph.add_edge(node_yield, message_send.block.args[0])
-              @worklist << message_send.block.args[0]
+            if kwarg_arg
+              unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values)
+              @graph.add_vertex(unwrapping_node)
+              @graph.add_edge(kwarg_arg, unwrapping_node)
+              @worklist << unwrapping_node
+
+              found_method.args.kwargs.each do |formal_kwarg|
+                next if formal_kwarg.name.nil?
+                node_formal_kwarg = found_method.nodes.args[formal_kwarg.name]
+
+                case formal_kwarg
+                when GlobalTree::Method::ArgumentsTree::Regular
+                  @graph.add_edge(unwrapping_node, node_formal_kwarg)
+                  @worklist << node_formal_kwarg
+                when GlobalTree::Method::ArgumentsTree::Optional
+                  @graph.add_edge(unwrapping_node, node_formal_kwarg)
+                  @worklist << node_formal_kwarg
+                when GlobalTree::Method::ArgumentsTree::Splat
+                  @graph.add_edge(kwarg_arg, node_formal_kwarg)
+                  @worklist << node_formal_kwarg
+                else raise
+                end
+              end
             end
-          end
 
-          method_result_node = found_method.nodes.result
-          if !@graph.original.has_edge?(method_result_node, message_send.send_result)
-            @graph.add_edge(method_result_node, message_send.send_result)
-            @worklist << message_send.send_result
+            if !found_method.nodes.yields.empty?
+              found_method.nodes.yields.each do |node_yield|
+                @graph.add_edge(node_yield, message_send.block.args[0])
+                @worklist << message_send.block.args[0]
+              end
+            end
+
+            method_result_node = found_method.nodes.result
+            if !@graph.original.has_edge?(method_result_node, message_send.send_result)
+              @graph.add_edge(method_result_node, message_send.send_result)
+              @worklist << message_send.send_result
+            end
           end
         end
       end
