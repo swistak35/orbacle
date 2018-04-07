@@ -442,94 +442,96 @@ module Orbacle
       end
     end
 
-    specify "method call, without args" do
-      snippet = <<-END
-      x = 42
-      x.succ
-      END
+    describe "method calls" do
+      specify "method call, without args" do
+        snippet = <<-END
+        x = 42
+        x.succ
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "x" }),
-        node(:call_obj))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "x" }),
+          node(:call_obj))
 
-      expect(result.message_sends).to include(
-        msend(
-          "succ",
-          node(:call_obj),
-          [],
-          node(:call_result, { csend: false })))
-    end
+        expect(result.message_sends).to include(
+          msend(
+            "succ",
+            node(:call_obj),
+            [],
+            node(:call_result, { csend: false })))
+      end
 
-    specify "method call, with 1 arg" do
-      snippet = <<-END
-      x = 42
-      x.floor(2)
-      END
+      specify "method call, with 1 arg" do
+        snippet = <<-END
+        x = 42
+        x.floor(2)
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "x" }),
-        node(:call_obj))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 2 }),
-        node(:call_arg))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "x" }),
+          node(:call_obj))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:call_arg))
 
-      expect(result.message_sends).to include(
-        msend("floor",
-              node(:call_obj),
-              [node(:call_arg)],
-              node(:call_result, { csend: false })))
-    end
+        expect(result.message_sends).to include(
+          msend("floor",
+                node(:call_obj),
+                [node(:call_arg)],
+                node(:call_result, { csend: false })))
+      end
 
-    specify "method call, with more than one arg" do
-      snippet = <<-END
-      x = 42
-      x.floor(2, 3)
-      END
+      specify "method call, with more than one arg" do
+        snippet = <<-END
+        x = 42
+        x.floor(2, 3)
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "x" }),
-        node(:call_obj))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 2 }),
-        node(:call_arg))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 3 }),
-        node(:call_arg))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "x" }),
+          node(:call_obj))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:call_arg))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 3 }),
+          node(:call_arg))
 
-      expect(result.message_sends).to include(
-        msend("floor",
-              node(:call_obj),
-              [node(:call_arg), node(:call_arg)],
-              node(:call_result, { csend: false })))
-    end
+        expect(result.message_sends).to include(
+          msend("floor",
+                node(:call_obj),
+                [node(:call_arg), node(:call_arg)],
+                node(:call_result, { csend: false })))
+      end
 
-    specify "method call, with block" do
-      snippet = <<-END
-      x = 42
-      x.map {|y| y }
-      END
+      specify "method call, with block" do
+        snippet = <<-END
+        x = 42
+        x.map {|y| y }
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:block_arg),
-        node(:lvar, { var_name: "y" }))
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "y" }),
-        node(:block_result))
+        expect(result.graph).to include_edge(
+          node(:block_arg),
+          node(:lvar, { var_name: "y" }))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "y" }),
+          node(:block_result))
 
-      expect(result.message_sends).to include(
-        msend("map",
-              node(:call_obj),
-              [],
-              node(:call_result, { csend: false }),
-              block([node(:block_arg)], node(:block_result))))
+        expect(result.message_sends).to include(
+          msend("map",
+                node(:call_obj),
+                [],
+                node(:call_result, { csend: false }),
+                block([node(:block_arg)], node(:block_result))))
+      end
     end
 
     describe "block arguments formats" do
@@ -1001,35 +1003,37 @@ module Orbacle
       end
     end
 
-    specify "usage of class variable" do
-      snippet = <<-END
-      class Foo
-        @@baz
+    describe "class variables" do
+      specify "usage of class variable" do
+        snippet = <<-END
+        class Foo
+          @@baz
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:cvar_definition),
+          node(:cvar))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "assignment of class variable" do
+        snippet = <<-END
+        class Foo
+          @@baz = 42
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:cvar_definition),
-        node(:cvar))
-    end
+        result = generate_cfg(snippet)
 
-    specify "assignment of class variable" do
-      snippet = <<-END
-      class Foo
-        @@baz = 42
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:cvasgn, { var_name: "@@baz" }))
+        expect(result.graph).to include_edge(
+          node(:cvasgn, { var_name: "@@baz" }),
+          node(:cvar_definition))
       end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:cvasgn, { var_name: "@@baz" }))
-      expect(result.graph).to include_edge(
-        node(:cvasgn, { var_name: "@@baz" }),
-        node(:cvar_definition))
     end
 
     describe "global variables" do
