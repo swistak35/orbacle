@@ -14,6 +14,7 @@ module Orbacle
       @db.create_table_constants
       @db.create_table_metods
       @db.create_table_klasslikes
+      @db.create_table_nodes
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
       @parser = DataFlowGraph.new
@@ -27,11 +28,15 @@ module Orbacle
           puts "Warning: Skipped #{file_path} because of syntax error"
         end
       end
+
+      puts "Typing..."
       typing_result = TypingService.new.(@parser.result.graph, @parser.result.message_sends, @parser.result.tree)
-      store_result(@parser.result)
+
+      puts "Saving..."
+      store_result(@parser.result, typing_result)
     end
 
-    def store_result(result)
+    def store_result(result, typing_result)
       result.tree.constants.each do |c|
         @db.add_constant(
           scope: c.scope.absolute_str,
@@ -54,6 +59,9 @@ module Orbacle
           type: type_of(kl),
           inheritance: type_of(kl) == "klass" ? kl.inheritance_ref&.full_name : nil,
           nesting: nil)
+      end
+      typing_result.each do |gnode, type|
+        @db.add_node(gnode, type)
       end
     end
 

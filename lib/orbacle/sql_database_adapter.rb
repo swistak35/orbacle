@@ -3,6 +3,7 @@ require 'yaml'
 class SQLDatabaseAdapter
   Metod = Struct.new(:name, :file, :line)
   Klasslike = Struct.new(:scope, :name, :type, :inheritance, :nesting)
+  Node = Struct.new(:kind, :data, :type, :location_uri, :location_start_line, :location_start_char, :location_end_line, :location_end_char)
 
   def initialize(project_root:)
     @db_path = project_root.join(".orbacle.db")
@@ -63,6 +64,21 @@ class SQLDatabaseAdapter
     SQL
   end
 
+  def create_table_nodes
+    db.execute <<-SQL
+    create table nodes (
+      kind varchar(255),
+      data text,
+      type text,
+      location_uri varchar(255),
+      location_start_line int,
+      location_start_char int,
+      location_end_line int,
+      location_end_char int
+    );
+    SQL
+  end
+
   def find_metods(name)
     db.execute("select * from metods where name = ?", name).map do |metod_data|
       Metod.new(*metod_data)
@@ -95,6 +111,15 @@ class SQLDatabaseAdapter
       inheritance,
       YAML.dump(nesting),
     ])
+  end
+
+  def add_node(gnode, type)
+    node = Node.new(
+      gnode.type.to_s, gnode.params.to_s, type.to_s,
+      gnode.location&.uri,
+      gnode.location&.start&.line, gnode.location&.start&.character,
+      gnode.location&.end&.line, gnode.location&.end&.character)
+    @db.execute("insert into nodes values (?, ?, ?, ?, ?, ?, ?, ?)", node.to_a)
   end
 
   private

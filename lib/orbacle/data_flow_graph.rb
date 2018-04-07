@@ -37,7 +37,15 @@ module Orbacle
 
     Position = Struct.new(:line, :character)
     PositionRange = Struct.new(:start, :end)
-    Location = Struct.new(:uri, :position_range)
+    class Location < Struct.new(:uri, :position_range)
+      def start
+        position_range&.start
+      end
+
+      def end
+        position_range&.end
+      end
+    end
 
     def initialize
       @graph = RGL::DirectedAdjacencyGraph.new
