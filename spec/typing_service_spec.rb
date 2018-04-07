@@ -458,16 +458,33 @@ module Orbacle
       end
     end
 
-    specify "constructor call" do
-      snippet = <<-END
-      class Foo
+    describe "constructors" do
+      specify "constructor call" do
+        snippet = <<-END
+        class Foo
+        end
+        Foo.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Foo"))
       end
-      Foo.new
-      END
 
-      result = type_snippet(snippet)
+      specify "constructor call with argument" do
+        snippet = <<-END
+        class Foo
+          def initialize(foo)
+            @foo = foo
+          end
+        end
+        Foo.new(42)
+        END
 
-      expect(result).to eq(nominal("Foo"))
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+      end
     end
 
     describe "user-defined methods" do
