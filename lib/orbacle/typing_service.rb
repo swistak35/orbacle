@@ -143,8 +143,6 @@ module Orbacle
       when :formal_kwrestarg then handle_pass_lte1(node, sources)
       when :block_arg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
-      when :primitive_integer_succ then handle_int(node, sources)
-      when :primitive_integer_to_s then handle_just_string(node, sources)
       when :primitive_array_map_1 then handle_primitive_array_map_1(node, sources)
       when :primitive_array_map_2 then handle_primitive_array_map_2(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
@@ -390,12 +388,25 @@ module Orbacle
       end
     end
 
+    def primitive_mapping
+      {
+        "Integer" => {
+          "succ" => method(:send_primitive_templ_just_int),
+          "to_s" => method(:send_primitive_templ_just_str),
+          "+" => method(:send_primitive_templ_just_int),
+          "-" => method(:send_primitive_templ_just_int),
+          "*" => method(:send_primitive_templ_just_int),
+        },
+        "Array" => {
+          "map" => method(:send_primitive_array_map),
+        },
+      }
+    end
+
     def primitive_send?(type, message_name)
       if type.is_a?(ClassType) && message_name == "new"
         true
-      elsif type.name == "Integer" && ["succ", "to_s"].include?(message_name)
-        true
-      elsif type.name == "Array" && message_name == "map"
+      elsif primitive_mapping[type.name] && primitive_mapping[type.name][message_name]
         true
       else
         false
@@ -405,16 +416,10 @@ module Orbacle
     def handle_primitive(type, message_send, graph)
       message_name = message_send.message_send
 
-      if type.name == "Integer" && message_name == "succ"
-        send_primitive_integer_succ(type, message_send, graph)
-      elsif type.name == "Integer" && message_name == "to_s"
-        send_primitive_integer_to_s(type, message_send, graph)
-      elsif type.name == "Array" && message_name == "map"
-        send_primitive_array_map(type, message_send, graph)
-      elsif message_name == "new"
+      if message_name == "new"
         send_constructor(type, message_send, graph)
       else
-        raise ArgumentError.new(possible_type)
+        primitive_mapping[type.name][message_name].(type, message_send, graph)
       end
     end
 
@@ -432,32 +437,18 @@ module Orbacle
       @worklist << message_send.send_result
     end
 
-    def send_primitive_integer_succ(type, message_send, graph)
-      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
-        adjacent_node.type == :primitive_integer_succ
-      end
-      return if already_handled
-
-      node = DataFlowGraph::Node.new(:primitive_integer_succ)
+    def send_primitive_templ_just_int(_type, message_send, _graph)
+      node = DataFlowGraph::Node.new(:int)
       @graph.add_vertex(node)
-      @graph.add_edge(message_send.send_obj, node)
-      @worklist << node
       @graph.add_edge(node, message_send.send_result)
-      @worklist << message_send.send_result
+      @worklist << node
     end
 
-    def send_primitive_integer_to_s(type, message_send, graph)
-      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
-        adjacent_node.type == :primitive_integer_to_s
-      end
-      return if already_handled
-
-      node = DataFlowGraph::Node.new(:primitive_integer_to_s)
+    def send_primitive_templ_just_str(_type, message_send, _graph)
+      node = DataFlowGraph::Node.new(:str)
       @graph.add_vertex(node)
-      @graph.add_edge(message_send.send_obj, node)
-      @worklist << node
       @graph.add_edge(node, message_send.send_result)
-      @worklist << message_send.send_result
+      @worklist << node
     end
 
     def send_primitive_array_map(type, message_send, graph)

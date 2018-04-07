@@ -404,26 +404,58 @@ module Orbacle
       expect(result).to eq(nominal("Integer"))
     end
 
-    specify "Array#map" do
-      snippet = <<-END
-      x = [1,2]
-      x.map {|y| y }
-      END
+    describe "built-in message sends" do
+      specify "Array#map" do
+        snippet = <<-END
+        x = [1,2]
+        x.map {|y| y }
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(generic("Array", [nominal("Integer")]))
-    end
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
 
-    specify "Array#map" do
-      snippet = <<-END
-      x = [1,2]
-      x.map {|y| y.to_s }
-      END
+      specify "Array#map" do
+        snippet = <<-END
+        x = [1,2]
+        x.map {|y| y.to_s }
+        END
 
-      result = type_snippet(snippet)
+        result = type_snippet(snippet)
 
-      expect(result).to eq(generic("Array", [nominal("String")]))
+        expect(result).to eq(generic("Array", [nominal("String")]))
+      end
+
+      specify "Integer#+" do
+        snippet = <<-END
+        42 + 78
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "Integer#-" do
+        snippet = <<-END
+        42 - 78
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "Integer#*" do
+        snippet = <<-END
+        42 * 78
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     specify "constructor call" do
