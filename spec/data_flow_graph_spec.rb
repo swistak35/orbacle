@@ -2289,6 +2289,27 @@ module Orbacle
       end
     end
 
+    describe "lambdas" do
+      specify "simple" do
+        snippet = <<-END
+        -> { 42 }
+        END
+
+        result = generate_cfg(snippet)
+        expect(result.final_node).to eq(node(:lambda, { id: 0 }))
+      end
+
+      specify "with one argument" do
+        snippet = <<-END
+        ->() { 42 }
+        ->(x) { 42 }
+        END
+
+        result = generate_cfg(snippet)
+        expect(result.final_node).to eq(node(:lambda, { id: 1 }))
+      end
+    end
+
     def generate_cfg(snippet)
       service = DataFlowGraph.new
       service.process_file(snippet, "")

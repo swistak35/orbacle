@@ -38,6 +38,7 @@ module Orbacle
     def initialize
       @graph = RGL::DirectedAdjacencyGraph.new
       @message_sends = []
+      @lambdas = []
       @tree = GlobalTree.new
     end
 
@@ -539,8 +540,12 @@ module Orbacle
       args_ast = ast.children[1]
       block_expr = ast.children[2]
 
-      send_node, send_lenv, _additional = process(send_expr, lenv)
-      message_send = _additional.fetch(:message_send)
+      if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
+        send_lenv = lenv
+      else
+        send_node, send_lenv, _additional = process(send_expr, lenv)
+        message_send = _additional.fetch(:message_send)
+      end
 
       args_ast_nodes = []
       lenv_with_args = args_ast.children.reduce(send_lenv) do |current_lenv, arg_ast|
@@ -552,7 +557,7 @@ module Orbacle
           current_lenv.merge(arg_name => [arg_node])
         when :mlhs
           handle_mlhs_for_block(arg_ast, current_lenv, arg_node)
-        else raise
+        else raise RuntimeError.new(ast)
         end
       end
 
@@ -561,10 +566,16 @@ module Orbacle
       block_final_node, block_result_lenv = process(block_expr, lenv_with_args)
       block_result_node = add_vertex(Node.new(:block_result))
       @graph.add_edge(block_final_node, block_result_node)
-      block = Block.new(args_ast_nodes, block_result_node)
-      message_send.block = block
 
-      return [send_node, block_result_lenv]
+      if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
+        lamb = @tree.add_lambda(GlobalTree::Lambda::Nodes.new(args_ast_nodes, block_result_node))
+        lambda_node = add_vertex(Node.new(:lambda, { id: lamb.id }))
+        return [lambda_node, block_result_lenv]
+      else
+        block = Block.new(args_ast_nodes, block_result_node)
+        message_send.block = block
+        return [send_node, block_result_lenv]
+      end
     end
 
     def handle_mlhs_for_block(ast, lenv, node)
@@ -583,6 +594,12 @@ module Orbacle
       end
 
       return final_lenv
+    end
+
+    def handle_lambda(ast, lenv)
+      send_expr = ast.children[0]
+      args_ast = ast.children[1]
+      block_expr = ast.children[2]
     end
 
     def handle_def(ast, lenv)

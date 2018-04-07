@@ -105,10 +105,22 @@ module Orbacle
       attr_accessor :global_variables, :constants
     end
 
+    class Lambda
+      Nodes = Struct.new(:args, :result)
+      def initialize(id, nodes)
+        @id = id
+        @nodes = nodes
+      end
+
+      attr_reader :id, :nodes
+    end
+
     def initialize
       @constants = []
       @metods = []
+      @lambdas = []
       @nodes = Nodes.new
+      @lambda_counter = 0
     end
 
     attr_reader :metods, :constants, :nodes
@@ -131,6 +143,13 @@ module Orbacle
     def add_constant(constant)
       @constants << constant
       return constant
+    end
+
+    def add_lambda(nodes)
+      lamb = Lambda.new(@lambda_counter, nodes)
+      @lambda_counter += 1
+      @lambdas << lamb
+      return lamb
     end
 
     def solve_reference(const_ref)
