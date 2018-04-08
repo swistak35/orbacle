@@ -50,8 +50,8 @@ module Orbacle
       result.tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
-          file: m.position.uri,
-          line: m.position.position_range.start.line)
+          file: m.position&.uri,
+          line: m.position&.position_range&.start&.line)
       end
       puts "Saving klasslikes..."
       klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
