@@ -334,6 +334,11 @@ module Orbacle
         end
       else
         handle_custom_message_send(found_method, message_send)
+
+        node = DataFlowGraph::Node.new(:constructor, { name: class_name })
+        @graph.add_vertex(node)
+        @graph.add_edge(node, message_send.send_result)
+        @worklist << node
       end
     end
 
@@ -348,6 +353,12 @@ module Orbacle
         end
       else
         handle_custom_message_send(found_method, message_send)
+
+        method_result_node = found_method.nodes.result
+        if !@graph.original.has_edge?(method_result_node, message_send.send_result)
+          @graph.add_edge(method_result_node, message_send.send_result)
+          @worklist << message_send.send_result
+        end
       end
     end
 
@@ -411,12 +422,6 @@ module Orbacle
           @graph.add_edge(node_yield, message_send.block.args[0])
           @worklist << message_send.block.args[0]
         end
-      end
-
-      method_result_node = found_method.nodes.result
-      if !@graph.original.has_edge?(method_result_node, message_send.send_result)
-        @graph.add_edge(method_result_node, message_send.send_result)
-        @worklist << message_send.send_result
       end
     end
 

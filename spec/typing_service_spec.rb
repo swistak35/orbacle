@@ -482,8 +482,10 @@ module Orbacle
         END
 
         result = full_type_snippet(snippet)
-
         expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+
+        final_result = type_snippet(snippet)
+        expect(final_result).to eq(nominal("Foo"))
       end
 
       specify "calling constructor from parent class" do
