@@ -69,30 +69,29 @@ module Orbacle
     end
 
     def call(graph, worklist, tree)
+      @worklist = worklist
       @graph = DoubleEdgedGraph.new(graph)
       @tree = tree
 
       @result = {}
 
-      @worklist = Set.new(@graph.original.vertices)
-      while !@worklist.empty?
-        current_worklist = @worklist
-        @worklist = Set.new
-
-        current_worklist.each do |node|
+      @worklist.nodes = @graph.original.vertices.to_a
+      while !@worklist.nodes.empty?
+        while !@worklist.nodes.empty?
+          node = @worklist.nodes.shift
           current_result = @result[node]
           @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
           if current_result != @result[node]
             @graph.original.adjacent_vertices(node).each do |adjacent_node|
-              @worklist << adjacent_node
+              @worklist.enqueue_node(adjacent_node)
             end
           end
         end
 
-        worklist.message_sends.each do |message_send|
-          if message_send.is_a?(Worklist::MessageSend) && satisfied_message_send?(message_send) && !worklist.handled_message_sends.include?(message_send)
+        @worklist.message_sends.each do |message_send|
+          if message_send.is_a?(Worklist::MessageSend) && satisfied_message_send?(message_send) && !@worklist.handled_message_sends.include?(message_send)
             handle_message_send(message_send, graph)
-            worklist.handled_message_sends << message_send
+            @worklist.handled_message_sends << message_send
           end
         end
       end
@@ -293,7 +292,7 @@ module Orbacle
         if ref_result && @tree.nodes.constants[ref_result.full_name]
           const_definition_node = @tree.nodes.constants[ref_result.full_name]
           @graph.add_edge(const_definition_node, node)
-          @worklist << const_definition_node
+          @worklist.enqueue_node(const_definition_node)
           @result[const_definition_node]
         else
           ClassType.new(const_ref.full_name)
@@ -327,7 +326,7 @@ module Orbacle
           node = DataFlowGraph::Node.new(:constructor, { name: original_class_name })
           @graph.add_vertex(node)
           @graph.add_edge(node, message_send.send_result)
-          @worklist << node
+          @worklist.enqueue_node(node)
         end
       else
         handle_custom_message_send(found_method, message_send)
@@ -335,7 +334,7 @@ module Orbacle
         node = DataFlowGraph::Node.new(:constructor, { name: class_name })
         @graph.add_vertex(node)
         @graph.add_edge(node, message_send.send_result)
-        @worklist << node
+        @worklist.enqueue_node(node)
       end
     end
 
@@ -354,7 +353,7 @@ module Orbacle
         method_result_node = found_method.nodes.result
         if !@graph.original.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
-          @worklist << message_send.send_result
+          @worklist.enqueue_node(message_send.send_result)
         end
       end
     end
@@ -374,16 +373,16 @@ module Orbacle
         case formal_arg
         when GlobalTree::Method::ArgumentsTree::Regular
           @graph.add_edge(regular_args[i], node_formal_arg)
-          @worklist << node_formal_arg
+          @worklist.enqueue_node(node_formal_arg)
         when GlobalTree::Method::ArgumentsTree::Optional
           if regular_args[i]
             @graph.add_edge(regular_args[i], node_formal_arg)
-            @worklist << node_formal_arg
+            @worklist.enqueue_node(node_formal_arg)
           end
         when GlobalTree::Method::ArgumentsTree::Splat
           regular_args[i..-1].each do |send_arg|
             @graph.add_edge(send_arg, node_formal_arg)
-            @worklist << node_formal_arg
+            @worklist.enqueue_node(node_formal_arg)
           end
         else raise
         end
@@ -393,7 +392,7 @@ module Orbacle
         unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values)
         @graph.add_vertex(unwrapping_node)
         @graph.add_edge(kwarg_arg, unwrapping_node)
-        @worklist << unwrapping_node
+        @worklist.enqueue_node(unwrapping_node)
 
         found_method.args.kwargs.each do |formal_kwarg|
           next if formal_kwarg.name.nil?
@@ -402,13 +401,13 @@ module Orbacle
           case formal_kwarg
           when GlobalTree::Method::ArgumentsTree::Regular
             @graph.add_edge(unwrapping_node, node_formal_kwarg)
-            @worklist << node_formal_kwarg
+            @worklist.enqueue_node(node_formal_kwarg)
           when GlobalTree::Method::ArgumentsTree::Optional
             @graph.add_edge(unwrapping_node, node_formal_kwarg)
-            @worklist << node_formal_kwarg
+            @worklist.enqueue_node(node_formal_kwarg)
           when GlobalTree::Method::ArgumentsTree::Splat
             @graph.add_edge(kwarg_arg, node_formal_kwarg)
-            @worklist << node_formal_kwarg
+            @worklist.enqueue_node(node_formal_kwarg)
           else raise
           end
         end
@@ -417,7 +416,7 @@ module Orbacle
       if !found_method.nodes.yields.empty?
         found_method.nodes.yields.each do |node_yield|
           @graph.add_edge(node_yield, message_send.block.args[0])
-          @worklist << message_send.block.args[0]
+          @worklist.enqueue_node(message_send.block.args[0])
         end
       end
     end
@@ -471,23 +470,23 @@ module Orbacle
       node = DataFlowGraph::Node.new(:constructor, { name: type.name })
       @graph.add_vertex(node)
       @graph.add_edge(message_send.send_obj, node)
-      @worklist << node
+      @worklist.enqueue_node(node)
       @graph.add_edge(node, message_send.send_result)
-      @worklist << message_send.send_result
+      @worklist.enqueue_node(message_send.send_result)
     end
 
     def send_primitive_templ_just_int(_class_name, message_send)
       node = DataFlowGraph::Node.new(:int)
       @graph.add_vertex(node)
       @graph.add_edge(node, message_send.send_result)
-      @worklist << node
+      @worklist.enqueue_node(node)
     end
 
     def send_primitive_templ_just_str(_class_name, message_send)
       node = DataFlowGraph::Node.new(:str)
       @graph.add_vertex(node)
       @graph.add_edge(node, message_send.send_result)
-      @worklist << node
+      @worklist.enqueue_node(node)
     end
 
     def send_primitive_array_map(_class_name, message_send)
@@ -496,16 +495,16 @@ module Orbacle
       unwrapping_node = DataFlowGraph::Node.new(:primitive_array_map_1)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
-      @worklist << unwrapping_node
+      @worklist.enqueue_node(unwrapping_node)
       @graph.add_edge(unwrapping_node, message_send.block.args.first)
-      @worklist << message_send.block.args.first
+      @worklist.enqueue_node(message_send.block.args.first)
 
       wrapping_node = DataFlowGraph::Node.new(:primitive_array_map_2)
       @graph.add_vertex(wrapping_node)
       @graph.add_edge(message_send.block.result, wrapping_node)
-      @worklist << wrapping_node
+      @worklist.enqueue_node(wrapping_node)
       @graph.add_edge(wrapping_node, message_send.send_result)
-      @worklist << message_send.send_result
+      @worklist.enqueue_node(message_send.send_result)
     end
 
     def handle_primitive_array_map_1(_node, sources)

@@ -6,7 +6,7 @@ module Orbacle
 
     def initialize
       @message_sends = Set.new
-      @nodes = Set.new
+      @nodes = []
       @handled_message_sends = Set.new
     end
 
