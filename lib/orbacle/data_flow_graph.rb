@@ -765,7 +765,7 @@ module Orbacle
         GlobalTree::Klass.new(
           name: klass_name_ref.name,
           scope: current_scope.increase_by_ref(klass_name_ref).decrease,
-          inheritance_ref: parent_name_ref,
+          parent_ref: parent_name_ref,
           position: build_location(Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
 
       switch_currently_analyzed_klass(klass) do
@@ -859,7 +859,7 @@ module Orbacle
           GlobalTree::Klass.new(
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
-            inheritance_ref: parent_name_ref,
+            parent_ref: parent_name_ref,
             position: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
         return [Node.new(:nil), lenv]

@@ -19,7 +19,7 @@ module Orbacle
             name: "Foo",
             scope: Scope.empty,
             position: DataFlowGraph::Position.new(nil, 42),
-            inheritance_ref: nil))
+            parent_ref: nil))
 
         const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
 
@@ -33,7 +33,7 @@ module Orbacle
             name: "Bar",
             scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             position: DataFlowGraph::Position.new(nil, 42),
-            inheritance_ref: nil))
+            parent_ref: nil))
 
         const_ref = ConstRef.from_full_name("Foo::Bar", Nesting.empty)
 
@@ -47,7 +47,7 @@ module Orbacle
             name: "Bar",
             scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             position: DataFlowGraph::Position.new(nil, 42),
-            inheritance_ref: nil))
+            parent_ref: nil))
 
         nesting = Nesting.empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))

@@ -60,7 +60,7 @@ module Orbacle
           scope: kl.scope.absolute_str,
           name: kl.name,
           type: type_of(kl),
-          inheritance: type_of(kl) == "klass" ? kl.inheritance_ref&.full_name : nil,
+          inheritance: type_of(kl) == "klass" ? kl.parent_ref&.full_name : nil,
           nesting: nil)
       end
       puts "Saving typings..."

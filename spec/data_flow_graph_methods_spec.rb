@@ -18,7 +18,7 @@ module Orbacle
 
       klass = find_constant(result, "", "Foo")
       expect(klass.position.position_range.start.line).to eq(1)
-      expect(klass.inheritance_ref).to eq(nil)
+      expect(klass.parent_ref).to eq(nil)
     end
 
     specify "private method in class declaration" do
@@ -689,7 +689,7 @@ module Orbacle
           methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.position.position_range.start.line }] },
           constants: result.tree.constants.map do |c|
             if c.is_a?(GlobalTree::Klass)
-              [c.class, c.scope.absolute_str, c.name, c.inheritance_ref&.full_name, c.inheritance_ref&.nesting&.to_primitive || []]
+              [c.class, c.scope.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]
             else
               [c.class, c.scope.absolute_str, c.name]
             end

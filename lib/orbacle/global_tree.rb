@@ -35,20 +35,20 @@ module Orbacle
         attr_accessor :instance_variables, :class_variables, :class_level_instance_variables
       end
 
-      def initialize(name:, scope:, position:, inheritance_ref:, nodes: Nodes.new)
+      def initialize(name:, scope:, position:, parent_ref:, nodes: Nodes.new)
         @name = name
         @scope = scope
         @position = position
-        @inheritance_ref = inheritance_ref
+        @parent_ref = parent_ref
         @nodes = nodes
       end
 
-      attr_reader :name, :scope, :position, :inheritance_ref, :nodes
+      attr_reader :name, :scope, :position, :parent_ref, :nodes
 
       def ==(other)
         @name == other.name &&
           @scope == other.scope &&
-          @inheritance_ref == other.inheritance_ref &&
+          @parent_ref == other.parent_ref &&
           @position == position
       end
 
@@ -170,7 +170,7 @@ module Orbacle
       possible_parents = @constants
         .select {|c| c.is_a?(Klass) }
         .select {|c| c.full_name == class_name }
-        .map(&:inheritance_ref)
+        .map(&:parent_ref)
         .reject(&:nil?)
         .map(&method(:solve_reference))
         .reject(&:nil?)
