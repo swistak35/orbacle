@@ -310,24 +310,22 @@ module Orbacle
     def handle_message_send(message_send, graph)
       message_name = message_send.message_send
       @result[message_send.send_obj].each_possible_type do |possible_type|
-        if primitive_send?(possible_type, message_send.message_send)
-          handle_primitive(possible_type, message_send, graph)
-        elsif constructor_send?(possible_type, message_send.message_send)
-          handle_constructor_send(possible_type.name, message_send)
+        if constructor_send?(possible_type, message_send.message_send)
+          handle_constructor_send(possible_type.name, possible_type.name, message_send)
         else
           handle_instance_send(possible_type.name, message_send)
         end
       end
     end
 
-    def handle_constructor_send(class_name, message_send)
+    def handle_constructor_send(original_class_name, class_name, message_send)
       found_method = @tree.metods.find {|m| m.scope.to_s == class_name && m.name == "initialize" }
       if found_method.nil?
         parent_name = @tree.get_parent_of(class_name)
         if parent_name
-          handle_constructor_send(parent_name, message_send)
+          handle_constructor_send(original_class_name, parent_name, message_send)
         else
-          node = DataFlowGraph::Node.new(:constructor, { name: class_name })
+          node = DataFlowGraph::Node.new(:constructor, { name: original_class_name })
           @graph.add_vertex(node)
           @graph.add_edge(node, message_send.send_result)
           @worklist << node
@@ -342,7 +340,7 @@ module Orbacle
       end
     end
 
-    def handle_instance_send(class_name, message_send)
+    def handle_instance_nonprimitive_send(class_name, message_send)
       found_method = @tree.find_instance_method(class_name, message_send.message_send)
       if found_method.nil?
         parent_name = @tree.get_parent_of(class_name)
@@ -425,6 +423,14 @@ module Orbacle
       end
     end
 
+    def handle_instance_send(class_name, message_send)
+      if primitive_send?(class_name, message_send.message_send)
+        handle_primitive(class_name, message_send)
+      else
+        handle_instance_nonprimitive_send(class_name, message_send)
+      end
+    end
+
     def primitive_mapping
       {
         "Integer" => {
@@ -440,8 +446,8 @@ module Orbacle
       }
     end
 
-    def primitive_send?(type, message_name)
-      if primitive_mapping[type.name] && primitive_mapping[type.name][message_name]
+    def primitive_send?(class_name, message_name)
+      if primitive_mapping[class_name] && primitive_mapping[class_name][message_name]
         true
       else
         false
@@ -452,17 +458,12 @@ module Orbacle
       type.is_a?(ClassType) && message_name == "new"
     end
 
-    def handle_primitive(type, message_send, graph)
+    def handle_primitive(class_name, message_send)
       message_name = message_send.message_send
-
-      if message_name == "new"
-        send_constructor(type, message_send, graph)
-      else
-        primitive_mapping[type.name][message_name].(type, message_send, graph)
-      end
+      primitive_mapping[class_name][message_name].(class_name, message_send)
     end
 
-    def send_constructor(type, message_send, graph)
+    def send_constructor(type, message_send)
       already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
         adjacent_node.type == :constructor
       end
@@ -476,26 +477,21 @@ module Orbacle
       @worklist << message_send.send_result
     end
 
-    def send_primitive_templ_just_int(_type, message_send, _graph)
+    def send_primitive_templ_just_int(_class_name, message_send)
       node = DataFlowGraph::Node.new(:int)
       @graph.add_vertex(node)
       @graph.add_edge(node, message_send.send_result)
       @worklist << node
     end
 
-    def send_primitive_templ_just_str(_type, message_send, _graph)
+    def send_primitive_templ_just_str(_class_name, message_send)
       node = DataFlowGraph::Node.new(:str)
       @graph.add_vertex(node)
       @graph.add_edge(node, message_send.send_result)
       @worklist << node
     end
 
-    def send_primitive_array_map(type, message_send, graph)
-      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
-        adjacent_node.type == :primitive_array_map_1
-      end
-      return if already_handled
-
+    def send_primitive_array_map(_class_name, message_send)
       raise if message_send.block.nil?
 
       unwrapping_node = DataFlowGraph::Node.new(:primitive_array_map_1)

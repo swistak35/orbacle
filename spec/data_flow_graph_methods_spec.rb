@@ -116,7 +116,7 @@ module Orbacle
 
       result = compute_graph(file)
 
-      expect(result.tree.metods[0].nodes.yields.size).to eq(1)
+      expect(result.tree.metods[-1].nodes.yields.size).to eq(1)
     end
 
     specify "method with more yields" do
@@ -130,7 +130,7 @@ module Orbacle
 
       result = compute_graph(file)
 
-      expect(result.tree.metods[0].nodes.yields.size).to eq(3)
+      expect(result.tree.metods[-1].nodes.yields.size).to eq(3)
     end
 
     specify do
@@ -686,8 +686,9 @@ module Orbacle
         service = DataFlowGraph.new
         result = service.process_file(file, nil)
         {
-          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location.position_range.start.line }] },
-          constants: result.tree.constants.map do |c|
+          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location&.position_range&.start&.line }] }
+            .reject {|m| m[0] == "Object" },
+          constants: result.tree.constants.reject {|c| c.full_name == "Object" }.map do |c|
             if c.is_a?(GlobalTree::Klass)
               [c.class, c.scope.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]
             else

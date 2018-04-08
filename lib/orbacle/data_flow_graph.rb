@@ -52,6 +52,8 @@ module Orbacle
       @message_sends = []
       @lambdas = []
       @tree = GlobalTree.new
+
+      add_object_klass
     end
 
     def process_file(file, filepath)
@@ -217,6 +219,27 @@ module Orbacle
         process_result[0].location = build_location_from_ast(ast)
       end
       process_result
+    end
+
+    def add_object_klass
+      klass = @tree.add_klass(
+        GlobalTree::Klass.new(
+          name: "Object",
+          scope: Scope.empty,
+          parent_ref: nil,
+          location: nil))
+
+      arg_name = "_arg"
+      arg_node = Node.new(:formal_arg, { var_name: arg_name })
+      metod = @tree.add_method(GlobalTree::Method.new(
+        scope: Scope.new(["Object"], false),
+        name: "==",
+        location: nil,
+        args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
+        visibility: :public,
+        nodes: GlobalTree::Method::Nodes.new({arg_name => arg_node}, add_vertex(Node.new(:method_result)), [])))
+      bool_node = Node.new(:bool)
+      @graph.add_edge(bool_node, metod.nodes.result)
     end
 
     def handle_lvasgn(ast, lenv)

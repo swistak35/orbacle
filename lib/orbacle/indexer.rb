@@ -43,8 +43,8 @@ module Orbacle
           scope: c.scope.absolute_str,
           name: c.name,
           type: type_of(c),
-          path: c.location.uri,
-          line: c.location.position_range.start.line)
+          path: c.location&.uri,
+          line: c.location&.position_range&.start&.line)
       end
       puts "Saving methods..."
       result.tree.metods.each do |m|

@@ -385,7 +385,6 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.final_node).to eq(node(:defined))
-        expect(result.graph.edges).to be_empty
       end
     end
 

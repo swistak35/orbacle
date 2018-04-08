@@ -456,6 +456,18 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
+
+      specify "== on any class" do
+        snippet = <<-END
+        class Foo
+        end
+        Foo.new == Foo.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
     end
 
     describe "constructors" do

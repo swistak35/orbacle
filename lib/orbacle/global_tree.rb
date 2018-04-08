@@ -175,7 +175,13 @@ module Orbacle
         .map(&method(:solve_reference))
         .reject(&:nil?)
         .map(&:full_name)
-      possible_parents[0]
+      if class_name == "Object"
+        nil
+      elsif possible_parents.empty?
+        "Object"
+      else
+        possible_parents[0]
+      end
     end
 
     def find_instance_method(class_name, method_name)
