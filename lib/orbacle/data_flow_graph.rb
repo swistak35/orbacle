@@ -2,10 +2,6 @@ module Orbacle
   module DataFlowGraph
     ProcessError = Class.new(StandardError)
 
-    MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
-    SuperSend = Struct.new(:send_args, :send_result, :block)
-    Super0Send = Struct.new(:send_result, :block)
-
     Block = Struct.new(:args, :result)
     BlockPass = Struct.new(:node)
     CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)

@@ -4,11 +4,11 @@ require 'orbacle/nesting'
 module Orbacle
   module DataFlowGraph
     class Builder
-      Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
+      Result = Struct.new(:graph, :final_lenv, :final_node, :tree)
 
-      def initialize(graph)
+      def initialize(graph, worklist)
         @graph = graph
-        @message_sends = []
+        @worklist = worklist
         @lambdas = []
         @tree = GlobalTree.new
 
@@ -39,7 +39,7 @@ module Orbacle
       end
 
       def result
-        Result.new(@graph, @final_local_environment, @message_sends, @final_node, @tree)
+        Result.new(@graph, @final_local_environment, @final_node, @tree)
       end
 
       private
@@ -501,8 +501,8 @@ module Orbacle
 
         call_result_node = add_vertex(Node.new(:call_result, { csend: csend }))
 
-        message_send = MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
-        @message_sends << message_send
+        message_send = Worklist::MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
+        @worklist.add_message_send(message_send)
 
         return [call_result_node, final_lenv, { message_send: message_send }]
       end
@@ -995,8 +995,8 @@ module Orbacle
 
         call_result_node = add_vertex(Node.new(:call_result))
 
-        super_send = SuperSend.new(call_arg_nodes, call_result_node, nil)
-        @message_sends << super_send
+        super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, nil)
+        @worklist.add_message_send(super_send)
 
         return [call_result_node, final_lenv, { message_send: super_send }]
       end
@@ -1004,8 +1004,8 @@ module Orbacle
       def handle_zsuper(ast, lenv)
         call_result_node = add_vertex(Node.new(:call_result))
 
-        zsuper_send = Super0Send.new(call_result_node, nil)
-        @message_sends << zsuper_send
+        zsuper_send = Worklist::Super0Send.new(call_result_node, nil)
+        @worklist.add_message_send(zsuper_send)
 
         return [call_result_node, lenv, { message_send: zsuper_send }]
       end

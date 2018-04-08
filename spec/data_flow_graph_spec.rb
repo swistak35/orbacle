@@ -1209,7 +1209,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       super_send = result.message_sends[0]
-      expect(super_send).to be_a(DataFlowGraph::SuperSend)
+      expect(super_send).to be_a(Worklist::SuperSend)
       expect(super_send.send_args).to match_array([])
       expect(super_send.send_result).to eq(node(:call_result))
       expect(super_send.block).to be_nil
@@ -1227,7 +1227,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       super_send = result.message_sends[0]
-      expect(super_send).to be_a(DataFlowGraph::SuperSend)
+      expect(super_send).to be_a(Worklist::SuperSend)
       expect(super_send.send_args).to match_array([node(:call_arg)])
       expect(super_send.send_result).to eq(node(:call_result))
       expect(super_send.block).to be_nil
@@ -1245,7 +1245,7 @@ module Orbacle
       result = generate_cfg(snippet)
 
       zsuper_send = result.message_sends[0]
-      expect(zsuper_send).to be_a(DataFlowGraph::Super0Send)
+      expect(zsuper_send).to be_a(Worklist::Super0Send)
       expect(zsuper_send.send_result).to eq(node(:call_result))
       expect(zsuper_send.block).to be_nil
     end
@@ -2347,9 +2347,15 @@ module Orbacle
     end
 
     def generate_cfg(snippet)
+      worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph)
-      service.process_file(snippet, "")
+      service = DataFlowGraph::Builder.new(graph, worklist)
+      result = service.process_file(snippet, "")
+      OpenStruct.new(
+        graph: graph,
+        final_lenv: result.final_lenv,
+        final_node: result.final_node,
+        message_sends: worklist.message_sends)
     end
 
     def node(type, params = {})
@@ -2357,7 +2363,7 @@ module Orbacle
     end
 
     def msend(message_send, call_obj, call_args, call_result, block = nil)
-      DataFlowGraph::MessageSend.new(message_send, call_obj, call_args, call_result, block)
+      Worklist::MessageSend.new(message_send, call_obj, call_args, call_result, block)
     end
 
     def block(args_node, result_node)

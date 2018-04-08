@@ -17,8 +17,9 @@ module Orbacle
       @db.create_table_nodes
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
+      worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      @parser = DataFlowGraph::Builder.new(graph)
+      @parser = DataFlowGraph::Builder.new(graph, worklist)
 
       files.each do |file_path|
         begin
@@ -31,7 +32,7 @@ module Orbacle
       end
 
       puts "Typing..."
-      typing_result = TypingService.new.(@parser.result.graph, @parser.result.message_sends, @parser.result.tree)
+      typing_result = TypingService.new.(@parser.result.graph, worklist.message_sends, @parser.result.tree)
 
       puts "Saving..."
       store_result(@parser.result, typing_result)

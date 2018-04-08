@@ -683,8 +683,9 @@ module Orbacle
 
     def parse_file_methods
       ->(file) {
+        worklist = Worklist.new
         graph = DataFlowGraph::Graph.new
-        service = DataFlowGraph::Builder.new(graph)
+        service = DataFlowGraph::Builder.new(graph, worklist)
         result = service.process_file(file, nil)
         {
           methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location&.position_range&.start&.line }] }
@@ -701,8 +702,9 @@ module Orbacle
     end
 
     def compute_graph(file)
+      worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph)
+      service = DataFlowGraph::Builder.new(graph, worklist)
       service.process_file(file, nil)
     end
 

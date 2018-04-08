@@ -91,7 +91,7 @@ module Orbacle
         end
 
         message_sends.each do |message_send|
-          if message_send.is_a?(DataFlowGraph::MessageSend) && satisfied_message_send?(message_send) && !@handled_message_sends.include?(message_send)
+          if message_send.is_a?(Worklist::MessageSend) && satisfied_message_send?(message_send) && !@handled_message_sends.include?(message_send)
             handle_message_send(message_send, graph)
             @handled_message_sends << message_send
           end

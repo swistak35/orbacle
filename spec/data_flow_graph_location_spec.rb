@@ -119,8 +119,9 @@ module Orbacle
     end
 
     def generate_cfg(snippet)
+      worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph)
+      service = DataFlowGraph::Builder.new(graph, worklist)
       service.process_file(snippet, "")
     end
 
