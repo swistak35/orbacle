@@ -2314,6 +2314,39 @@ module Orbacle
       end
     end
 
+    describe "attr_reader/writer/accessor" do
+      specify "simple attr_reader example" do
+        file = <<-END
+        class Foo
+          attr_reader :bar, :baz
+        end
+        END
+
+        result = generate_cfg(file)
+
+        expect(result.graph).to include_edge(
+          node(:ivar_definition),
+          node(:method_result))
+      end
+
+      specify "simple attr_writer example" do
+        file = <<-END
+        class Foo
+          attr_writer :bar, :baz
+        end
+        END
+
+        result = generate_cfg(file)
+
+        expect(result.graph).to include_edge(
+          node(:formal_arg, { var_name: "_attr_writer" }),
+          node(:ivar_definition))
+        expect(result.graph).to include_edge(
+          node(:ivar_definition),
+          node(:method_result))
+      end
+    end
+
     def generate_cfg(snippet)
       service = DataFlowGraph.new
       service.process_file(snippet, "")

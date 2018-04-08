@@ -773,6 +773,41 @@ module Orbacle
       end
     end
 
+    describe "attr_reader/writer/accessor" do
+      specify "simple attr_reader" do
+        snippet = <<-END
+        class Foo
+          def initialize(x)
+            @bar = x
+          end
+
+          attr_reader :bar
+        end
+        Foo.new(42).bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "simple attr_writer" do
+        snippet = <<-END
+        class Foo
+          attr_reader :bar
+          attr_writer :bar
+        end
+        y = Foo.new
+        y.bar = 42
+        y.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+    end
+
     describe "misbehaviours" do
       specify "misbehaviour - super call without argument" do
         snippet = <<-END

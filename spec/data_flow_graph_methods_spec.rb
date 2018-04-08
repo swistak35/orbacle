@@ -574,6 +574,46 @@ module Orbacle
       ])
     end
 
+    describe "attr_reader/accessor/writer" do
+      specify "simple attr_reader example" do
+        file = <<-END
+        class Foo
+          attr_reader :bar, :baz
+        end
+        END
+
+        result = compute_graph(file)
+
+        meth = find_method(result, "Foo", "bar")
+        expect(meth.visibility).to eq(:public)
+        expect(meth.args.args).to eq([])
+        expect(meth.args.kwargs).to eq([])
+        expect(meth.args.blockarg).to be_nil
+
+        meth = find_method(result, "Foo", "baz")
+        expect(meth.visibility).to eq(:public)
+        expect(meth.args.args).to eq([])
+        expect(meth.args.kwargs).to eq([])
+        expect(meth.args.blockarg).to be_nil
+      end
+
+      specify "simple attr_writer example" do
+        file = <<-END
+        class Foo
+          attr_writer :bar, :baz
+        end
+        END
+
+        result = compute_graph(file)
+
+        meth = find_method(result, "Foo", "bar=")
+        expect(meth.visibility).to eq(:public)
+        expect(meth.args.args.size).to eq(1)
+        expect(meth.args.kwargs).to eq([])
+        expect(meth.args.blockarg).to be_nil
+      end
+    end
+
     # Currently does not work
     context "misbehaviours" do
       specify "using private with passing a method definition" do
