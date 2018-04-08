@@ -323,13 +323,22 @@ module Orbacle
             handle_custom_message_send(found_method, message_send)
           end
         else
-          found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == message_name }
-          if found_method.nil?
-            warn("Method #{message_name} not found\n")
-          else
-            handle_custom_message_send(found_method, message_send)
-          end
+          handle_instance_send(possible_type.name, message_send)
         end
+      end
+    end
+
+    def handle_instance_send(class_name, message_send)
+      found_method = @tree.find_instance_method(class_name, message_send.message_send)
+      if found_method.nil?
+        parent_name = @tree.get_parent_of(class_name)
+        if parent_name
+          handle_instance_send(parent_name, message_send)
+        else
+          warn("Method #{message_name} not found\n")
+        end
+      else
+        handle_custom_message_send(found_method, message_send)
       end
     end
 

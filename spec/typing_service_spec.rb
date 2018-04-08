@@ -735,6 +735,23 @@ module Orbacle
 
         expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(union([nominal("Integer"), nominal("String")]))
       end
+
+      specify "method call from parent class" do
+        snippet = <<-END
+        class Foo
+          def foo
+            42
+          end
+        end
+        class Bar < Foo
+        end
+        Bar.new.foo
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "misbehaviours" do

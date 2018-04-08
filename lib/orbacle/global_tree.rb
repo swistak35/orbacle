@@ -165,5 +165,20 @@ module Orbacle
         const_ref.const_name == ConstName.from_string(constant.full_name)
       end
     end
+
+    def get_parent_of(class_name)
+      possible_parents = @constants
+        .select {|c| c.is_a?(Klass) }
+        .select {|c| c.full_name == class_name }
+        .map(&:inheritance_ref)
+        .reject(&:nil?)
+        .map(&method(:solve_reference))
+        .map(&:full_name)
+      possible_parents[0]
+    end
+
+    def find_instance_method(class_name, method_name)
+      @metods.find {|m| m.scope.to_s == class_name && m.name == method_name }
+    end
   end
 end
