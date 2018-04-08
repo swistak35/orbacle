@@ -313,18 +313,27 @@ module Orbacle
         if primitive_send?(possible_type, message_send.message_send)
           handle_primitive(possible_type, message_send, graph)
         elsif constructor_send?(possible_type, message_send.message_send)
-          found_method = @tree.metods.find {|m| m.scope.to_s == possible_type.name && m.name == "initialize" }
-          if found_method.nil?
-            node = DataFlowGraph::Node.new(:constructor, { name: possible_type.name })
-            @graph.add_vertex(node)
-            @graph.add_edge(node, message_send.send_result)
-            @worklist << node
-          else
-            handle_custom_message_send(found_method, message_send)
-          end
+          handle_constructor_send(possible_type.name, message_send)
         else
           handle_instance_send(possible_type.name, message_send)
         end
+      end
+    end
+
+    def handle_constructor_send(class_name, message_send)
+      found_method = @tree.metods.find {|m| m.scope.to_s == class_name && m.name == "initialize" }
+      if found_method.nil?
+        parent_name = @tree.get_parent_of(class_name)
+        if parent_name
+          handle_constructor_send(parent_name, message_send)
+        else
+          node = DataFlowGraph::Node.new(:constructor, { name: class_name })
+          @graph.add_vertex(node)
+          @graph.add_edge(node, message_send.send_result)
+          @worklist << node
+        end
+      else
+        handle_custom_message_send(found_method, message_send)
       end
     end
 
@@ -335,7 +344,7 @@ module Orbacle
         if parent_name
           handle_instance_send(parent_name, message_send)
         else
-          warn("Method #{message_name} not found\n")
+          warn("Method #{message_send.message_send} not found\n")
         end
       else
         handle_custom_message_send(found_method, message_send)

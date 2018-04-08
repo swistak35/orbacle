@@ -485,6 +485,23 @@ module Orbacle
 
         expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
       end
+
+      specify "calling constructor from parent class" do
+        snippet = <<-END
+        class Foo
+          def initialize(foo)
+            @foo = foo
+          end
+        end
+        class Bar < Foo
+        end
+        Bar.new(42)
+        END
+
+        result = full_type_snippet(snippet)
+
+        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+      end
     end
 
     describe "user-defined methods" do
