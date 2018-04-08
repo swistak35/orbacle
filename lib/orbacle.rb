@@ -17,7 +17,12 @@ require 'orbacle/definition_processor'
 require 'orbacle/sql_database_adapter'
 require 'orbacle/lang_file_server'
 require 'orbacle/some_utils'
+
+require 'orbacle/data_flow_graph/node'
+require 'orbacle/data_flow_graph/graph'
+require 'orbacle/data_flow_graph/builder'
 require 'orbacle/data_flow_graph'
+
 require 'orbacle/generate_class_hierarchy'
 require 'orbacle/export_class_hierarchy'
 require 'orbacle/ast_utils'
