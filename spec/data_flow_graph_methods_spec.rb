@@ -14,13 +14,13 @@ module Orbacle
 
       meth = find_method(result, "Foo", "bar")
       expect(meth.visibility).to eq(:public)
-      expect(meth.position.position_range.start.line).to eq(2)
+      expect(meth.location.position_range.start.line).to eq(2)
 
       klass = find_constant(result, "", "Foo")
-      expect(klass.position.position_range.start.line).to eq(1)
+      expect(klass.location.position_range.start.line).to eq(1)
       expect(klass.parent_ref).to eq(nil)
     end
-
+    location
     specify "private method in class declaration" do
       file = <<-END
       class Foo
@@ -33,7 +33,7 @@ module Orbacle
       result = compute_graph(file)
       meth = find_method(result, "Foo", "bar")
       expect(meth.visibility).to eq(:private)
-      expect(meth.position.position_range.start.line).to eq(3)
+      expect(meth.location.position_range.start.line).to eq(3)
     end
 
     specify "rechanging visibility of methods in class declaration" do
@@ -147,10 +147,10 @@ module Orbacle
       result = compute_graph(file)
 
       meth = find_method(result, "Foo", "bar")
-      expect(meth.position.position_range.start.line).to eq(2)
+      expect(meth.location.position_range.start.line).to eq(2)
 
       meth = find_method(result, "Foo", "baz")
-      expect(meth.position.position_range.start.line).to eq(5)
+      expect(meth.location.position_range.start.line).to eq(5)
     end
 
     it do
@@ -457,7 +457,7 @@ module Orbacle
       result = compute_graph(file)
 
       meth = find_method(result, "Foo", "baz")
-      expect(meth.position.position_range.start.line).to eq(3)
+      expect(meth.location.position_range.start.line).to eq(3)
     end
 
     specify do
@@ -686,7 +686,7 @@ module Orbacle
         service = DataFlowGraph.new
         result = service.process_file(file, nil)
         {
-          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.position.position_range.start.line }] },
+          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location.position_range.start.line }] },
           constants: result.tree.constants.map do |c|
             if c.is_a?(GlobalTree::Klass)
               [c.class, c.scope.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]

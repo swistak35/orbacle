@@ -589,7 +589,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope,
           name: ivar_name,
-          position: nil,
+          location: nil,
           args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new([], add_vertex(Node.new(:method_result)), [])))
@@ -605,7 +605,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope,
           name: "#{ivar_name}=",
-          position: nil,
+          location: nil,
           args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new({arg_name => arg_node}, add_vertex(Node.new(:method_result)), [])))
@@ -696,7 +696,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope,
           name: method_name.to_s,
-          position: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
+          location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
           args: arguments_tree,
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
@@ -766,7 +766,7 @@ module Orbacle
           name: klass_name_ref.name,
           scope: current_scope.increase_by_ref(klass_name_ref).decrease,
           parent_ref: parent_name_ref,
-          position: build_location(Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
+          location: build_location(Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
 
       switch_currently_analyzed_klass(klass) do
         with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
@@ -793,7 +793,7 @@ module Orbacle
         GlobalTree::Mod.new(
           name: module_name_ref.name,
           scope: current_scope.increase_by_ref(module_name_ref).decrease,
-          position: build_location(Position.new(module_name_ast.loc.line, nil), Position.new(module_name_ast.loc.line, nil))))
+          location: build_location(Position.new(module_name_ast.loc.line, nil), Position.new(module_name_ast.loc.line, nil))))
 
       if module_body
         with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
@@ -826,7 +826,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope.increase_by_metaklass,
           name: method_name.to_s,
-          position: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
+          location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
           args: arguments_tree,
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
@@ -860,7 +860,7 @@ module Orbacle
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
             parent_ref: parent_name_ref,
-            position: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
+            location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
         return [Node.new(:nil), lenv]
       elsif expr_is_module_definition?(expr)
@@ -868,7 +868,7 @@ module Orbacle
           GlobalTree::Mod.new(
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
-            position: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
+            location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
         return [Node.new(:nil), lenv]
       else
@@ -876,7 +876,7 @@ module Orbacle
           GlobalTree::Constant.new(
             name: const_name_ref.name,
             scope: current_scope.increase_by_ref(const_name_ref).decrease,
-            position: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
+            location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
         node_expr, final_lenv = process(expr, lenv)
 

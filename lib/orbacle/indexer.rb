@@ -43,15 +43,15 @@ module Orbacle
           scope: c.scope.absolute_str,
           name: c.name,
           type: type_of(c),
-          path: c.position.uri,
-          line: c.position.position_range.start.line)
+          path: c.location.uri,
+          line: c.location.position_range.start.line)
       end
       puts "Saving methods..."
       result.tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
-          file: m.position&.uri,
-          line: m.position&.position_range&.start&.line)
+          file: m.location&.uri,
+          line: m.location&.position_range&.start&.line)
       end
       puts "Saving klasslikes..."
       klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
