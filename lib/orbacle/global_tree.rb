@@ -173,6 +173,7 @@ module Orbacle
         .map(&:inheritance_ref)
         .reject(&:nil?)
         .map(&method(:solve_reference))
+        .reject(&:nil?)
         .map(&:full_name)
       possible_parents[0]
     end
