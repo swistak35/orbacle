@@ -555,7 +555,7 @@ module Orbacle
     end
 
     def handle_custom_attr_reader_send(lenv, arg_exprs)
-      ivar_names = arg_exprs.reject {|s| s.type != :sym }.map {|s| s.children.first }.map(&:to_s)
+      ivar_names = arg_exprs.select {|s| [:sym, :str].include?(s.type) }.map {|s| s.children.first }.map(&:to_s)
       ivar_names.each do |ivar_name|
         define_attr_reader_method(ivar_name)
       end
@@ -564,7 +564,7 @@ module Orbacle
     end
 
     def handle_custom_attr_writer_send(lenv, arg_exprs)
-      ivar_names = arg_exprs.reject {|s| s.type != :sym }.map {|s| s.children.first }.map(&:to_s)
+      ivar_names = arg_exprs.select {|s| [:sym, :str].include?(s.type) }.map {|s| s.children.first }.map(&:to_s)
       ivar_names.each do |ivar_name|
         define_attr_writer_method(ivar_name)
       end
@@ -573,7 +573,7 @@ module Orbacle
     end
 
     def handle_custom_attr_accessor_send(lenv, arg_exprs)
-      ivar_names = arg_exprs.reject {|s| s.type != :sym }.map {|s| s.children.first }.map(&:to_s)
+      ivar_names = arg_exprs.select {|s| [:sym, :str].include?(s.type) }.map {|s| s.children.first }.map(&:to_s)
       ivar_names.each do |ivar_name|
         define_attr_reader_method(ivar_name)
         define_attr_writer_method(ivar_name)
