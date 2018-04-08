@@ -9,7 +9,6 @@ module Orbacle
       def initialize(graph, worklist, tree)
         @graph = graph
         @worklist = worklist
-        @lambdas = []
         @tree = tree
 
         add_object_klass
