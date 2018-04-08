@@ -1,7 +1,5 @@
 module Orbacle
   module DataFlowGraph
-    ProcessError = Class.new(StandardError)
-
     Block = Struct.new(:args, :result)
     BlockPass = Struct.new(:node)
     CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
