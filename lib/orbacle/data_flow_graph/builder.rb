@@ -4,6 +4,8 @@ require 'orbacle/nesting'
 module Orbacle
   module DataFlowGraph
     class Builder
+      Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
+
       def initialize(graph)
         @graph = graph
         @message_sends = []

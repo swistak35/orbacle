@@ -10,8 +10,6 @@ module Orbacle
     BlockPass = Struct.new(:node)
     CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
-    Result = Struct.new(:graph, :final_lenv, :message_sends, :final_node, :tree)
-
     Position = Struct.new(:line, :character)
     PositionRange = Struct.new(:start, :end)
     class Location < Struct.new(:uri, :position_range)
