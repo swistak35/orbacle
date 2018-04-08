@@ -1208,7 +1208,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      super_send = result.message_sends[0]
+      super_send = result.message_sends.first
       expect(super_send).to be_a(Worklist::SuperSend)
       expect(super_send.send_args).to match_array([])
       expect(super_send.send_result).to eq(node(:call_result))
@@ -1226,7 +1226,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      super_send = result.message_sends[0]
+      super_send = result.message_sends.first
       expect(super_send).to be_a(Worklist::SuperSend)
       expect(super_send.send_args).to match_array([node(:call_arg)])
       expect(super_send.send_result).to eq(node(:call_result))
@@ -1244,7 +1244,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      zsuper_send = result.message_sends[0]
+      zsuper_send = result.message_sends.first
       expect(zsuper_send).to be_a(Worklist::Super0Send)
       expect(zsuper_send.send_result).to eq(node(:call_result))
       expect(zsuper_send.block).to be_nil
@@ -1431,7 +1431,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("[]")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
@@ -1461,7 +1461,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("[]")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
@@ -1511,7 +1511,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("[]")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
@@ -1544,7 +1544,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("[]")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
@@ -1573,7 +1573,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("[]")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
@@ -1989,7 +1989,7 @@ module Orbacle
 
         expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("+")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:lvar, { var_name: "a" })])
         expect(msend0.send_args.size).to eq(1)
@@ -2006,7 +2006,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("+")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
         expect(msend0.send_args.size).to eq(1)
@@ -2023,7 +2023,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("+")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
         expect(msend0.send_args.size).to eq(1)
@@ -2040,7 +2040,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("a")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
         expect(msend0.send_args.size).to eq(0)
@@ -2071,7 +2071,7 @@ module Orbacle
         nesting = Nesting.empty.increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
         const_ref = ConstRef.from_full_name("Bar", nesting)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("+")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:const, { const_ref: const_ref })])
         expect(msend0.send_args.size).to eq(1)
@@ -2149,7 +2149,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("a")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
         expect(msend0.send_args.size).to eq(0)
@@ -2255,7 +2255,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        msend0 = result.message_sends[0]
+        msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("a")
         expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
         expect(msend0.send_args.size).to eq(0)
@@ -2355,7 +2355,7 @@ module Orbacle
         graph: graph,
         final_lenv: result.final_lenv,
         final_node: result.final_node,
-        message_sends: worklist.message_sends)
+        message_sends: worklist.message_sends.to_a)
     end
 
     def node(type, params = {})

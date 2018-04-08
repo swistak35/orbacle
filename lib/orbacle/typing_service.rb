@@ -68,14 +68,13 @@ module Orbacle
       end
     end
 
-    def call(graph, message_sends, tree)
+    def call(graph, worklist, tree)
       @graph = DoubleEdgedGraph.new(graph)
       @tree = tree
 
       @result = {}
 
       @worklist = Set.new(@graph.original.vertices)
-      @handled_message_sends = Set.new
       while !@worklist.empty?
         current_worklist = @worklist
         @worklist = Set.new
@@ -90,10 +89,10 @@ module Orbacle
           end
         end
 
-        message_sends.each do |message_send|
-          if message_send.is_a?(Worklist::MessageSend) && satisfied_message_send?(message_send) && !@handled_message_sends.include?(message_send)
+        worklist.message_sends.each do |message_send|
+          if message_send.is_a?(Worklist::MessageSend) && satisfied_message_send?(message_send) && !worklist.handled_message_sends.include?(message_send)
             handle_message_send(message_send, graph)
-            @handled_message_sends << message_send
+            worklist.handled_message_sends << message_send
           end
         end
       end
