@@ -17,7 +17,8 @@ module Orbacle
       @db.create_table_nodes
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
-      @parser = DataFlowGraph.new
+      graph = DataFlowGraph::Graph.new
+      @parser = DataFlowGraph::Builder.new(graph)
 
       files.each do |file_path|
         begin

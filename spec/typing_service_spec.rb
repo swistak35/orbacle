@@ -835,13 +835,15 @@ module Orbacle
     end
 
     def type_snippet(snippet)
-      result = DataFlowGraph.new.process_file(snippet, nil)
+      graph = DataFlowGraph::Graph.new
+      result = DataFlowGraph::Builder.new(graph).process_file(snippet, nil)
       typing_result = TypingService.new.(result.graph, result.message_sends, result.tree)
       typing_result[result.final_node]
     end
 
     def full_type_snippet(snippet)
-      result = DataFlowGraph.new.process_file(snippet, nil)
+      graph = DataFlowGraph::Graph.new
+      result = DataFlowGraph::Builder.new(graph).process_file(snippet, nil)
       TypingService.new.(result.graph, result.message_sends, result.tree)
     end
 
