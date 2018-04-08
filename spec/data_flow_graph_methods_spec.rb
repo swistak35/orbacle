@@ -612,6 +612,21 @@ module Orbacle
         expect(meth.args.kwargs).to eq([])
         expect(meth.args.blockarg).to be_nil
       end
+
+      specify "simple attr_accessor example" do
+        file = <<-END
+        class Foo
+          attr_accessor :bar, :baz
+        end
+        END
+
+        result = compute_graph(file)
+
+        expect(find_method(result, "Foo", "bar")).not_to be_nil
+        expect(find_method(result, "Foo", "bar=")).not_to be_nil
+        expect(find_method(result, "Foo", "baz")).not_to be_nil
+        expect(find_method(result, "Foo", "baz=")).not_to be_nil
+      end
     end
 
     # Currently does not work
