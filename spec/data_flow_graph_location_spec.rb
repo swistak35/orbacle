@@ -76,6 +76,48 @@ module Orbacle
       expect(result.final_node.location).to eq(loc([1, 7], [1, 36]))
     end
 
+    specify "attr_reader" do
+      snippet = <<-END
+      class Foo
+        attr_reader :bar
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      meth = result.tree.find_instance_method("Foo", "bar")
+      expect(meth.location).to eq(loc([2, 9], [2, 25]))
+    end
+
+    specify "attr_writer" do
+      snippet = <<-END
+      class Foo
+        attr_writer :bar
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      meth = result.tree.find_instance_method("Foo", "bar=")
+      expect(meth.location).to eq(loc([2, 9], [2, 25]))
+    end
+
+    specify "attr_accessor" do
+      snippet = <<-END
+      class Foo
+        attr_accessor :bar
+      end
+      END
+
+      result = generate_cfg(snippet)
+
+      meth = result.tree.find_instance_method("Foo", "bar")
+      expect(meth.location).to eq(loc([2, 9], [2, 27]))
+
+      meth = result.tree.find_instance_method("Foo", "bar=")
+      expect(meth.location).to eq(loc([2, 9], [2, 27]))
+    end
+
     def generate_cfg(snippet)
       service = DataFlowGraph.new
       service.process_file(snippet, "")

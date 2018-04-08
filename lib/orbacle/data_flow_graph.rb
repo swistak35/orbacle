@@ -213,12 +213,8 @@ module Orbacle
         raise ArgumentError.new(ast.type)
       end
 
-      if process_result[0] && ast.loc
-        process_result[0].location = Location.new(
-          @filepath,
-          PositionRange.new(
-            Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
-            Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
+      if process_result[0] && ast.loc && !process_result[0].location
+        process_result[0].location = build_location_from_ast(ast)
       end
       process_result
     end
@@ -514,9 +510,9 @@ module Orbacle
       end
 
       return handle_changing_visibility(lenv, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
-      return handle_custom_attr_reader_send(lenv, arg_exprs) if obj_expr.nil? && message_name == "attr_reader"
-      return handle_custom_attr_writer_send(lenv, arg_exprs) if obj_expr.nil? && message_name == "attr_writer"
-      return handle_custom_attr_accessor_send(lenv, arg_exprs) if obj_expr.nil? && message_name == "attr_accessor"
+      return handle_custom_attr_reader_send(lenv, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_reader"
+      return handle_custom_attr_writer_send(lenv, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_writer"
+      return handle_custom_attr_accessor_send(lenv, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_accessor"
 
       call_obj_node = add_vertex(Node.new(:call_obj))
       @graph.add_edge(obj_node, call_obj_node)
@@ -554,49 +550,52 @@ module Orbacle
       return [node, lenv]
     end
 
-    def handle_custom_attr_reader_send(lenv, arg_exprs)
+    def handle_custom_attr_reader_send(lenv, arg_exprs, ast)
+      location = build_location_from_ast(ast)
       ivar_names = arg_exprs.select {|s| [:sym, :str].include?(s.type) }.map {|s| s.children.first }.map(&:to_s)
       ivar_names.each do |ivar_name|
-        define_attr_reader_method(ivar_name)
+        define_attr_reader_method(ivar_name, location)
       end
 
       return [Node.new(:nil), lenv]
     end
 
-    def handle_custom_attr_writer_send(lenv, arg_exprs)
+    def handle_custom_attr_writer_send(lenv, arg_exprs, ast)
+      location = build_location_from_ast(ast)
       ivar_names = arg_exprs.select {|s| [:sym, :str].include?(s.type) }.map {|s| s.children.first }.map(&:to_s)
       ivar_names.each do |ivar_name|
-        define_attr_writer_method(ivar_name)
+        define_attr_writer_method(ivar_name, location)
       end
 
       return [Node.new(:nil), lenv]
     end
 
-    def handle_custom_attr_accessor_send(lenv, arg_exprs)
+    def handle_custom_attr_accessor_send(lenv, arg_exprs, ast)
+      location = build_location_from_ast(ast)
       ivar_names = arg_exprs.select {|s| [:sym, :str].include?(s.type) }.map {|s| s.children.first }.map(&:to_s)
       ivar_names.each do |ivar_name|
-        define_attr_reader_method(ivar_name)
-        define_attr_writer_method(ivar_name)
+        define_attr_reader_method(ivar_name, location)
+        define_attr_writer_method(ivar_name, location)
       end
 
       return [Node.new(:nil), lenv]
     end
 
-    def define_attr_reader_method(ivar_name)
+    def define_attr_reader_method(ivar_name, location)
       ivar_definition_node = get_ivar_definition_node("@#{ivar_name}")
 
       metod = @tree.add_method(
         GlobalTree::Method.new(
           scope: current_scope,
           name: ivar_name,
-          location: nil,
+          location: location,
           args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new([], add_vertex(Node.new(:method_result)), [])))
       @graph.add_edge(ivar_definition_node, metod.nodes.result)
     end
 
-    def define_attr_writer_method(ivar_name)
+    def define_attr_writer_method(ivar_name, location)
       ivar_definition_node = get_ivar_definition_node("@#{ivar_name}")
 
       arg_name = "_attr_writer"
@@ -605,7 +604,7 @@ module Orbacle
         GlobalTree::Method.new(
           scope: current_scope,
           name: "#{ivar_name}=",
-          location: nil,
+          location: location,
           args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
           visibility: @currently_analyzed_klass.method_visibility,
           nodes: GlobalTree::Method::Nodes.new({arg_name => arg_node}, add_vertex(Node.new(:method_result)), [])))
@@ -1550,6 +1549,14 @@ module Orbacle
 
     def build_location(pstart, pend)
       Location.new(@filepath, PositionRange.new(pstart, pend))
+    end
+
+    def build_location_from_ast(ast)
+      Location.new(
+        @filepath,
+        PositionRange.new(
+          Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
+          Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
     end
   end
 end
