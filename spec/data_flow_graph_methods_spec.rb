@@ -685,12 +685,13 @@ module Orbacle
       ->(file) {
         worklist = Worklist.new
         graph = DataFlowGraph::Graph.new
-        service = DataFlowGraph::Builder.new(graph, worklist)
+        tree = GlobalTree.new
+        service = DataFlowGraph::Builder.new(graph, worklist, tree)
         result = service.process_file(file, nil)
         {
-          methods: result.tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location&.position_range&.start&.line }] }
+          methods: tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location&.position_range&.start&.line }] }
             .reject {|m| m[0] == "Object" },
-          constants: result.tree.constants.reject {|c| c.full_name == "Object" }.map do |c|
+          constants: tree.constants.reject {|c| c.full_name == "Object" }.map do |c|
             if c.is_a?(GlobalTree::Klass)
               [c.class, c.scope.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]
             else
@@ -704,8 +705,14 @@ module Orbacle
     def compute_graph(file)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph, worklist)
-      service.process_file(file, nil)
+      tree = GlobalTree.new
+      service = DataFlowGraph::Builder.new(graph, worklist, tree)
+      result = service.process_file(file, nil)
+      OpenStruct.new(
+        graph: graph,
+        final_lenv: result.final_lenv,
+        final_node: result.final_node,
+        tree: tree)
     end
 
     def find_methods(result, scope, name)

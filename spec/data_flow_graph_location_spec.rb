@@ -121,8 +121,12 @@ module Orbacle
     def generate_cfg(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph, worklist)
-      service.process_file(snippet, "")
+      tree = GlobalTree.new
+      service = DataFlowGraph::Builder.new(graph, worklist, tree)
+      result = service.process_file(snippet, "")
+      OpenStruct.new(
+        final_node: result.final_node,
+        tree: tree)
     end
 
     def loc(start_arr, end_arr, uri = "")

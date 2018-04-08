@@ -18,8 +18,9 @@ module Orbacle
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
       worklist = Worklist.new
+      tree = GlobalTree.new
       graph = DataFlowGraph::Graph.new
-      @parser = DataFlowGraph::Builder.new(graph, worklist)
+      @parser = DataFlowGraph::Builder.new(graph, worklist, tree)
 
       files.each do |file_path|
         begin
@@ -32,15 +33,15 @@ module Orbacle
       end
 
       puts "Typing..."
-      typing_result = TypingService.new.(@parser.result.graph, worklist, @parser.result.tree)
+      typing_result = TypingService.new.(@parser.result.graph, worklist, tree)
 
       puts "Saving..."
-      store_result(@parser.result, typing_result)
+      store_result(@parser.result, tree, typing_result)
     end
 
-    def store_result(result, typing_result)
+    def store_result(result, tree, typing_result)
       puts "Saving constants..."
-      result.tree.constants.each do |c|
+      tree.constants.each do |c|
         @db.add_constant(
           scope: c.scope.absolute_str,
           name: c.name,
@@ -49,14 +50,14 @@ module Orbacle
           line: c.location&.position_range&.start&.line)
       end
       puts "Saving methods..."
-      result.tree.metods.each do |m|
+      tree.metods.each do |m|
         @db.add_metod(
           name: m.name,
           file: m.location&.uri,
           line: m.location&.position_range&.start&.line)
       end
       puts "Saving klasslikes..."
-      klasslikes = result.tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
+      klasslikes = tree.constants.select {|c| [GlobalTree::Klass, GlobalTree::Mod].include?(c.class)}
       klasslikes.each do |kl|
         @db.add_klasslike(
           scope: kl.scope.absolute_str,

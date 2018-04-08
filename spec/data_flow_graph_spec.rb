@@ -2349,7 +2349,7 @@ module Orbacle
     def generate_cfg(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph, worklist)
+      service = DataFlowGraph::Builder.new(graph, worklist, GlobalTree.new)
       result = service.process_file(snippet, "")
       OpenStruct.new(
         graph: graph,

@@ -4,13 +4,13 @@ require 'orbacle/nesting'
 module Orbacle
   module DataFlowGraph
     class Builder
-      Result = Struct.new(:graph, :final_lenv, :final_node, :tree)
+      Result = Struct.new(:graph, :final_lenv, :final_node)
 
-      def initialize(graph, worklist)
+      def initialize(graph, worklist, tree)
         @graph = graph
         @worklist = worklist
         @lambdas = []
-        @tree = GlobalTree.new
+        @tree = tree
 
         add_object_klass
       end
@@ -39,7 +39,7 @@ module Orbacle
       end
 
       def result
-        Result.new(@graph, @final_local_environment, @final_node, @tree)
+        Result.new(@graph, @final_local_environment, @final_node)
       end
 
       private
