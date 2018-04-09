@@ -5,6 +5,7 @@ module Orbacle
   module DataFlowGraph
     class Builder
       Result = Struct.new(:graph, :final_lenv, :final_node)
+      CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
       def initialize(graph, worklist, tree)
         @graph = graph
