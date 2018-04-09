@@ -8,11 +8,16 @@ module Orbacle
       CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
       class Context
-        def initialize(filepath)
+        def initialize(filepath, selfie)
           @filepath = filepath
+          @selfie = selfie
         end
 
-        attr_reader :filepath
+        attr_reader :filepath, :selfie
+
+        def with_selfie(new_selfie)
+          self.class.new(filepath, new_selfie)
+        end
       end
 
       def initialize(graph, worklist, tree)
@@ -25,10 +30,9 @@ module Orbacle
 
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
-        @context = Context.new(filepath)
+        @context = Context.new(filepath, Selfie.main)
 
         @current_nesting = Nesting.empty
-        @current_selfie = Selfie.main
         @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
         @currently_analyzed_method = nil
 
@@ -52,7 +56,7 @@ module Orbacle
 
       private
 
-      attr_reader :current_nesting, :current_selfie
+      attr_reader :current_nesting
 
       def process(ast, lenv)
         return [nil, lenv] if ast.nil?
@@ -383,9 +387,9 @@ module Orbacle
       def handle_ivar(ast, lenv)
         ivar_name = ast.children.first.to_s
 
-        ivar_definition_node = if current_selfie.klass?
+        ivar_definition_node = if @context.selfie.klass?
           get_class_level_ivar_definition_node(ivar_name)
-        elsif current_selfie.instance?
+        elsif @context.selfie.instance?
           get_ivar_definition_node(ivar_name)
         else
           raise
@@ -410,9 +414,9 @@ module Orbacle
           lenv_after_expr = lenv
         end
 
-        ivar_definition_node = if current_selfie.klass?
+        ivar_definition_node = if @context.selfie.klass?
           get_class_level_ivar_definition_node(ivar_name)
-        elsif current_selfie.instance?
+        elsif @context.selfie.instance?
           get_ivar_definition_node(ivar_name)
         else
           raise
@@ -484,7 +488,7 @@ module Orbacle
         arg_exprs = ast.children[2..-1]
 
         if obj_expr.nil?
-          obj_node = add_vertex(Node.new(:self, { selfie: current_selfie }))
+          obj_node = add_vertex(Node.new(:self, { selfie: @context.selfie }))
           obj_lenv = lenv
         else
           obj_node, obj_lenv = process(obj_expr, lenv)
@@ -603,7 +607,7 @@ module Orbacle
       end
 
       def handle_self(ast, lenv)
-        node = add_vertex(Node.new(:self, { selfie: current_selfie }))
+        node = add_vertex(Node.new(:self, { selfie: @context.selfie }))
         return [node, lenv]
       end
 
@@ -692,7 +696,7 @@ module Orbacle
 
         switch_currently_analyzed_method(metod) do
           if method_body
-            with_selfie(Selfie.instance_from_scope(current_scope)) do
+            with_context(@context.with_selfie(Selfie.instance_from_scope(current_scope))) do
               final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
               @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
             end
@@ -759,7 +763,7 @@ module Orbacle
 
         switch_currently_analyzed_klass(klass) do
           with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
-            with_selfie(Selfie.klass_from_scope(current_scope)) do
+            with_context(@context.with_selfie(Selfie.klass_from_scope(current_scope))) do
               if klass_body
                 process(klass_body, lenv)
               end
@@ -822,7 +826,7 @@ module Orbacle
 
         switch_currently_analyzed_method(metod) do
           if method_body
-            with_selfie(Selfie.klass_from_scope(current_scope)) do
+            with_context(@context.with_selfie(Selfie.klass_from_scope(current_scope))) do
               final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
               @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
             end
@@ -1475,11 +1479,11 @@ module Orbacle
         @current_nesting = previous
       end
 
-      def with_selfie(new_selfie)
-        previous = @current_selfie
-        @current_selfie = new_selfie
+      def with_context(new_context)
+        previous = @context
+        @context = new_context
         yield
-        @current_selfie = previous
+        @context = previous
       end
 
       def current_scope
