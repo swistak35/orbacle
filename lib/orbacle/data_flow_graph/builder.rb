@@ -9,21 +9,22 @@ module Orbacle
       class Context
         AnalyzedKlass = Struct.new(:klass, :method_visibility)
 
-        def initialize(filepath, selfie, nesting, analyzed_klass)
+        def initialize(filepath, selfie, nesting, analyzed_klass, analyzed_method)
           @filepath = filepath
           @selfie = selfie
           @nesting = nesting
           @analyzed_klass = analyzed_klass
+          @analyzed_method = analyzed_method
         end
 
-        attr_reader :filepath, :selfie, :nesting, :analyzed_klass
+        attr_reader :filepath, :selfie, :nesting, :analyzed_klass, :analyzed_method
 
         def with_selfie(new_selfie)
-          self.class.new(filepath, new_selfie, nesting, analyzed_klass)
+          self.class.new(filepath, new_selfie, nesting, analyzed_klass, analyzed_method)
         end
 
         def with_nesting(new_nesting)
-          self.class.new(filepath, selfie, new_nesting, analyzed_klass)
+          self.class.new(filepath, selfie, new_nesting, analyzed_klass, analyzed_method)
         end
 
         def scope
@@ -31,7 +32,11 @@ module Orbacle
         end
 
         def with_analyzed_klass(new_klass)
-          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(new_klass, :public))
+          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(new_klass, :public), analyzed_method)
+        end
+
+        def with_analyzed_method(new_analyzed_method)
+          self.class.new(filepath, selfie, nesting, analyzed_klass, new_analyzed_method)
         end
       end
 
@@ -45,9 +50,7 @@ module Orbacle
 
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
-        @context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public))
-
-        @currently_analyzed_method = nil
+        @context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil)
 
         initial_local_environment = {}
         if ast
@@ -705,15 +708,15 @@ module Orbacle
             visibility: @context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
-        switch_currently_analyzed_method(metod) do
+        with_context(@context.with_analyzed_method(metod)) do
           if method_body
             with_context(@context.with_selfie(Selfie.instance_from_scope(@context.scope))) do
               final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
-              @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
+              @graph.add_edge(final_node, @context.analyzed_method.nodes.result)
             end
           else
             final_node = add_vertex(Node.new(:nil))
-            @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
+            @graph.add_edge(final_node, @context.analyzed_method.nodes.result)
           end
         end
 
@@ -835,15 +838,15 @@ module Orbacle
             visibility: @context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
-        switch_currently_analyzed_method(metod) do
+        with_context(@context.with_analyzed_method(metod)) do
           if method_body
             with_context(@context.with_selfie(Selfie.klass_from_scope(@context.scope))) do
               final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
-              @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
+              @graph.add_edge(final_node, @context.analyzed_method.nodes.result)
             end
           else
             final_node = add_vertex(Node.new(:nil))
-            @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
+            @graph.add_edge(final_node, @context.analyzed_method.nodes.result)
           end
         end
 
@@ -962,7 +965,7 @@ module Orbacle
           final_lenv, nodes = fold_lenv(ast.children, lenv)
           add_edges(nodes, node_expr)
         end
-        @graph.add_edge(node_expr, @currently_analyzed_method.nodes.result)
+        @graph.add_edge(node_expr, @context.analyzed_method.nodes.result)
 
         return [node_expr, final_lenv]
       end
@@ -1075,8 +1078,8 @@ module Orbacle
             next_lenv
           end
         end
-        if @currently_analyzed_method
-          @currently_analyzed_method.nodes.yields << node_yield
+        if @context.analyzed_method
+          @context.analyzed_method.nodes.yields << node_yield
         end
         result_node = add_vertex(Node.new(:nil))
 
@@ -1313,13 +1316,6 @@ module Orbacle
         expr.type == :send &&
           expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
           expr.children[1] == :new
-      end
-
-      def switch_currently_analyzed_method(metod)
-        previous = @currently_analyzed_method
-        @currently_analyzed_method = metod
-        yield
-        @currently_analyzed_method = previous
       end
 
       def get_ivar_definition_node(ivar_name)
