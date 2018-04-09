@@ -7,6 +7,14 @@ module Orbacle
       Result = Struct.new(:graph, :final_lenv, :final_node)
       CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
+      class Context
+        def initialize(filepath)
+          @filepath = filepath
+        end
+
+        attr_reader :filepath
+      end
+
       def initialize(graph, worklist, tree)
         @graph = graph
         @worklist = worklist
@@ -17,7 +25,7 @@ module Orbacle
 
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
-        @filepath = filepath
+        @context = Context.new(filepath)
 
         @current_nesting = Nesting.empty
         @current_selfie = Selfie.main
@@ -1500,12 +1508,12 @@ module Orbacle
       end
 
       def build_location(pstart, pend)
-        Location.new(@filepath, PositionRange.new(pstart, pend))
+        Location.new(@context.filepath, PositionRange.new(pstart, pend))
       end
 
       def build_location_from_ast(ast)
         Location.new(
-          @filepath,
+          @context.filepath,
           PositionRange.new(
             Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
             Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
