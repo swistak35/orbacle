@@ -289,8 +289,8 @@ module Orbacle
       if !sources.empty?
         handle_group(node, sources)
       else
-        if ref_result && @tree.nodes.constants[ref_result.full_name]
-          const_definition_node = @tree.nodes.constants[ref_result.full_name]
+        if ref_result && @graph.original.constants[ref_result.full_name]
+          const_definition_node = @graph.original.constants[ref_result.full_name]
           @graph.add_edge(const_definition_node, node)
           @worklist.enqueue_node(const_definition_node)
           @result[const_definition_node]

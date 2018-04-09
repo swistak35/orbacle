@@ -97,13 +97,6 @@ module Orbacle
       end
     end
 
-    class Nodes
-      def initialize(constants = {})
-        @constants = constants
-      end
-      attr_accessor :constants
-    end
-
     class Lambda
       Nodes = Struct.new(:args, :result)
       def initialize(id, nodes)
@@ -118,7 +111,6 @@ module Orbacle
       @constants = []
       @metods = []
       @lambdas = []
-      @nodes = Nodes.new
       @lambda_counter = 0
     end
 

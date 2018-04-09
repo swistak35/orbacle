@@ -864,7 +864,7 @@ module Orbacle
           @graph.add_edge(node_expr, final_node)
 
           const_name = current_scope.increase_by_ref(const_name_ref).to_const_name
-          node_const_definition = get_constant_definition_node(const_name)
+          node_const_definition = @graph.get_constant_definition_node(const_name.to_string)
           @graph.add_edge(final_node, node_const_definition)
 
           return [final_node, final_lenv]
@@ -1345,15 +1345,6 @@ module Orbacle
         end
 
         return klass.nodes.class_variables[cvar_name]
-      end
-
-      def get_constant_definition_node(const_name)
-        name = const_name.to_string
-        if !@tree.nodes.constants[name]
-          @tree.nodes.constants[name] = add_vertex(Node.new(:const_definition))
-        end
-
-        return @tree.nodes.constants[name]
       end
 
       def build_arguments(formal_arguments, lenv)

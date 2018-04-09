@@ -7,7 +7,10 @@ module Orbacle
         @graph = RGL::DirectedAdjacencyGraph.new
 
         @global_variables = {}
+        @constants = {}
       end
+
+      attr_reader :constants
 
       def add_vertex(node)
         @graph.add_vertex(node)
@@ -52,6 +55,14 @@ module Orbacle
         end
 
         return global_variables[gvar_name]
+      end
+
+      def get_constant_definition_node(const_name)
+        if !constants[const_name]
+          constants[const_name] = add_vertex(Node.new(:const_definition))
+        end
+
+        return constants[const_name]
       end
 
       private
