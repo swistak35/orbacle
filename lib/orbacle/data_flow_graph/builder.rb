@@ -53,15 +53,7 @@ module Orbacle
         @context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil)
 
         initial_local_environment = {}
-        if ast
-          final_node, final_local_environment = process(ast, initial_local_environment)
-        else
-          final_node = nil
-          final_local_environment = initial_local_environment
-        end
-
-        @final_local_environment = final_local_environment
-        @final_node = final_node
+        @final_node, @final_local_environment = process(ast, initial_local_environment)
 
         return result
       end
