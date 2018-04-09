@@ -452,7 +452,7 @@ module Orbacle
         node_expr, lenv_after_expr = process(expr, lenv)
         @graph.add_edge(node_expr, node_gvasgn)
 
-        node_gvar_definition = get_gvar_definition_node(gvar_name)
+        node_gvar_definition = @graph.get_gvar_definition_node(gvar_name)
         @graph.add_edge(node_gvasgn, node_gvar_definition)
 
         return [node_gvasgn, lenv_after_expr]
@@ -461,7 +461,7 @@ module Orbacle
       def handle_gvar(ast, lenv)
         gvar_name = ast.children.first.to_s
 
-        gvar_definition_node = get_gvar_definition_node(gvar_name)
+        gvar_definition_node = @graph.get_gvar_definition_node(gvar_name)
 
         node = add_vertex(Node.new(:gvar))
         @graph.add_edge(gvar_definition_node, node)
@@ -1345,14 +1345,6 @@ module Orbacle
         end
 
         return klass.nodes.class_variables[cvar_name]
-      end
-
-      def get_gvar_definition_node(gvar_name)
-        if !@tree.nodes.global_variables[gvar_name]
-          @tree.nodes.global_variables[gvar_name] = add_vertex(Node.new(:gvar_definition))
-        end
-
-        return @tree.nodes.global_variables[gvar_name]
       end
 
       def get_constant_definition_node(const_name)

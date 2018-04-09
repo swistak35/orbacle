@@ -98,11 +98,10 @@ module Orbacle
     end
 
     class Nodes
-      def initialize(global_variables = {}, constants = {})
-        @global_variables = global_variables
+      def initialize(constants = {})
         @constants = constants
       end
-      attr_accessor :global_variables, :constants
+      attr_accessor :constants
     end
 
     class Lambda

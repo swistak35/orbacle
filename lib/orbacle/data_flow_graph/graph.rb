@@ -5,6 +5,8 @@ module Orbacle
     class Graph
       def initialize
         @graph = RGL::DirectedAdjacencyGraph.new
+
+        @global_variables = {}
       end
 
       def add_vertex(node)
@@ -43,6 +45,17 @@ module Orbacle
       def has_edge?(x, y)
         @graph.has_edge?(x, y)
       end
+
+      def get_gvar_definition_node(gvar_name)
+        if !global_variables[gvar_name]
+          global_variables[gvar_name] = add_vertex(Node.new(:gvar_definition))
+        end
+
+        return global_variables[gvar_name]
+      end
+
+      private
+      attr_reader :global_variables
     end
   end
 end
