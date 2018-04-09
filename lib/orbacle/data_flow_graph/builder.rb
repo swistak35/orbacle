@@ -5,27 +5,33 @@ module Orbacle
   module DataFlowGraph
     class Builder
       Result = Struct.new(:graph, :final_lenv, :final_node)
-      CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
       class Context
-        def initialize(filepath, selfie, nesting)
+        AnalyzedKlass = Struct.new(:klass, :method_visibility)
+
+        def initialize(filepath, selfie, nesting, analyzed_klass)
           @filepath = filepath
           @selfie = selfie
           @nesting = nesting
+          @analyzed_klass = analyzed_klass
         end
 
-        attr_reader :filepath, :selfie, :nesting
+        attr_reader :filepath, :selfie, :nesting, :analyzed_klass
 
         def with_selfie(new_selfie)
-          self.class.new(filepath, new_selfie, nesting)
+          self.class.new(filepath, new_selfie, nesting, analyzed_klass)
         end
 
         def with_nesting(new_nesting)
-          self.class.new(filepath, selfie, new_nesting)
+          self.class.new(filepath, selfie, new_nesting, analyzed_klass)
         end
 
         def scope
           nesting.to_scope
+        end
+
+        def with_analyzed_klass(new_klass)
+          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(new_klass, :public))
         end
       end
 
@@ -39,9 +45,8 @@ module Orbacle
 
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
-        @context = Context.new(filepath, Selfie.main, Nesting.empty)
+        @context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public))
 
-        @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
         @currently_analyzed_method = nil
 
         initial_local_environment = {}
@@ -526,9 +531,9 @@ module Orbacle
       end
 
       def handle_changing_visibility(lenv, new_visibility, arg_exprs)
-        node = if @currently_analyzed_klass.klass
+        node = if @context.analyzed_klass.klass
           if arg_exprs.empty?
-            @currently_analyzed_klass.method_visibility = new_visibility
+            @context.analyzed_klass.method_visibility = new_visibility
           else
             methods_to_change_visibility = arg_exprs.map do |arg_expr|
               [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
@@ -540,7 +545,7 @@ module Orbacle
             end
           end
 
-          Node.new(:class, { klass: @currently_analyzed_klass.klass })
+          Node.new(:class, { klass: @context.analyzed_klass.klass })
         else
           # This should actually be reference to Object class
           Node.new(:nil)
@@ -590,7 +595,7 @@ module Orbacle
             name: ivar_name,
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
-            visibility: @currently_analyzed_klass.method_visibility,
+            visibility: @context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new([], add_vertex(Node.new(:method_result)), [])))
         @graph.add_edge(ivar_definition_node, metod.nodes.result)
       end
@@ -606,7 +611,7 @@ module Orbacle
             name: "#{ivar_name}=",
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
-            visibility: @currently_analyzed_klass.method_visibility,
+            visibility: @context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new({arg_name => arg_node}, add_vertex(Node.new(:method_result)), [])))
         @graph.add_edge(arg_node, ivar_definition_node)
         @graph.add_edge(ivar_definition_node, metod.nodes.result)
@@ -697,7 +702,7 @@ module Orbacle
             name: method_name.to_s,
             location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
             args: arguments_tree,
-            visibility: @currently_analyzed_klass.method_visibility,
+            visibility: @context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
         switch_currently_analyzed_method(metod) do
@@ -767,7 +772,7 @@ module Orbacle
             parent_ref: parent_name_ref,
             location: build_location(Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
 
-        switch_currently_analyzed_klass(klass) do
+        with_context(@context.with_analyzed_klass(klass)) do
           with_context(@context.with_nesting(@context.nesting.increase_nesting_const(klass_name_ref))) do
             with_context(@context.with_selfie(Selfie.klass_from_scope(@context.scope))) do
               if klass_body
@@ -827,7 +832,7 @@ module Orbacle
             name: method_name.to_s,
             location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
             args: arguments_tree,
-            visibility: @currently_analyzed_klass.method_visibility,
+            visibility: @context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
         switch_currently_analyzed_method(metod) do
@@ -1308,13 +1313,6 @@ module Orbacle
         expr.type == :send &&
           expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
           expr.children[1] == :new
-      end
-
-      def switch_currently_analyzed_klass(klass)
-        previous = @currently_analyzed_klass
-        @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(klass, :public)
-        yield
-        @currently_analyzed_klass = previous
       end
 
       def switch_currently_analyzed_method(metod)
