@@ -23,6 +23,10 @@ module Orbacle
         def with_nesting(new_nesting)
           self.class.new(filepath, selfie, new_nesting)
         end
+
+        def scope
+          nesting.to_scope
+        end
       end
 
       def initialize(graph, worklist, tree)
@@ -530,7 +534,7 @@ module Orbacle
               [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
             end.compact
             @tree.metods.each do |m|
-              if m.scope == current_scope && methods_to_change_visibility.include?(m.name)
+              if m.scope == @context.scope && methods_to_change_visibility.include?(m.name)
                 m.visibility = new_visibility
               end
             end
@@ -582,7 +586,7 @@ module Orbacle
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            scope: current_scope,
+            scope: @context.scope,
             name: ivar_name,
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
@@ -598,7 +602,7 @@ module Orbacle
         arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            scope: current_scope,
+            scope: @context.scope,
             name: "#{ivar_name}=",
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
@@ -689,7 +693,7 @@ module Orbacle
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            scope: current_scope,
+            scope: @context.scope,
             name: method_name.to_s,
             location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
             args: arguments_tree,
@@ -698,7 +702,7 @@ module Orbacle
 
         switch_currently_analyzed_method(metod) do
           if method_body
-            with_context(@context.with_selfie(Selfie.instance_from_scope(current_scope))) do
+            with_context(@context.with_selfie(Selfie.instance_from_scope(@context.scope))) do
               final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
               @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
             end
@@ -759,13 +763,13 @@ module Orbacle
         klass = @tree.add_klass(
           GlobalTree::Klass.new(
             name: klass_name_ref.name,
-            scope: current_scope.increase_by_ref(klass_name_ref).decrease,
+            scope: @context.scope.increase_by_ref(klass_name_ref).decrease,
             parent_ref: parent_name_ref,
             location: build_location(Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
 
         switch_currently_analyzed_klass(klass) do
           with_context(@context.with_nesting(@context.nesting.increase_nesting_const(klass_name_ref))) do
-            with_context(@context.with_selfie(Selfie.klass_from_scope(current_scope))) do
+            with_context(@context.with_selfie(Selfie.klass_from_scope(@context.scope))) do
               if klass_body
                 process(klass_body, lenv)
               end
@@ -787,7 +791,7 @@ module Orbacle
         @tree.add_mod(
           GlobalTree::Mod.new(
             name: module_name_ref.name,
-            scope: current_scope.increase_by_ref(module_name_ref).decrease,
+            scope: @context.scope.increase_by_ref(module_name_ref).decrease,
             location: build_location(Position.new(module_name_ast.loc.line, nil), Position.new(module_name_ast.loc.line, nil))))
 
         if module_body
@@ -819,7 +823,7 @@ module Orbacle
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            scope: current_scope.increase_by_metaklass,
+            scope: @context.scope.increase_by_metaklass,
             name: method_name.to_s,
             location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
             args: arguments_tree,
@@ -828,7 +832,7 @@ module Orbacle
 
         switch_currently_analyzed_method(metod) do
           if method_body
-            with_context(@context.with_selfie(Selfie.klass_from_scope(current_scope))) do
+            with_context(@context.with_selfie(Selfie.klass_from_scope(@context.scope))) do
               final_node, _result_lenv = process(method_body, lenv.merge(arguments_lenv))
               @graph.add_edge(final_node, @currently_analyzed_method.nodes.result)
             end
@@ -853,7 +857,7 @@ module Orbacle
           @tree.add_klass(
             GlobalTree::Klass.new(
               name: const_name_ref.name,
-              scope: current_scope.increase_by_ref(const_name_ref).decrease,
+              scope: @context.scope.increase_by_ref(const_name_ref).decrease,
               parent_ref: parent_name_ref,
               location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
@@ -862,7 +866,7 @@ module Orbacle
           @tree.add_mod(
             GlobalTree::Mod.new(
               name: const_name_ref.name,
-              scope: current_scope.increase_by_ref(const_name_ref).decrease,
+              scope: @context.scope.increase_by_ref(const_name_ref).decrease,
               location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
           return [Node.new(:nil), lenv]
@@ -870,7 +874,7 @@ module Orbacle
           @tree.add_constant(
             GlobalTree::Constant.new(
               name: const_name_ref.name,
-              scope: current_scope.increase_by_ref(const_name_ref).decrease,
+              scope: @context.scope.increase_by_ref(const_name_ref).decrease,
               location: build_location(Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
           node_expr, final_lenv = process(expr, lenv)
@@ -878,7 +882,7 @@ module Orbacle
           final_node = Node.new(:casgn, { const_ref: const_name_ref })
           @graph.add_edge(node_expr, final_node)
 
-          const_name = current_scope.increase_by_ref(const_name_ref).to_const_name
+          const_name = @context.scope.increase_by_ref(const_name_ref).to_const_name
           node_const_definition = @graph.get_constant_definition_node(const_name.to_string)
           @graph.add_edge(final_node, node_const_definition)
 
@@ -1322,7 +1326,7 @@ module Orbacle
 
       def get_ivar_definition_node(ivar_name)
         klass = @tree.constants.find do |c|
-          c.full_name == current_scope.absolute_str
+          c.full_name == @context.scope.absolute_str
         end
 
         raise if klass.nil?
@@ -1336,7 +1340,7 @@ module Orbacle
 
       def get_class_level_ivar_definition_node(ivar_name)
         klass = @tree.constants.find do |c|
-          c.full_name == current_scope.absolute_str
+          c.full_name == @context.scope.absolute_str
         end
 
         raise if klass.nil?
@@ -1350,7 +1354,7 @@ module Orbacle
 
       def get_cvar_definition_node(cvar_name)
         klass = @tree.constants.find do |c|
-          c.full_name == current_scope.absolute_str
+          c.full_name == @context.scope.absolute_str
         end
 
         raise if klass.nil?
@@ -1479,10 +1483,6 @@ module Orbacle
         @context = new_context
         yield
         @context = previous
-      end
-
-      def current_scope
-        @context.nesting.to_scope
       end
 
       def merge_lenvs(lenv1, lenv2)
