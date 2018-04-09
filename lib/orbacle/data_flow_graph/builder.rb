@@ -8,15 +8,20 @@ module Orbacle
       CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
       class Context
-        def initialize(filepath, selfie)
+        def initialize(filepath, selfie, nesting)
           @filepath = filepath
           @selfie = selfie
+          @nesting = nesting
         end
 
-        attr_reader :filepath, :selfie
+        attr_reader :filepath, :selfie, :nesting
 
         def with_selfie(new_selfie)
-          self.class.new(filepath, new_selfie)
+          self.class.new(filepath, new_selfie, nesting)
+        end
+
+        def with_nesting(new_nesting)
+          self.class.new(filepath, selfie, new_nesting)
         end
       end
 
@@ -30,9 +35,8 @@ module Orbacle
 
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
-        @context = Context.new(filepath, Selfie.main)
+        @context = Context.new(filepath, Selfie.main, Nesting.empty)
 
-        @current_nesting = Nesting.empty
         @currently_analyzed_klass = CurrentlyAnalyzedKlass.new(nil, :public)
         @currently_analyzed_method = nil
 
@@ -55,8 +59,6 @@ module Orbacle
       end
 
       private
-
-      attr_reader :current_nesting
 
       def process(ast, lenv)
         return [nil, lenv] if ast.nil?
@@ -751,8 +753,8 @@ module Orbacle
 
       def handle_class(ast, lenv)
         klass_name_ast, parent_klass_name_ast, klass_body = ast.children
-        klass_name_ref = ConstRef.from_ast(klass_name_ast, current_nesting)
-        parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, current_nesting)
+        klass_name_ref = ConstRef.from_ast(klass_name_ast, @context.nesting)
+        parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, @context.nesting)
 
         klass = @tree.add_klass(
           GlobalTree::Klass.new(
@@ -762,7 +764,7 @@ module Orbacle
             location: build_location(Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
 
         switch_currently_analyzed_klass(klass) do
-          with_new_nesting(current_nesting.increase_nesting_const(klass_name_ref)) do
+          with_context(@context.with_nesting(@context.nesting.increase_nesting_const(klass_name_ref))) do
             with_context(@context.with_selfie(Selfie.klass_from_scope(current_scope))) do
               if klass_body
                 process(klass_body, lenv)
@@ -780,7 +782,7 @@ module Orbacle
         module_name_ast = ast.children[0]
         module_body = ast.children[1]
 
-        module_name_ref = ConstRef.from_ast(module_name_ast, current_nesting)
+        module_name_ref = ConstRef.from_ast(module_name_ast, @context.nesting)
 
         @tree.add_mod(
           GlobalTree::Mod.new(
@@ -789,7 +791,7 @@ module Orbacle
             location: build_location(Position.new(module_name_ast.loc.line, nil), Position.new(module_name_ast.loc.line, nil))))
 
         if module_body
-          with_new_nesting(current_nesting.increase_nesting_const(module_name_ref)) do
+          with_context(@context.with_nesting(@context.nesting.increase_nesting_const(module_name_ref))) do
             process(module_body, lenv)
           end
         end
@@ -800,7 +802,7 @@ module Orbacle
       def handle_sclass(ast, lenv)
         self_name = ast.children[0]
         sklass_body = ast.children[1]
-        with_new_nesting(current_nesting.increase_nesting_self) do
+        with_context(@context.with_nesting(@context.nesting.increase_nesting_self)) do
           process(sklass_body, lenv)
         end
 
@@ -843,11 +845,11 @@ module Orbacle
 
       def handle_casgn(ast, lenv)
         const_prename, const_name, expr = ast.children
-        const_name_ref = ConstRef.from_full_name(AstUtils.const_prename_and_name_to_string(const_prename, const_name), current_nesting)
+        const_name_ref = ConstRef.from_full_name(AstUtils.const_prename_and_name_to_string(const_prename, const_name), @context.nesting)
 
         if expr_is_class_definition?(expr)
           parent_klass_name_ast = expr.children[2]
-          parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, current_nesting)
+          parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, @context.nesting)
           @tree.add_klass(
             GlobalTree::Klass.new(
               name: const_name_ref.name,
@@ -885,7 +887,7 @@ module Orbacle
       end
 
       def handle_const(ast, lenv)
-        const_ref = ConstRef.from_ast(ast, current_nesting)
+        const_ref = ConstRef.from_ast(ast, @context.nesting)
 
         node = add_vertex(Node.new(:const, { const_ref: const_ref }))
 
@@ -1472,13 +1474,6 @@ module Orbacle
         return ArgumentsTree::Nested.new(args), final_lenv
       end
 
-      def with_new_nesting(new_nesting)
-        previous = @current_nesting
-        @current_nesting = new_nesting
-        yield
-        @current_nesting = previous
-      end
-
       def with_context(new_context)
         previous = @context
         @context = new_context
@@ -1487,7 +1482,7 @@ module Orbacle
       end
 
       def current_scope
-        current_nesting.to_scope
+        @context.nesting.to_scope
       end
 
       def merge_lenvs(lenv1, lenv2)
