@@ -20,6 +20,7 @@ module Orbacle
       worklist = Worklist.new
       tree = GlobalTree.new
       graph = DataFlowGraph::Graph.new
+      DataFlowGraph::DefineBuiltins.new(graph, tree).()
       @parser = DataFlowGraph::Builder.new(graph, worklist, tree)
 
       files.each do |file_path|

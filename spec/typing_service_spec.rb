@@ -838,6 +838,7 @@ module Orbacle
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
       tree = GlobalTree.new
+      DataFlowGraph::DefineBuiltins.new(graph, tree).()
       result = DataFlowGraph::Builder.new(graph, worklist, tree).process_file(snippet, nil)
       typing_result = TypingService.new.(graph, worklist, tree)
       typing_result[result.node]

@@ -22,6 +22,7 @@ require 'orbacle/worklist'
 
 require 'orbacle/data_flow_graph/node'
 require 'orbacle/data_flow_graph/graph'
+require 'orbacle/data_flow_graph/define_builtins'
 require 'orbacle/data_flow_graph/builder'
 require 'orbacle/data_flow_graph'
 
