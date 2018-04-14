@@ -238,9 +238,9 @@ module Orbacle
         node_lvasgn = add_vertex(Node.new(:lvasgn, { var_name: var_name }))
 
         if expr
-          node_expr, context_after_expr = process(expr, context).to_a
-          @graph.add_edge(node_expr, node_lvasgn)
-          final_context = context_after_expr.merge_lenv(var_name => [node_lvasgn])
+          expr_result = process(expr, context)
+          @graph.add_edge(expr_result.node, node_lvasgn)
+          final_context = expr_result.context.merge_lenv(var_name => [node_lvasgn])
         else
           final_context = context.merge_lenv(var_name => [node_lvasgn])
         end
@@ -324,12 +324,12 @@ module Orbacle
       def handle_splat(ast, context)
         expr = ast.children[0]
 
-        node_expr, context_after_expr = process(expr, context).to_a
+        expr_result = process(expr, context)
 
         node_splat = Node.new(:splat_array)
-        @graph.add_edge(node_expr, node_splat)
+        @graph.add_edge(expr_result.node, node_splat)
 
-        return [node_splat, context_after_expr]
+        return [node_splat, expr_result.context]
       end
 
       def handle_regexp(ast, context)
@@ -358,17 +358,17 @@ module Orbacle
 
         range_node = Node.new(:range, { inclusive: inclusive })
 
-        range_from_node, context2 = process(range_from_ast, context).to_a
+        range_from_ast_result = process(range_from_ast, context)
         from_node = Node.new(:range_from)
-        @graph.add_edge(range_from_node, from_node)
+        @graph.add_edge(range_from_ast_result.node, from_node)
         @graph.add_edge(from_node, range_node)
 
-        range_to_node, final_context = process(range_to_ast, context2).to_a
+        range_to_ast_result = process(range_to_ast, range_from_ast_result.context)
         to_node = Node.new(:range_to)
-        @graph.add_edge(range_to_node, to_node)
+        @graph.add_edge(range_to_ast_result.node, to_node)
         @graph.add_edge(to_node, range_node)
 
-        return [range_node, final_context]
+        return [range_node, range_to_ast_result.context]
       end
 
       def handle_ref(ast, context, node_type)
