@@ -839,7 +839,7 @@ module Orbacle
       graph = DataFlowGraph::Graph.new
       tree = GlobalTree.new
       result = DataFlowGraph::Builder.new(graph, worklist, tree).process_file(snippet, nil)
-      typing_result = TypingService.new.(result.graph, worklist, tree)
+      typing_result = TypingService.new.(graph, worklist, tree)
       typing_result[result.final_node]
     end
 
@@ -848,7 +848,7 @@ module Orbacle
       graph = DataFlowGraph::Graph.new
       tree = GlobalTree.new
       result = DataFlowGraph::Builder.new(graph, worklist, tree).process_file(snippet, nil)
-      TypingService.new.(result.graph, worklist, tree)
+      TypingService.new.(graph, worklist, tree)
     end
 
     def nominal(*args)

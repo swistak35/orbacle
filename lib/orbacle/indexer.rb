@@ -33,7 +33,7 @@ module Orbacle
       end
 
       puts "Typing..."
-      typing_result = TypingService.new.(@parser.result.graph, worklist, tree)
+      typing_result = TypingService.new.(graph, worklist, tree)
 
       puts "Saving..."
       store_result(@parser.result, tree, typing_result)
