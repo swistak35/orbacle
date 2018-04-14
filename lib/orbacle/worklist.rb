@@ -27,7 +27,8 @@ module Orbacle
     end
 
     def limit_exceeded?(node)
-      @nodes_counter.fetch(node, 0) > 100
+      # @nodes_counter.fetch(node, 0) > 100
+      false
     end
   end
 end

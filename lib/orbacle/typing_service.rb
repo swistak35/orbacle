@@ -284,7 +284,7 @@ module Orbacle
       elsif sources_types.size == 1
         sources_types.first
       else
-        UnionType.new(sources_types.flat_map {|t| get_possible_types(t) })
+        UnionType.new(sources_types.flat_map {|t| get_possible_types(t) }.uniq)
       end
     end
 
