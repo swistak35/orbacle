@@ -44,7 +44,7 @@ module Orbacle
           self.class.new(filepath, selfie, nesting, analyzed_klass, analyzed_method, lenv.merge(new_lenv))
         end
 
-        def fetch(key)
+        def lenv_fetch(key)
           lenv.fetch(key)
         end
 
@@ -395,7 +395,7 @@ module Orbacle
 
         node_lvar = add_vertex(Node.new(:lvar, { var_name: var_name }))
 
-        context.fetch(var_name).each do |var_definition_node|
+        context.lenv_fetch(var_name).each do |var_definition_node|
           @graph.add_edge(var_definition_node, node_lvar)
         end
 
