@@ -7,8 +7,8 @@ module Orbacle
       class Result
         def initialize(node, context, data = {})
           @node = node
-          @context = context
-          @data = data
+          @context = context.freeze
+          @data = data.freeze
         end
         attr_reader :node, :context, :data
       end
