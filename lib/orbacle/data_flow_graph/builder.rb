@@ -51,6 +51,14 @@ module Orbacle
         def with_lenv(new_lenv)
           self.class.new(filepath, selfie, nesting, analyzed_klass, analyzed_method, new_lenv)
         end
+
+        def almost_equal?(other)
+          filepath == other.filepath &&
+            selfie == other.selfie &&
+            nesting == other.nesting &&
+            analyzed_klass == other.analyzed_klass &&
+            analyzed_method == other.analyzed_method
+        end
       end
 
       def initialize(graph, worklist, tree)
@@ -1468,6 +1476,7 @@ module Orbacle
       end
 
       def merge_contexts(context1, context2)
+        raise if !context1.almost_equal?(context2)
         final_lenv = {}
 
         var_names = (context1.lenv.keys + context2.lenv.keys).uniq
