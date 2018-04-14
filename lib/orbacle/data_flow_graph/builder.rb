@@ -40,7 +40,7 @@ module Orbacle
           self.class.new(filepath, selfie, nesting, analyzed_klass, new_analyzed_method, lenv)
         end
 
-        def merge(new_lenv)
+        def merge_lenv(new_lenv)
           self.class.new(filepath, selfie, nesting, analyzed_klass, analyzed_method, lenv.merge(new_lenv))
         end
 
@@ -240,9 +240,9 @@ module Orbacle
         if expr
           node_expr, context_after_expr = process(expr, context)
           @graph.add_edge(node_expr, node_lvasgn)
-          final_context = context_after_expr.merge(var_name => [node_lvasgn])
+          final_context = context_after_expr.merge_lenv(var_name => [node_lvasgn])
         else
-          final_context = context.merge(var_name => [node_lvasgn])
+          final_context = context.merge_lenv(var_name => [node_lvasgn])
         end
 
         return [node_lvasgn, final_context]
@@ -648,7 +648,7 @@ module Orbacle
           case arg_ast.type
           when :arg
             arg_name = arg_ast.children[0].to_s
-            current_context.merge(arg_name => [arg_node])
+            current_context.merge_lenv(arg_name => [arg_node])
           when :mlhs
             handle_mlhs_for_block(arg_ast, current_context, arg_node)
           else raise RuntimeError.new(ast)
@@ -680,7 +680,7 @@ module Orbacle
           case ast_child.type
           when :arg
             arg_name = ast_child.children[0].to_s
-            current_context.merge(arg_name => [unwrap_array_node])
+            current_context.merge_lenv(arg_name => [unwrap_array_node])
           when :mlhs
             handle_mlhs_for_block(ast_child, current_context, unwrap_array_node)
           else raise
@@ -715,7 +715,7 @@ module Orbacle
         context2 = context.with_analyzed_method(metod)
         if method_body
           context3 = context2.with_selfie(Selfie.instance_from_scope(context2.scope))
-          final_node, _result_context = process(method_body, context3.merge(arguments_context.lenv))
+          final_node, _result_context = process(method_body, context3.merge_lenv(arguments_context.lenv))
           @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
         else
           final_node = add_vertex(Node.new(:nil))
@@ -838,7 +838,7 @@ module Orbacle
         context2 = context.with_analyzed_method(metod)
         if method_body
           context3 = context2.with_selfie(Selfie.klass_from_scope(context2.scope))
-          final_node, _result_context = process(method_body, context3.merge(arguments_context.lenv))
+          final_node, _result_context = process(method_body, context3.merge_lenv(arguments_context.lenv))
           @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
         else
           final_node = add_vertex(Node.new(:nil))
@@ -1403,31 +1403,31 @@ module Orbacle
           when :arg
             args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
-            current_context.merge(arg_name => [nodes[arg_name]])
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :optarg
             args << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
             arg_node, next_context = process(maybe_arg_default_expr, current_context)
             nodes[arg_name] = add_vertex(Node.new(:formal_optarg, { var_name: arg_name }))
             @graph.add_edge(arg_node, nodes[arg_name])
-            next_context.merge(arg_name => [nodes[arg_name]])
+            next_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :restarg
             args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
-            current_context.merge(arg_name => [nodes[arg_name]])
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwarg
             kwargs << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_kwarg, { var_name: arg_name }))
-            current_context.merge(arg_name => [nodes[arg_name]])
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwoptarg
             kwargs << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
             arg_node, next_context = process(maybe_arg_default_expr, current_context)
             nodes[arg_name] = add_vertex(Node.new(:formal_kwoptarg, { var_name: arg_name }))
             @graph.add_edge(arg_node, nodes[arg_name])
-            next_context.merge(arg_name => [nodes[arg_name]])
+            next_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwrestarg
             kwargs << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_kwrestarg, { var_name: arg_name }))
-            current_context.merge(arg_name => [nodes[arg_name]])
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :mlhs
             mlhs_node = add_vertex(Node.new(:formal_mlhs))
             nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context, mlhs_node)
