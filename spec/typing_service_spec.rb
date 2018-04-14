@@ -840,7 +840,7 @@ module Orbacle
       tree = GlobalTree.new
       result = DataFlowGraph::Builder.new(graph, worklist, tree).process_file(snippet, nil)
       typing_result = TypingService.new.(graph, worklist, tree)
-      typing_result[result.final_node]
+      typing_result[result.node]
     end
 
     def full_type_snippet(snippet)

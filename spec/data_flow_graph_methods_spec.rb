@@ -710,8 +710,8 @@ module Orbacle
       result = service.process_file(file, nil)
       OpenStruct.new(
         graph: graph,
-        final_lenv: result.final_lenv,
-        final_node: result.final_node,
+        final_lenv: result.context.lenv,
+        final_node: result.node,
         tree: tree)
     end
 

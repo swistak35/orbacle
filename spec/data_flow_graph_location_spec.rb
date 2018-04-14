@@ -125,7 +125,7 @@ module Orbacle
       service = DataFlowGraph::Builder.new(graph, worklist, tree)
       result = service.process_file(snippet, "")
       OpenStruct.new(
-        final_node: result.final_node,
+        final_node: result.node,
         tree: tree)
     end
 

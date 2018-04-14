@@ -4,7 +4,14 @@ require 'orbacle/nesting'
 module Orbacle
   module DataFlowGraph
     class Builder
-      Result = Struct.new(:final_lenv, :final_node)
+      class Result
+        def initialize(node, context, data = {})
+          @node = node
+          @context = context
+          @data = data
+        end
+        attr_reader :node, :context, :data
+      end
 
       class Context
         AnalyzedKlass = Struct.new(:klass, :method_visibility)
@@ -79,7 +86,7 @@ module Orbacle
       end
 
       def result
-        Result.new(@final_context.lenv, @final_node)
+        Result.new(@final_node, @final_context)
       end
 
       private
