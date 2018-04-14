@@ -549,7 +549,7 @@ module Orbacle
         message_send = Worklist::MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
         @worklist.add_message_send(message_send)
 
-        return [call_result_node, final_context, { message_send: message_send }]
+        return Result.new(call_result_node, final_context, { message_send: message_send })
       end
 
       def handle_custom_class_send(context, obj_node)
