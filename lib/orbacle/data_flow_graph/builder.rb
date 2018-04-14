@@ -371,7 +371,13 @@ module Orbacle
       end
 
       def handle_ref(ast, context, node_type)
-        ref = ast.children[0].to_s
+        ref = if node_type == :backref
+          ast.children[0].to_s[1..-1]
+        elsif node_type == :nthref
+          ast.children[0].to_s
+        else
+          raise
+        end
         node = add_vertex(Node.new(node_type, { ref: ref }))
         return Result.new(node, context)
       end

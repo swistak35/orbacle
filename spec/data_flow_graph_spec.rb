@@ -1061,10 +1061,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:backref, { ref: "$`" }))
-        expect(result.graph).to include_node(node(:backref, { ref: "$&" }))
-        expect(result.graph).to include_node(node(:backref, { ref: "$'" }))
-        expect(result.graph).to include_node(node(:backref, { ref: "$+" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "`" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "&" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "'" }))
+        expect(result.graph).to include_node(node(:backref, { ref: "+" }))
 
         expect(result.graph).to include_node(node(:nthref, { ref: "1" }))
         expect(result.graph).to include_node(node(:nthref, { ref: "9" }))
