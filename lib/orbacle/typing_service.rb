@@ -79,11 +79,14 @@ module Orbacle
       while !@worklist.nodes.empty?
         while !@worklist.nodes.empty?
           node = @worklist.nodes.shift
-          current_result = @result[node]
-          @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
-          if current_result != @result[node]
-            @graph.original.adjacent_vertices(node).each do |adjacent_node|
-              @worklist.enqueue_node(adjacent_node)
+          @worklist.count_node(node)
+          if !@worklist.limit_exceeded?(node)
+            current_result = @result[node]
+            @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
+            if current_result != @result[node]
+              @graph.original.adjacent_vertices(node).each do |adjacent_node|
+                @worklist.enqueue_node(adjacent_node)
+              end
             end
           end
         end
@@ -131,7 +134,7 @@ module Orbacle
       when :splat_array then handle_unwrap_array(node, sources)
       when :lvasgn then handle_pass_lte1(node, sources)
       when :call_obj then handle_pass1(node, sources)
-      when :call_result then handle_pass_lte1(node, sources)
+      when :call_result then handle_group(node, sources)
       when :call_arg then handle_group(node, sources)
       when :formal_arg then handle_group(node, sources)
       when :formal_optarg then handle_group(node, sources)
@@ -281,7 +284,14 @@ module Orbacle
       elsif sources_types.size == 1
         sources_types.first
       else
-        UnionType.new(sources_types)
+        UnionType.new(sources_types.flat_map {|t| get_possible_types(t) })
+      end
+    end
+
+    def get_possible_types(type)
+      case type
+      when UnionType then type.types.flat_map {|t| get_possible_types(t) }
+      else [type]
       end
     end
 
@@ -296,8 +306,10 @@ module Orbacle
           @graph.add_edge(const_definition_node, node)
           @worklist.enqueue_node(const_definition_node)
           @result[const_definition_node]
+        elsif ref_result
+          ClassType.new(ref_result.full_name)
         else
-          ClassType.new(const_ref.to_full_const_name.to_string)
+          ClassType.new(const_ref.full_name)
         end
       end
     end
@@ -314,7 +326,7 @@ module Orbacle
       when NominalType then ClassType.new(type.name)
       when GenericType then ClassType.new(type.name)
       when ClassType then ClassType.new("Class")
-      when UnionType then UnionType.new(type.types.map {|t| extract_class(t) })
+      when UnionType then build_union(type.types.map {|t| extract_class(t) })
       when MainType then ClassType.new("Object")
       end
     end

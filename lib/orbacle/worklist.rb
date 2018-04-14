@@ -8,6 +8,7 @@ module Orbacle
       @message_sends = Set.new
       @nodes = []
       @handled_message_sends = Set.new
+      @nodes_counter = {}
     end
 
     attr_reader :message_sends, :nodes, :handled_message_sends
@@ -19,6 +20,14 @@ module Orbacle
 
     def enqueue_node(v)
       @nodes << v
+    end
+
+    def count_node(node)
+      @nodes_counter[node] = @nodes_counter.fetch(node, 0) + 1
+    end
+
+    def limit_exceeded?(node)
+      @nodes_counter.fetch(node, 0) > 100
     end
   end
 end
