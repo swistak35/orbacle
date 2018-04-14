@@ -8,6 +8,7 @@ module Orbacle
 
         @global_variables = {}
         @constants = {}
+        @main_ivariables = {}
       end
 
       attr_reader :constants
@@ -57,6 +58,14 @@ module Orbacle
         return global_variables[gvar_name]
       end
 
+      def get_main_ivar_definition_node(ivar_name)
+        if !main_ivariables[ivar_name]
+          main_ivariables[ivar_name] = add_vertex(Node.new(:ivar_definition))
+        end
+
+        return main_ivariables[ivar_name]
+      end
+
       def get_constant_definition_node(const_name)
         if !constants[const_name]
           constants[const_name] = add_vertex(Node.new(:const_definition))
@@ -66,7 +75,7 @@ module Orbacle
       end
 
       private
-      attr_reader :global_variables
+      attr_reader :global_variables, :main_ivariables
     end
   end
 end

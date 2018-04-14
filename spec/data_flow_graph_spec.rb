@@ -935,6 +935,18 @@ module Orbacle
           node(:ivar))
       end
 
+      specify "usage of instance variable in main" do
+        snippet = <<-END
+        @baz
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:ivar_definition),
+          node(:ivar))
+      end
+
       specify "assignment of instance variable" do
         snippet = <<-END
         class Foo
@@ -954,7 +966,22 @@ module Orbacle
           node(:ivar_definition))
       end
 
-      specify "distinguish instance variables from class level instance variables" do
+      specify "assignment of instance variable in main" do
+        snippet = <<-END
+        @baz = 42
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:ivasgn, { var_name: "@baz" }))
+        expect(result.graph).to include_edge(
+          node(:ivasgn, { var_name: "@baz" }),
+          node(:ivar_definition))
+      end
+
+      specify "distinguish instance variables from main and class level instance variables" do
         snippet = <<-END
         class Fizz
           @baz = 42

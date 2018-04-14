@@ -414,6 +414,8 @@ module Orbacle
           get_class_level_ivar_definition_node(context, ivar_name)
         elsif context.selfie.instance?
           get_ivar_definition_node(context, ivar_name)
+        elsif context.selfie.main?
+          @graph.get_main_ivar_definition_node(ivar_name)
         else
           raise
         end
@@ -442,6 +444,8 @@ module Orbacle
           get_class_level_ivar_definition_node(context, ivar_name)
         elsif context.selfie.instance?
           get_ivar_definition_node(context_after_expr, ivar_name)
+        elsif context.selfie.main?
+          @graph.get_main_ivar_definition_node(ivar_name)
         else
           raise
         end
