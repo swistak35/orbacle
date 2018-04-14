@@ -838,7 +838,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      expect(result.graph).to include_node(node(:nil))
+      expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) }))
     end
 
     describe "returning" do

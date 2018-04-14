@@ -568,8 +568,7 @@ module Orbacle
 
           Node.new(:class, { klass: context.analyzed_klass.klass })
         else
-          # This should actually be reference to Object class
-          Node.new(:nil)
+          Node.new(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) })
         end
         add_vertex(node)
 
