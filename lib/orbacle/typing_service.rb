@@ -297,7 +297,7 @@ module Orbacle
           @worklist.enqueue_node(const_definition_node)
           @result[const_definition_node]
         else
-          ClassType.new(const_ref.full_name)
+          ClassType.new(const_ref.to_full_const_name.to_string)
         end
       end
     end

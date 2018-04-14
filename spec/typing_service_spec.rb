@@ -598,6 +598,24 @@ module Orbacle
 
         expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
       end
+
+      specify "constructor within module" do
+        snippet = <<-END
+        module Foo
+          class Bar
+            def initialize(foo)
+              @foo = foo
+            end
+          end
+        end
+        module Foo
+          x = Bar.new(42)
+        end
+        END
+
+        result = full_type_snippet(snippet)
+        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+      end
     end
 
     describe "user-defined methods" do
