@@ -468,6 +468,78 @@ module Orbacle
 
         expect(result).to eq(nominal("Boolean"))
       end
+
+      specify "class on nominal self" do
+        snippet = <<-END
+        class Foo
+          def with_something
+            self.class.new
+          end
+        end
+        x = Foo.new.with_something
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Foo"))
+      end
+
+      specify "class on nominal" do
+        snippet = <<-END
+        class Foo
+        end
+        Foo.new.class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Foo"))
+      end
+
+      specify "class on generic" do
+        snippet = <<-END
+        [].class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Array"))
+      end
+
+      specify "class on class" do
+        snippet = <<-END
+        [].class.class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Class"))
+      end
+
+      specify "class on union" do
+        snippet = <<-END
+        x = if something?
+          []
+        else
+          {}
+        end
+        x.class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([klass("Array"), klass("Hash")]))
+      end
+
+      specify "class on main" do
+        snippet = <<-END
+        self.class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Object"))
+      end
     end
 
     describe "constructors" do
@@ -862,6 +934,10 @@ module Orbacle
 
     def generic(*args)
       TypingService::GenericType.new(*args)
+    end
+
+    def klass(*args)
+      TypingService::ClassType.new(*args)
     end
 
     def find_by_node(result, node_type, node_params = {})

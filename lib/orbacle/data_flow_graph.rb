@@ -2,7 +2,6 @@ module Orbacle
   module DataFlowGraph
     Block = Struct.new(:args, :result)
     BlockPass = Struct.new(:node)
-    CurrentlyAnalyzedKlass = Struct.new(:klass, :method_visibility)
 
     Position = Struct.new(:line, :character)
     PositionRange = Struct.new(:start, :end)

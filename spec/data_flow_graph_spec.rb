@@ -2346,6 +2346,27 @@ module Orbacle
       end
     end
 
+    describe "custom - class send" do
+      specify "simple example" do
+        file = <<-END
+        class Foo
+          def foo
+            self.class
+          end
+        end
+        END
+
+        result = generate_cfg(file)
+
+        expect(result.graph).to include_edge(
+          node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
+          node(:extract_class))
+        expect(result.graph).to include_edge(
+          node(:extract_class),
+          node(:method_result))
+      end
+    end
+
     def generate_cfg(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new

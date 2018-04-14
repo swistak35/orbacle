@@ -162,6 +162,7 @@ module Orbacle
       when :ivar_definition then handle_group(node, sources)
       when :clivar_definition then handle_group(node, sources)
       when :ivar then handle_pass1(node, sources)
+      when :extract_class then handle_extract_class(node, sources)
 
 
       # below not really tested
@@ -297,6 +298,23 @@ module Orbacle
         else
           ClassType.new(const_ref.full_name)
         end
+      end
+    end
+
+    def handle_extract_class(node, sources)
+      res = sources.map do |source|
+        extract_class(@result[sources.first])
+      end
+      build_union(res)
+    end
+
+    def extract_class(type)
+      case type
+      when NominalType then ClassType.new(type.name)
+      when GenericType then ClassType.new(type.name)
+      when ClassType then ClassType.new("Class")
+      when UnionType then UnionType.new(type.types.map {|t| extract_class(t) })
+      when MainType then ClassType.new("Object")
       end
     end
 
