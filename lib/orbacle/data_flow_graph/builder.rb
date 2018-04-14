@@ -1431,38 +1431,39 @@ module Orbacle
         final_context = formal_arguments.reduce(context) do |current_context, arg_ast|
           arg_name = arg_ast.children[0]&.to_s
           maybe_arg_default_expr = arg_ast.children[1]
+          location = build_location_from_ast(current_context, arg_ast)
 
           case arg_ast.type
           when :arg
             args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
-            nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
+            nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :optarg
             args << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
             arg_node, next_context = process(maybe_arg_default_expr, current_context).to_a
-            nodes[arg_name] = add_vertex(Node.new(:formal_optarg, { var_name: arg_name }))
+            nodes[arg_name] = add_vertex(Node.new(:formal_optarg, { var_name: arg_name }, location))
             @graph.add_edge(arg_node, nodes[arg_name])
             next_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :restarg
             args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
-            nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
+            nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwarg
             kwargs << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
-            nodes[arg_name] = add_vertex(Node.new(:formal_kwarg, { var_name: arg_name }))
+            nodes[arg_name] = add_vertex(Node.new(:formal_kwarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwoptarg
             kwargs << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
             arg_node, next_context = process(maybe_arg_default_expr, current_context).to_a
-            nodes[arg_name] = add_vertex(Node.new(:formal_kwoptarg, { var_name: arg_name }))
+            nodes[arg_name] = add_vertex(Node.new(:formal_kwoptarg, { var_name: arg_name }, location))
             @graph.add_edge(arg_node, nodes[arg_name])
             next_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwrestarg
             kwargs << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
-            nodes[arg_name] = add_vertex(Node.new(:formal_kwrestarg, { var_name: arg_name }))
+            nodes[arg_name] = add_vertex(Node.new(:formal_kwrestarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :mlhs
-            mlhs_node = add_vertex(Node.new(:formal_mlhs))
+            mlhs_node = add_vertex(Node.new(:formal_mlhs, {}, location))
             nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context, mlhs_node)
             args << nested_arg
             next_context
