@@ -6,7 +6,6 @@ module Orbacle
     class Builder
       class Result
         def initialize(node, context, data = {})
-          raise if node && !node.is_a?(Node)
           @node = node
           @context = context
           @data = data
@@ -86,7 +85,6 @@ module Orbacle
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
         initial_context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil, {})
-
         return process(ast, initial_context)
       end
 
@@ -427,8 +425,9 @@ module Orbacle
         node_ivasgn = add_vertex(Node.new(:ivasgn, { var_name: ivar_name }))
 
         if expr
-          node_expr, context_after_expr = process(expr, context).to_a
-          @graph.add_edge(node_expr, node_ivasgn)
+          expr_result = process(expr, context)
+          @graph.add_edge(expr_result.node, node_ivasgn)
+          context_after_expr = expr_result.context
         else
           context_after_expr = context
         end
@@ -452,8 +451,9 @@ module Orbacle
         node_cvasgn = add_vertex(Node.new(:cvasgn, { var_name: cvar_name }))
 
         if expr
-          node_expr, context_after_expr = process(expr, context).to_a
-          @graph.add_edge(node_expr, node_cvasgn)
+          expr_result = process(expr, context)
+          @graph.add_edge(expr_result.node, node_cvasgn)
+          context_after_expr = expr_result.context
         else
           context_after_expr = context
         end
@@ -481,13 +481,13 @@ module Orbacle
 
         node_gvasgn = add_vertex(Node.new(:gvasgn, { var_name: gvar_name }))
 
-        node_expr, context_after_expr = process(expr, context).to_a
-        @graph.add_edge(node_expr, node_gvasgn)
+        expr_result = process(expr, context)
+        @graph.add_edge(expr_result.node, node_gvasgn)
 
         node_gvar_definition = @graph.get_gvar_definition_node(gvar_name)
         @graph.add_edge(node_gvasgn, node_gvar_definition)
 
-        return Result.new(node_gvasgn, context_after_expr)
+        return Result.new(node_gvasgn, expr_result.context)
       end
 
       def handle_gvar(ast, context)
@@ -510,16 +510,18 @@ module Orbacle
           obj_node = add_vertex(Node.new(:self, { selfie: context.selfie }))
           obj_context = context
         else
-          obj_node, obj_context = process(obj_expr, context).to_a
+          expr_result = process(obj_expr, context)
+          obj_node = expr_result.node
+          obj_context = expr_result.context
         end
 
         call_arg_nodes = []
         final_context = arg_exprs.reduce(obj_context) do |current_context, ast_child|
-          ast_child_node, new_context = process(ast_child, current_context).to_a
+          ast_child_result = process(ast_child, current_context)
           call_arg_node = add_vertex(Node.new(:call_arg))
           call_arg_nodes << call_arg_node
-          @graph.add_edge(ast_child_node, call_arg_node)
-          new_context
+          @graph.add_edge(ast_child_result.node, call_arg_node)
+          ast_child_result.context
         end
 
         return handle_changing_visibility(context, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
@@ -654,8 +656,10 @@ module Orbacle
         if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
           send_context = context
         else
-          send_node, send_context, _additional = process(send_expr, context).to_a
-          message_send = _additional.fetch(:message_send)
+          send_expr_result = process(send_expr, context)
+          message_send = send_expr_result.data.fetch(:message_send)
+          send_node = send_expr_result.node
+          send_context = send_expr_result.context
         end
 
         args_ast_nodes = []
@@ -674,7 +678,9 @@ module Orbacle
 
         # It's not exactly good - local vars defined in blocks are not available outside (?),
         #     but assignments done in blocks are valid.
-        block_final_node, block_result_context = process(block_expr, context_with_args).to_a
+        block_expr_result = process(block_expr, context_with_args)
+        block_final_node = block_expr_result.node
+        block_result_context = block_expr_result.context
         block_result_node = add_vertex(Node.new(:block_result))
         @graph.add_edge(block_final_node, block_result_node)
 
@@ -732,7 +738,7 @@ module Orbacle
         context2 = context.with_analyzed_method(metod)
         if method_body
           context3 = context2.with_selfie(Selfie.instance_from_scope(context2.scope))
-          final_node, _result_context = process(method_body, context3.merge_lenv(arguments_context.lenv)).to_a
+          final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
           @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
         else
           final_node = add_vertex(Node.new(:nil))
@@ -755,26 +761,26 @@ module Orbacle
           case ast_child.type
           when :pair
             hash_key, hash_value = ast_child.children
-            hash_key_node, context_for_value = process(hash_key, current_context).to_a
-            hash_value_node, new_context = process(hash_value, context_for_value).to_a
-            @graph.add_edge(hash_key_node, node_hash_keys)
-            @graph.add_edge(hash_value_node, node_hash_values)
-            new_context
+            hash_key_result = process(hash_key, current_context)
+            hash_value_result = process(hash_value, hash_key_result.context)
+            @graph.add_edge(hash_key_result.node, node_hash_keys)
+            @graph.add_edge(hash_value_result.node, node_hash_values)
+            hash_value_result.context
           when :kwsplat
             kwsplat_expr = ast_child.children[0]
 
-            node_kwsplat, context_after_kwsplat = process(kwsplat_expr, context).to_a
+            kwsplat_expr_result = process(kwsplat_expr, context)
 
             node_unwrap_hash_keys = Node.new(:unwrap_hash_keys)
             node_unwrap_hash_values = Node.new(:unwrap_hash_values)
 
-            @graph.add_edge(node_kwsplat, node_unwrap_hash_keys)
-            @graph.add_edge(node_kwsplat, node_unwrap_hash_values)
+            @graph.add_edge(kwsplat_expr_result.node, node_unwrap_hash_keys)
+            @graph.add_edge(kwsplat_expr_result.node, node_unwrap_hash_values)
 
             @graph.add_edge(node_unwrap_hash_keys, node_hash_keys)
             @graph.add_edge(node_unwrap_hash_values, node_hash_values)
 
-            context_after_kwsplat
+            kwsplat_expr_result.context
           else raise ArgumentError.new(ast)
           end
         end
