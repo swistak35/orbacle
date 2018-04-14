@@ -163,6 +163,7 @@ module Orbacle
       when :clivar_definition then handle_group(node, sources)
       when :ivar then handle_pass1(node, sources)
       when :extract_class then handle_extract_class(node, sources)
+      when :freeze then handle_group(node, sources)
 
 
       # below not really tested

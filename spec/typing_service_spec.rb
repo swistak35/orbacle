@@ -540,6 +540,16 @@ module Orbacle
 
         expect(result).to eq(klass("Object"))
       end
+
+      specify "freeze is id" do
+        snippet = <<-END
+        [1,2,3].freeze
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
     end
 
     describe "constructors" do
