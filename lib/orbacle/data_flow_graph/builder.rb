@@ -10,12 +10,12 @@ module Orbacle
         AnalyzedKlass = Struct.new(:klass, :method_visibility)
 
         def initialize(filepath, selfie, nesting, analyzed_klass, analyzed_method, lenv)
-          @filepath = filepath
-          @selfie = selfie
-          @nesting = nesting
+          @filepath = filepath.freeze
+          @selfie = selfie.freeze
+          @nesting = nesting.freeze
           @analyzed_klass = analyzed_klass
           @analyzed_method = analyzed_method
-          @lenv = lenv
+          @lenv = lenv.freeze
         end
 
         attr_reader :filepath, :selfie, :nesting, :analyzed_klass, :analyzed_method, :lenv
