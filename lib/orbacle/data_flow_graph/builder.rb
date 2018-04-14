@@ -20,7 +20,7 @@ module Orbacle
           @filepath = filepath.freeze
           @selfie = selfie.freeze
           @nesting = nesting.freeze
-          @analyzed_klass = analyzed_klass
+          @analyzed_klass = analyzed_klass.freeze
           @analyzed_method = analyzed_method
           @lenv = lenv.freeze
         end
@@ -41,6 +41,10 @@ module Orbacle
 
         def with_analyzed_klass(new_klass)
           self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(new_klass, :public), analyzed_method, lenv)
+        end
+
+        def with_visibility(new_visibility)
+          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(analyzed_klass.klass, new_visibility), analyzed_method, lenv)
         end
 
         def with_analyzed_method(new_analyzed_method)
@@ -552,27 +556,25 @@ module Orbacle
       end
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
-        node = if context.analyzed_klass.klass
-          if arg_exprs.empty?
-            context.analyzed_klass.method_visibility = new_visibility
-          else
-            methods_to_change_visibility = arg_exprs.map do |arg_expr|
-              [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
-            end.compact
-            @tree.metods.each do |m|
-              if m.scope == context.scope && methods_to_change_visibility.include?(m.name)
-                m.visibility = new_visibility
-              end
+        if context.analyzed_klass.klass && arg_exprs.empty?
+          final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name(context.analyzed_klass.klass.full_name, Nesting.empty) }))
+          return Result.new(final_node, context.with_visibility(new_visibility))
+        elsif context.analyzed_klass.klass
+          methods_to_change_visibility = arg_exprs.map do |arg_expr|
+            [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
+          end.compact
+          @tree.metods.each do |m|
+            if m.scope == context.scope && methods_to_change_visibility.include?(m.name)
+              m.visibility = new_visibility
             end
           end
 
-          Node.new(:class, { klass: context.analyzed_klass.klass })
+          final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name(context.analyzed_klass.klass.full_name, Nesting.empty) }))
+          return Result.new(final_node, context)
         else
-          Node.new(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) })
+          final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) }))
+          return Result.new(final_node, context)
         end
-        add_vertex(node)
-
-        return Result.new(node, context)
       end
 
       def handle_custom_attr_reader_send(context, arg_exprs, ast)

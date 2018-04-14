@@ -824,9 +824,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      nodes = result.graph.vertices.select {|v| v.type == :class }
-      expect(nodes.size).to eq(1)
-      expect(nodes.first.params.fetch(:klass).name).to eq("Foo")
+      expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Foo", Nesting.empty) }))
     end
 
     specify "private send outside class definition" do
