@@ -6,6 +6,7 @@ module Orbacle
     class Builder
       class Result
         def initialize(node, context, data = {})
+          raise if node && !node.is_a?(Node)
           @node = node
           @context = context
           @data = data
@@ -245,46 +246,46 @@ module Orbacle
           final_context = context.merge_lenv(var_name => [node_lvasgn])
         end
 
-        return [node_lvasgn, final_context]
+        return Result.new(node_lvasgn, final_context)
       end
 
       def handle_int(ast, context)
         value = ast.children[0]
         n = add_vertex(Node.new(:int, { value: value }))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_float(ast, context)
         value = ast.children[0]
         n = add_vertex(Node.new(:float, { value: value }))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_true(ast, context)
         n = add_vertex(Node.new(:bool, { value: true }))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_false(ast, context)
         n = add_vertex(Node.new(:bool, { value: false }))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_nil(ast, context)
         n = add_vertex(Node.new(:nil))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_str(ast, context)
         value = ast.children[0]
         n = add_vertex(Node.new(:str, { value: value }))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_dstr(ast, context)
@@ -293,14 +294,14 @@ module Orbacle
         final_context, nodes = fold_context(ast.children, context)
         add_edges(nodes, node_dstr)
 
-        return [node_dstr, final_context]
+        return Result.new(node_dstr, final_context)
       end
 
       def handle_sym(ast, context)
         value = ast.children[0]
         n = add_vertex(Node.new(:sym, { value: value }))
 
-        return [n, context]
+        return Result.new(n, context)
       end
 
       def handle_dsym(ast, context)
@@ -309,7 +310,7 @@ module Orbacle
         final_context, nodes = fold_context(ast.children, context)
         add_edges(nodes, node_dsym)
 
-        return [node_dsym, final_context]
+        return Result.new(node_dsym, final_context)
       end
 
       def handle_array(ast, context)
@@ -318,7 +319,7 @@ module Orbacle
         final_context, nodes = fold_context(ast.children, context)
         add_edges(nodes, node_array)
 
-        return [node_array, final_context]
+        return Result.new(node_array, final_context)
       end
 
       def handle_splat(ast, context)
@@ -329,7 +330,7 @@ module Orbacle
         node_splat = Node.new(:splat_array)
         @graph.add_edge(expr_result.node, node_splat)
 
-        return [node_splat, expr_result.context]
+        return Result.new(node_splat, expr_result.context)
       end
 
       def handle_regexp(ast, context)
@@ -341,7 +342,7 @@ module Orbacle
         final_context, nodes = fold_context(expr_nodes, context)
         add_edges(nodes, node_regexp)
 
-        return [node_regexp, final_context]
+        return Result.new(node_regexp, final_context)
       end
 
       def handle_irange(ast, context)
@@ -368,13 +369,13 @@ module Orbacle
         @graph.add_edge(range_to_ast_result.node, to_node)
         @graph.add_edge(to_node, range_node)
 
-        return [range_node, range_to_ast_result.context]
+        return Result.new(range_node, range_to_ast_result.context)
       end
 
       def handle_ref(ast, context, node_type)
         ref = ast.children[0].to_s
         node = add_vertex(Node.new(node_type, { ref: ref }))
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_defined(ast, context)
@@ -382,12 +383,12 @@ module Orbacle
 
         node = add_vertex(Node.new(:defined))
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_begin(ast, context)
         final_context, nodes = fold_context(ast.children, context)
-        return [nodes.last, final_context]
+        return Result.new(nodes.last, final_context)
       end
 
       def handle_lvar(ast, context)
@@ -399,7 +400,7 @@ module Orbacle
           @graph.add_edge(var_definition_node, node_lvar)
         end
 
-        return [node_lvar, context]
+        return Result.new(node_lvar, context)
       end
 
       def handle_ivar(ast, context)
@@ -416,7 +417,7 @@ module Orbacle
         node = Node.new(:ivar)
         @graph.add_edge(ivar_definition_node, node)
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_ivasgn(ast, context)
@@ -441,7 +442,7 @@ module Orbacle
         end
         @graph.add_edge(node_ivasgn, ivar_definition_node)
 
-        return [node_ivasgn, context_after_expr]
+        return Result.new(node_ivasgn, context_after_expr)
       end
 
       def handle_cvasgn(ast, context)
@@ -460,7 +461,7 @@ module Orbacle
         node_cvar_definition = get_cvar_definition_node(context, cvar_name)
         @graph.add_edge(node_cvasgn, node_cvar_definition)
 
-        return [node_cvasgn, context_after_expr]
+        return Result.new(node_cvasgn, context_after_expr)
       end
 
       def handle_cvar(ast, context)
@@ -471,7 +472,7 @@ module Orbacle
         node = Node.new(:cvar)
         @graph.add_edge(cvar_definition_node, node)
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_gvasgn(ast, context)
@@ -486,7 +487,7 @@ module Orbacle
         node_gvar_definition = @graph.get_gvar_definition_node(gvar_name)
         @graph.add_edge(node_gvasgn, node_gvar_definition)
 
-        return [node_gvasgn, context_after_expr]
+        return Result.new(node_gvasgn, context_after_expr)
       end
 
       def handle_gvar(ast, context)
@@ -497,7 +498,7 @@ module Orbacle
         node = add_vertex(Node.new(:gvar))
         @graph.add_edge(gvar_definition_node, node)
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_send(ast, context, csend)
@@ -543,14 +544,14 @@ module Orbacle
         extract_class_node = @graph.add_vertex(Node.new(:extract_class))
         @graph.add_edge(obj_node, extract_class_node)
 
-        return [extract_class_node, context]
+        return Result.new(extract_class_node, context)
       end
 
       def handle_custom_freeze_send(context, obj_node)
         freeze_node = @graph.add_vertex(Node.new(:freeze))
         @graph.add_edge(obj_node, freeze_node)
 
-        return [freeze_node, context]
+        return Result.new(freeze_node, context)
       end
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
@@ -575,7 +576,7 @@ module Orbacle
         end
         add_vertex(node)
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_custom_attr_reader_send(context, arg_exprs, ast)
@@ -585,7 +586,7 @@ module Orbacle
           define_attr_reader_method(context, ivar_name, location)
         end
 
-        return [Node.new(:nil), context]
+        return Result.new(Node.new(:nil), context)
       end
 
       def handle_custom_attr_writer_send(context, arg_exprs, ast)
@@ -595,7 +596,7 @@ module Orbacle
           define_attr_writer_method(context, ivar_name, location)
         end
 
-        return [Node.new(:nil), context]
+        return Result.new(Node.new(:nil), context)
       end
 
       def handle_custom_attr_accessor_send(context, arg_exprs, ast)
@@ -606,7 +607,7 @@ module Orbacle
           define_attr_writer_method(context, ivar_name, location)
         end
 
-        return [Node.new(:nil), context]
+        return Result.new(Node.new(:nil), context)
       end
 
       def define_attr_reader_method(context, ivar_name, location)
@@ -642,7 +643,7 @@ module Orbacle
 
       def handle_self(ast, context)
         node = add_vertex(Node.new(:self, { selfie: context.selfie }))
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_block(ast, context)
@@ -680,11 +681,11 @@ module Orbacle
         if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
           lamb = @tree.add_lambda(GlobalTree::Lambda::Nodes.new(args_ast_nodes, block_result_node))
           lambda_node = add_vertex(Node.new(:lambda, { id: lamb.id }))
-          return [lambda_node, block_result_context]
+          return Result.new(lambda_node, block_result_context)
         else
           block = Block.new(args_ast_nodes, block_result_node)
           message_send.block = block
-          return [send_node, block_result_context]
+          return Result.new(send_node, block_result_context)
         end
       end
 
@@ -740,7 +741,7 @@ module Orbacle
 
         node = add_vertex(Node.new(:sym, { value: method_name }))
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_hash(ast, context)
@@ -778,7 +779,7 @@ module Orbacle
           end
         end
 
-        return [node_hash, final_context]
+        return Result.new(node_hash, final_context)
       end
 
       def handle_class(ast, context)
@@ -803,7 +804,7 @@ module Orbacle
 
         node = add_vertex(Node.new(:nil))
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_module(ast, context)
@@ -823,7 +824,7 @@ module Orbacle
           process(module_body, context2).to_a
         end
 
-        return [Node.new(:nil), context]
+        return Result.new(Node.new(:nil), context)
       end
 
       def handle_sclass(ast, context)
@@ -831,7 +832,7 @@ module Orbacle
         sklass_body = ast.children[1]
         process(sklass_body, context.with_nesting(context.nesting.increase_nesting_self)).to_a
 
-        return [Node.new(:nil), context]
+        return Result.new(Node.new(:nil), context)
       end
 
       def handle_defs(ast, context)
@@ -863,7 +864,7 @@ module Orbacle
 
         node = add_vertex(Node.new(:sym, { value: method_name }))
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_casgn(ast, context)
@@ -880,7 +881,7 @@ module Orbacle
               parent_ref: parent_name_ref,
               location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
-          return [Node.new(:nil), context]
+          return Result.new(Node.new(:nil), context)
         elsif expr_is_module_definition?(expr)
           @tree.add_mod(
             GlobalTree::Mod.new(
@@ -888,7 +889,7 @@ module Orbacle
               scope: context.scope.increase_by_ref(const_name_ref).decrease,
               location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
 
-          return [Node.new(:nil), context]
+          return Result.new(Node.new(:nil), context)
         else
           @tree.add_constant(
             GlobalTree::Constant.new(
@@ -905,7 +906,7 @@ module Orbacle
           node_const_definition = @graph.get_constant_definition_node(const_name.to_string)
           @graph.add_edge(final_node, node_const_definition)
 
-          return [final_node, final_context]
+          return Result.new(final_node, final_context)
         end
       end
 
@@ -914,7 +915,7 @@ module Orbacle
 
         node = add_vertex(Node.new(:const, { const_ref: const_ref }))
 
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_and(ast, context)
@@ -933,7 +934,7 @@ module Orbacle
         @graph.add_edge(node_left, node_or)
         @graph.add_edge(node_right, node_or)
 
-        return [node_or, context_after_right]
+        return Result.new(node_or, context_after_right)
       end
 
       def handle_if(ast, context)
@@ -978,7 +979,7 @@ module Orbacle
         end
         @graph.add_edge(node_expr, context.analyzed_method.nodes.result)
 
-        return [node_expr, final_context]
+        return Result.new(node_expr, final_context)
       end
 
       def handle_masgn(ast, context)
@@ -987,9 +988,9 @@ module Orbacle
 
         node_rhs, context_after_rhs = process(rhs_expr, context).to_a
 
-        result_node, result_context = handle_mlhs_for_masgn(mlhs_expr, context, rhs_expr)
+        result_node, result_context = handle_mlhs_for_masgn(mlhs_expr, context, rhs_expr).to_a
 
-        return [result_node, result_context]
+        return Result.new(result_node, result_context)
       end
 
       def handle_mlhs_for_masgn(ast, context, rhs_expr)
@@ -999,7 +1000,7 @@ module Orbacle
         final_context = ast.children.reduce(context) do |current_context, ast_child|
           if ast_child.type == :mlhs
             new_rhs_expr = Parser::AST::Node.new(:send, [rhs_expr, :[], Parser::AST::Node.new(:int, [i])])
-            node_child, context_after_child = handle_mlhs_for_masgn(ast_child, current_context, new_rhs_expr)
+            node_child, context_after_child = handle_mlhs_for_masgn(ast_child, current_context, new_rhs_expr).to_a
           else
             new_ast_child = ast_child.append(Parser::AST::Node.new(:send, [rhs_expr, :[], Parser::AST::Node.new(:int, [i])]))
             node_child, context_after_child = process(new_ast_child, current_context).to_a
@@ -1010,12 +1011,12 @@ module Orbacle
           context_after_child
         end
 
-        return [result_node, final_context]
+        return Result.new(result_node, final_context)
       end
 
       def handle_alias(ast, context)
         node = add_vertex(Node.new(:nil))
-        return [node, context]
+        return Result.new(node, context)
       end
 
       def handle_super(ast, context)
@@ -1056,7 +1057,7 @@ module Orbacle
 
         node = add_vertex(Node.new(:nil))
 
-        return [node, final_context]
+        return Result.new(node, final_context)
       end
 
       def handle_case(ast, context)
@@ -1072,7 +1073,7 @@ module Orbacle
           next_context
         end
 
-        return [node_case_result, final_context]
+        return Result.new(node_case_result, final_context)
       end
 
       def handle_yield(ast, context)
@@ -1094,7 +1095,7 @@ module Orbacle
         end
         result_node = add_vertex(Node.new(:nil))
 
-        return [result_node, final_context]
+        return Result.new(result_node, final_context)
       end
 
       def handle_when(ast, context)
@@ -1104,11 +1105,11 @@ module Orbacle
         node_cond, context_after_cond = process(expr_cond, context).to_a
         node_body, context_after_body = process(expr_body, context_after_cond).to_a
 
-        return [node_body, context_after_body]
+        return Result.new(node_body, context_after_body)
       end
 
       def handle_break(ast, context)
-        return [Node.new(:nil), context]
+        return Result.new(Node.new(:nil), context)
       end
 
       def handle_block_pass(ast, context)
@@ -1116,7 +1117,7 @@ module Orbacle
 
         node_block_pass, next_context = process(expr, context).to_a
 
-        return [node_block_pass, next_context]
+        return Result.new(node_block_pass, next_context)
       end
 
       def handle_resbody(ast, context)
@@ -1148,7 +1149,7 @@ module Orbacle
           final_context = context
         end
 
-        return [node_rescue_body, final_context]
+        return Result.new(node_rescue_body, final_context)
       end
 
       def handle_rescue(ast, context)
@@ -1173,12 +1174,12 @@ module Orbacle
           return [node, merge_contexts(context_after_resbody, context_after_else)]
         else
           @graph.add_edge(node_try, node)
-          return [node, context_after_resbody]
+          return Result.new(node, context_after_resbody)
         end
       end
 
       def handle_retry(ast, context)
-        return [add_vertex(Node.new(:nil)), context]
+        return Result.new(add_vertex(Node.new(:nil)), context)
       end
 
       def handle_ensure(ast, context)
@@ -1193,7 +1194,7 @@ module Orbacle
         node_ensure_body, context_after_ensure_body = process(expr_ensure_body, context_after_pre).to_a
         @graph.add_edge(node_ensure_body, node_ensure) if node_ensure_body
 
-        return [node_ensure, context_after_ensure_body]
+        return Result.new(node_ensure, context_after_ensure_body)
       end
 
       def handle_op_asgn(ast, context)
@@ -1234,7 +1235,7 @@ module Orbacle
         end
         final_node, final_context = process(expr_full_asgn, context).to_a
 
-        return [final_node, final_context]
+        return Result.new(final_node, final_context)
       end
 
       def handle_or_asgn(ast, context)
@@ -1274,7 +1275,7 @@ module Orbacle
         end
         final_node, final_context = process(expr_full_asgn, context).to_a
 
-        return [final_node, final_context]
+        return Result.new(final_node, final_context)
       end
 
       def handle_and_asgn(ast, context)
@@ -1314,7 +1315,7 @@ module Orbacle
         end
         final_node, final_context = process(expr_full_asgn, context).to_a
 
-        return [final_node, final_context]
+        return Result.new(final_node, final_context)
       end
 
       def expr_is_class_definition?(expr)
@@ -1401,7 +1402,7 @@ module Orbacle
           add_vertex(arg_node)
           h[arg_name] = [arg_node]
         end
-        return [formal_arguments_hash, formal_arguments_nodes]
+        return Result.new(formal_arguments_hash, formal_arguments_nodes)
       end
 
       def build_def_arguments(formal_arguments, context)
@@ -1498,9 +1499,9 @@ module Orbacle
       def fold_context(exprs, context)
         nodes = []
         final_context = exprs.reduce(context) do |current_context, ast_child|
-          ast_child_node, new_context = process(ast_child, current_context).to_a
-          nodes << ast_child_node
-          new_context
+          child_result = process(ast_child, current_context)
+          nodes << child_result.node
+          child_result.context
         end
         return final_context, nodes
       end
