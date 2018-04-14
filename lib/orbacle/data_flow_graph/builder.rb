@@ -80,13 +80,9 @@ module Orbacle
         ast = Parser::CurrentRuby.parse(file)
         context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil, {})
 
-        @final_node, @final_context = process(ast, context)
+        final_node, final_context, _data = process(ast, context)
 
-        return result
-      end
-
-      def result
-        Result.new(@final_node, @final_context)
+        return Result.new(final_node, final_context)
       end
 
       private

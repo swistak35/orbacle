@@ -36,10 +36,10 @@ module Orbacle
       typing_result = TypingService.new.(graph, worklist, tree)
 
       puts "Saving..."
-      store_result(@parser.result, tree, typing_result)
+      store_result(tree, typing_result)
     end
 
-    def store_result(result, tree, typing_result)
+    def store_result(tree, typing_result)
       puts "Saving constants..."
       tree.constants.each do |c|
         @db.add_constant(
