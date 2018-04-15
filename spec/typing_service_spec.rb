@@ -393,6 +393,48 @@ module Orbacle
       end
     end
 
+    describe "self" do
+      specify "self without class" do
+        snippet = <<-END
+        self
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(main)
+      end
+
+      specify "self inside class" do
+        snippet = <<-END
+        class Foo
+          def self.bar
+            $x = self
+          end
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Foo"))
+      end
+
+      specify "self inside instance" do
+        snippet = <<-END
+        class Foo
+          def bar
+            self
+          end
+        end
+        Foo.new.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Foo"))
+      end
+    end
+
     specify "Integer#succ" do
       snippet = <<-END
       x = 42
@@ -966,6 +1008,10 @@ module Orbacle
 
     def klass(*args)
       TypingService::ClassType.new(*args)
+    end
+
+    def main
+      TypingService::MainType.new
     end
 
     def find_by_node(result, node_type, node_params = {})

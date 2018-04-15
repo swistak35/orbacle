@@ -46,6 +46,10 @@ module Orbacle
       def pretty
         "main"
       end
+
+      def ==(other)
+        self.class == other.class
+      end
     end
     class UnionType < Struct.new(:types)
       def each_possible_type
@@ -258,8 +262,10 @@ module Orbacle
         ClassType.new(selfie.scope.absolute_str)
       elsif selfie.instance?
         NominalType.new(selfie.scope.absolute_str)
-      else
+      elsif selfie.main?
         MainType.new
+      else
+        raise
       end
     end
 
