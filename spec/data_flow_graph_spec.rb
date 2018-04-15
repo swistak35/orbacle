@@ -531,6 +531,52 @@ module Orbacle
                 node(:call_result, { csend: false }),
                 block([node(:block_arg)], node(:block_result))))
       end
+
+      specify "method call, on self" do
+        snippet = <<-END
+        class Foo
+          def bar
+            self.baz
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
+          node(:call_obj))
+
+        expect(result.message_sends).to include(
+          msend(
+            "baz",
+            node(:call_obj),
+            [],
+            node(:call_result, { csend: false })))
+      end
+
+      specify "method call, on implicit self" do
+        snippet = <<-END
+        class Foo
+          def bar
+            baz
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
+          node(:call_obj))
+
+        expect(result.message_sends).to include(
+          msend(
+            "baz",
+            node(:call_obj),
+            [],
+            node(:call_result, { csend: false })))
+      end
     end
 
     describe "block arguments formats" do
@@ -813,32 +859,6 @@ module Orbacle
 
         expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
       end
-    end
-
-    specify "private send in class definition" do
-      snippet = <<-END
-      class Foo
-        private
-        def foo
-        end
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Foo", Nesting.empty) }))
-    end
-
-    specify "private send outside class definition" do
-      snippet = <<-END
-      private
-      def foo
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) }))
     end
 
     describe "returning" do
@@ -1178,52 +1198,6 @@ module Orbacle
               node(:call_result, { csend: false })))
     end
 
-    specify "method call, on self" do
-      snippet = <<-END
-      class Foo
-        def bar
-          self.baz
-        end
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
-        node(:call_obj))
-
-      expect(result.message_sends).to include(
-        msend(
-          "baz",
-          node(:call_obj),
-          [],
-          node(:call_result, { csend: false })))
-    end
-
-    specify "method call, on implicit self" do
-      snippet = <<-END
-      class Foo
-        def bar
-          baz
-        end
-      end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
-        node(:call_obj))
-
-      expect(result.message_sends).to include(
-        msend(
-          "baz",
-          node(:call_obj),
-          [],
-          node(:call_result, { csend: false })))
-    end
-
     specify "super call without arguments" do
       snippet = <<-END
       class Foo
@@ -1277,177 +1251,181 @@ module Orbacle
       expect(zsuper_send.block).to be_nil
     end
 
-    specify "control flow `and` operator" do
-      snippet = <<-END
-      false and 42
-      END
+    describe "control flow operators" do
+      specify "control flow `and` operator" do
+        snippet = <<-END
+        false and 42
+        END
 
-      result = generate_cfg(snippet)
+        result = generate_cfg(snippet)
 
-      expect(result.graph).to include_edge(
-        node(:bool, { value: false }),
-        node(:and))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:and))
-    end
-
-    specify "control flow `and` operator - using correct lenv" do
-      snippet = <<-END
-      (x = 17) and x
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "x" }),
-        node(:lvar, { var_name: "x" }))
-    end
-
-    specify "control flow `or` operator" do
-      snippet = <<-END
-      false or 42
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:bool, { value: false }),
-        node(:or))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:or))
-    end
-
-    specify "control flow `&&` operator" do
-      snippet = <<-END
-      false && 42
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:bool, { value: false }),
-        node(:and))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:and))
-    end
-
-    specify "control flow `||` operator" do
-      snippet = <<-END
-      false || 42
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:bool, { value: false }),
-        node(:or))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:or))
-    end
-
-    specify "branching" do
-      snippet = <<-END
-      if 1
-        2
-      else
-        3
+        expect(result.graph).to include_edge(
+          node(:bool, { value: false }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:and))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "control flow `and` operator - using correct lenv" do
+        snippet = <<-END
+        (x = 17) and x
+        END
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 2 }),
-        node(:if_result))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 3 }),
-        node(:if_result))
-      expect(result.final_node).to eq(node(:if_result))
-    end
+        result = generate_cfg(snippet)
 
-    specify "branching - without iffalse" do
-      snippet = <<-END
-      if 42
-        17
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "control flow `or` operator" do
+        snippet = <<-END
+        false or 42
+        END
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
-        node(:if_result))
-      expect(result.graph).to include_edge(
-        node(:nil),
-        node(:if_result))
-      expect(result.final_node).to eq(node(:if_result))
-    end
+        result = generate_cfg(snippet)
 
-    specify "branching - without iftrue" do
-      snippet = <<-END
-      unless 42
-        17
+        expect(result.graph).to include_edge(
+          node(:bool, { value: false }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:or))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "control flow `&&` operator" do
+        snippet = <<-END
+        false && 42
+        END
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 17 }),
-        node(:if_result))
-      expect(result.graph).to include_edge(
-        node(:nil),
-        node(:if_result))
-      expect(result.final_node).to eq(node(:if_result))
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:bool, { value: false }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:and))
+      end
+
+      specify "control flow `||` operator" do
+        snippet = <<-END
+        false || 42
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:bool, { value: false }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:or))
+      end
     end
 
-    specify "branching - using correct lenvs" do
-      snippet = <<-END
-      if (x = 42) && (y = 17)
+    describe "branching" do
+      specify "simple if" do
+        snippet = <<-END
+        if 1
+          2
+        else
+          3
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:if_result))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 3 }),
+          node(:if_result))
+        expect(result.final_node).to eq(node(:if_result))
+      end
+
+      specify "without iffalse" do
+        snippet = <<-END
+        if 42
+          17
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 17 }),
+          node(:if_result))
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:if_result))
+        expect(result.final_node).to eq(node(:if_result))
+      end
+
+      specify "without iftrue" do
+        snippet = <<-END
+        unless 42
+          17
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 17 }),
+          node(:if_result))
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:if_result))
+        expect(result.final_node).to eq(node(:if_result))
+      end
+
+      specify "using correct lenvs" do
+        snippet = <<-END
+        if (x = 42) && (y = 17)
+          x
+        else
+          y
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "y" }),
+          node(:lvar, { var_name: "y" }))
+      end
+
+      specify "using correct lenvs" do
+        snippet = <<-END
+        if "meh"
+          x = 42
+        else
+          x = 17
+        end
         x
-      else
-        y
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_lenv["x"]).to match_array([
+          node(:lvasgn, { var_name: "x" }),
+          node(:lvasgn, { var_name: "x" }),
+        ])
+
+        int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
+        lvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
+        expect(result.graph.adjacent_vertices(lvasgn_to_42)).to include(node(:lvar, { var_name: "x" }))
+
+        int_17 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 17 }
+        lvasgn_to_17 = result.graph.adjacent_vertices(int_17).first
+        expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: "x" }))
       end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "x" }),
-        node(:lvar, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "y" }),
-        node(:lvar, { var_name: "y" }))
-    end
-
-    specify "branching - using correct lenvs" do
-      snippet = <<-END
-      if "meh"
-        x = 42
-      else
-        x = 17
-      end
-      x
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_lenv["x"]).to match_array([
-        node(:lvasgn, { var_name: "x" }),
-        node(:lvasgn, { var_name: "x" }),
-      ])
-
-      int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
-      lvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
-      expect(result.graph.adjacent_vertices(lvasgn_to_42)).to include(node(:lvar, { var_name: "x" }))
-
-      int_17 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 17 }
-      lvasgn_to_17 = result.graph.adjacent_vertices(int_17).first
-      expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: "x" }))
     end
 
     describe "multiple assignment" do
@@ -2337,6 +2315,34 @@ module Orbacle
 
         result = generate_cfg(snippet)
         expect(result.final_node).to eq(node(:lambda, { id: 1 }))
+      end
+    end
+
+    describe "custom - private/public/protected" do
+      specify "private send in class definition" do
+        snippet = <<-END
+        class Foo
+          private
+          def foo
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Foo", Nesting.empty) }))
+      end
+
+      specify "private send outside class definition" do
+        snippet = <<-END
+        private
+        def foo
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) }))
       end
     end
 
