@@ -663,154 +663,156 @@ module Orbacle
       end
     end
 
-    specify "empty method definition" do
-      snippet = <<-END
-      def foo
+    describe "method definitions" do
+      specify "empty method definition" do
+        snippet = <<-END
+        def foo
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:method_result))
+        expect(result.final_node).to eq(node(:sym, { value: :foo }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with 1 arg" do
+        snippet = <<-END
+        def foo(x)
+          x
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:nil),
-        node(:method_result))
-      expect(result.final_node).to eq(node(:sym, { value: :foo }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with 1 arg" do
-      snippet = <<-END
-      def foo(x)
-        x
+        expect(result.graph).to include_edge(
+          node(:formal_arg, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "x" }),
+          node(:method_result))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with optional argument" do
+        snippet = <<-END
+        def foo(x = 42)
+          x
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:formal_arg, { var_name: "x" }),
-        node(:lvar, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "x" }),
-        node(:method_result))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with optional argument" do
-      snippet = <<-END
-      def foo(x = 42)
-        x
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:formal_optarg, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:formal_optarg, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with keyword arguments" do
+        snippet = <<-END
+        def foo(x, bar:, baz:)
+          bar
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:formal_optarg, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:formal_optarg, { var_name: "x" }),
-        node(:lvar, { var_name: "x" }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with keyword arguments" do
-      snippet = <<-END
-      def foo(x, bar:, baz:)
-        bar
+        expect(result.graph).to include_edge(
+          node(:formal_kwarg, { var_name: "bar" }),
+          node(:lvar, { var_name: "bar" }))
+        expect(result.graph).to include_node(
+          node(:formal_kwarg, { var_name: "baz" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with optional keyword arguments" do
+        snippet = <<-END
+        def foo(x, bar: 42, baz: "foo")
+          bar
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:formal_kwarg, { var_name: "bar" }),
-        node(:lvar, { var_name: "bar" }))
-      expect(result.graph).to include_node(
-        node(:formal_kwarg, { var_name: "baz" }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with optional keyword arguments" do
-      snippet = <<-END
-      def foo(x, bar: 42, baz: "foo")
-        bar
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:formal_kwoptarg, { var_name: "bar" }))
+        expect(result.graph).to include_edge(
+          node(:formal_kwoptarg, { var_name: "bar" }),
+          node(:lvar, { var_name: "bar" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with keyword args splat" do
+        snippet = <<-END
+        def foo(x, **kwargs)
+        end
+        END
 
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:formal_kwoptarg, { var_name: "bar" }))
-      expect(result.graph).to include_edge(
-        node(:formal_kwoptarg, { var_name: "bar" }),
-        node(:lvar, { var_name: "bar" }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with keyword args splat" do
-      snippet = <<-END
-      def foo(x, **kwargs)
+        expect(result.graph).to include_node(
+          node(:formal_kwrestarg, { var_name: "kwargs" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with unnamed keyword args splat" do
+        snippet = <<-END
+        def foo(x, **)
+        end
+        END
 
-      expect(result.graph).to include_node(
-        node(:formal_kwrestarg, { var_name: "kwargs" }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with unnamed keyword args splat" do
-      snippet = <<-END
-      def foo(x, **)
+        expect(result.graph).to include_node(
+          node(:formal_kwrestarg, { var_name: nil }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with splat argument" do
+        snippet = <<-END
+        def foo(x, *rest)
+          rest
+        end
+        END
 
-      expect(result.graph).to include_node(
-        node(:formal_kwrestarg, { var_name: nil }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with splat argument" do
-      snippet = <<-END
-      def foo(x, *rest)
-        rest
+        expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:formal_restarg, { var_name: "rest" }),
+          node(:lvar, { var_name: "rest" }))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "rest" }),
+          node(:method_result))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with splat argument in the middle" do
+        snippet = <<-END
+        def foo(x, *rest, y)
+          rest
+        end
+        END
 
-      expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
-      expect(result.graph).to include_edge(
-        node(:formal_restarg, { var_name: "rest" }),
-        node(:lvar, { var_name: "rest" }))
-      expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "rest" }),
-        node(:method_result))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with splat argument in the middle" do
-      snippet = <<-END
-      def foo(x, *rest, y)
-        rest
+        expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
+        expect(result.graph).to include_node(node(:formal_arg, { var_name: "y" }))
+        expect(result.graph).to include_edge(
+          node(:formal_restarg, { var_name: "rest" }),
+          node(:lvar, { var_name: "rest" }))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "method definition with unnamed splat argument" do
+        snippet = <<-END
+        def foo(x, *)
+        end
+        END
 
-      expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
-      expect(result.graph).to include_node(node(:formal_arg, { var_name: "y" }))
-      expect(result.graph).to include_edge(
-        node(:formal_restarg, { var_name: "rest" }),
-        node(:lvar, { var_name: "rest" }))
-    end
+        result = generate_cfg(snippet)
 
-    specify "method definition with unnamed splat argument" do
-      snippet = <<-END
-      def foo(x, *)
+        expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
       end
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
     end
 
     specify "private send in class definition" do
@@ -2338,7 +2340,7 @@ module Orbacle
       end
     end
 
-    describe "attr_reader/writer/accessor" do
+    describe "custom - attr_reader/writer/accessor" do
       specify "simple attr_reader example" do
         file = <<-END
         class Foo
