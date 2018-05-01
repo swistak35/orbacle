@@ -347,6 +347,8 @@ module Orbacle
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, possible_type.name, message_send)
+        elsif possible_type.is_a?(ClassType)
+          handle_class_send(possible_type.name, message_send)
         else
           handle_instance_send(possible_type.name, message_send)
         end
@@ -381,6 +383,26 @@ module Orbacle
         parent_name = @tree.get_parent_of(class_name)
         if parent_name
           handle_instance_send(parent_name, message_send)
+        else
+          warn("Method #{message_send.message_send} not found\n")
+        end
+      else
+        handle_custom_message_send(found_method, message_send)
+
+        method_result_node = found_method.nodes.result
+        if !@graph.original.has_edge?(method_result_node, message_send.send_result)
+          @graph.add_edge(method_result_node, message_send.send_result)
+          @worklist.enqueue_node(message_send.send_result)
+        end
+      end
+    end
+
+    def handle_class_nonprimitive_send(class_name, message_send)
+      found_method = @tree.find_class_method(class_name, message_send.message_send)
+      if found_method.nil?
+        parent_name = @tree.get_parent_of(class_name)
+        if parent_name
+          handle_class_send(parent_name, message_send)
         else
           warn("Method #{message_send.message_send} not found\n")
         end
@@ -464,6 +486,10 @@ module Orbacle
       else
         handle_instance_nonprimitive_send(class_name, message_send)
       end
+    end
+
+    def handle_class_send(class_name, message_send)
+      handle_class_nonprimitive_send(class_name, message_send)
     end
 
     def primitive_mapping

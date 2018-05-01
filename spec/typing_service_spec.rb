@@ -936,6 +936,36 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
+
+      specify "call to missing class method" do
+        snippet = <<-END
+        class Foo
+          def bar
+            42
+          end
+        end
+        Foo.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nil)
+      end
+
+      specify "call to class method" do
+        snippet = <<-END
+        class Foo
+          def self.bar
+            42
+          end
+        end
+        Foo.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "attr_reader/writer/accessor" do
