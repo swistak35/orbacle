@@ -275,8 +275,17 @@ module Orbacle
     end
 
     def handle_unwrap_array(node, sources)
-      types_inside_arrays = sources.select {|s| @result[s] && @result[s].name == "Array" }.map {|s| @result[s].parameters.first }.uniq
-      build_union(types_inside_arrays)
+      types_inside_arrays = []
+      sources
+        .select {|s| @result[s] }
+        .each do |s|
+          @result[s].each_possible_type do |t|
+            if t.name == "Array"
+              types_inside_arrays << t.parameters.first
+            end
+          end
+        end
+      build_union(types_inside_arrays.uniq)
     end
 
     def handle_pass_lte1(_node, sources)

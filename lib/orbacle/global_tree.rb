@@ -170,7 +170,7 @@ module Orbacle
     end
 
     def find_class_method(class_name, method_name)
-      @metods.find {|m| m.scope.to_const_name.to_string == class_name && m.scope.metaklass? && m.name == method_name }
+      @metods.find {|m| !m.scope.empty? && m.scope.to_const_name.to_string == class_name && m.scope.metaklass? && m.name == method_name }
     end
   end
 end
