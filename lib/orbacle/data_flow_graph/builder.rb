@@ -709,12 +709,6 @@ module Orbacle
         return final_context
       end
 
-      def handle_lambda(ast, context)
-        send_expr = ast.children[0]
-        args_ast = ast.children[1]
-        block_expr = ast.children[2]
-      end
-
       def handle_def(ast, context)
         method_name = ast.children[0]
         formal_arguments = ast.children[1]
