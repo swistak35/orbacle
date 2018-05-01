@@ -26,19 +26,11 @@ module Orbacle
     end
 
     class Klass
-      class Nodes
-        def initialize(class_variables = {})
-          @class_variables = class_variables
-        end
-        attr_accessor :class_variables
-      end
-
-      def initialize(name:, scope:, location:, parent_ref:, nodes: Nodes.new)
+      def initialize(name:, scope:, location:, parent_ref:)
         @name = name
         @scope = scope
         @location = location
         @parent_ref = parent_ref
-        @nodes = nodes
       end
 
       attr_reader :name, :scope, :location, :parent_ref, :nodes

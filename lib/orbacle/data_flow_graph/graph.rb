@@ -11,6 +11,7 @@ module Orbacle
         @main_ivariables = {}
         @instance_ivariables = {}
         @class_ivariables = {}
+        @cvariables = {}
       end
 
       attr_reader :constants
@@ -79,8 +80,14 @@ module Orbacle
         return class_ivariables[scope.absolute_str][ivar_name]
       end
 
+      def get_cvar_definition_node(scope, ivar_name)
+        cvariables[scope.absolute_str] ||= {}
+        cvariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:cvar_definition))
+        return cvariables[scope.absolute_str][ivar_name]
+      end
+
       private
-      attr_reader :global_variables, :main_ivariables, :instance_ivariables, :class_ivariables
+      attr_reader :global_variables, :main_ivariables, :instance_ivariables, :class_ivariables, :cvariables
     end
   end
 end

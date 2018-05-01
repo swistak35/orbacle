@@ -457,7 +457,7 @@ module Orbacle
           context_after_expr = context
         end
 
-        node_cvar_definition = get_cvar_definition_node(context, cvar_name)
+        node_cvar_definition = @graph.get_cvar_definition_node(context.scope, cvar_name)
         @graph.add_edge(node_cvasgn, node_cvar_definition)
 
         return Result.new(node_cvasgn, context_after_expr)
@@ -466,7 +466,7 @@ module Orbacle
       def handle_cvar(ast, context)
         cvar_name = ast.children.first.to_s
 
-        cvar_definition_node = get_cvar_definition_node(context, cvar_name)
+        cvar_definition_node = @graph.get_cvar_definition_node(context.scope, cvar_name)
 
         node = Node.new(:cvar, {}, build_location_from_ast(context, ast))
         @graph.add_edge(cvar_definition_node, node)
@@ -1354,20 +1354,6 @@ module Orbacle
         expr.type == :send &&
           expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
           expr.children[1] == :new
-      end
-
-      def get_cvar_definition_node(context, cvar_name)
-        klass = @tree.constants.find do |c|
-          c.full_name == context.scope.absolute_str
-        end
-
-        raise if klass.nil?
-
-        if !klass.nodes.class_variables[cvar_name]
-          klass.nodes.class_variables[cvar_name] = add_vertex(Node.new(:cvar_definition))
-        end
-
-        return klass.nodes.class_variables[cvar_name]
       end
 
       def build_arguments(formal_arguments, context)
