@@ -9,6 +9,7 @@ module Orbacle
       def call
         add_object_klass
         add_dir_klass
+        add_file_klass
       end
 
       def add_object_klass
@@ -31,6 +32,17 @@ module Orbacle
             location: nil))
 
         define_dir_glob
+      end
+
+      def add_file_klass
+        klass = @tree.add_klass(
+          GlobalTree::Klass.new(
+            name: "File",
+            scope: Scope.empty,
+            parent_ref: nil,
+            location: nil))
+
+        define_file_read
       end
 
       def define_object_opeq
@@ -61,6 +73,20 @@ module Orbacle
         array_node = Node.new(:array)
         @graph.add_edge(str_node, array_node)
         @graph.add_edge(array_node, metod.nodes.result)
+      end
+
+      def define_file_read
+        arg_names = build_arg_names(1)
+        arg_nodes = build_arg_nodes(arg_names)
+        metod = @tree.add_method(GlobalTree::Method.new(
+          scope: Scope.new(["File"], false),
+          name: "read",
+          location: nil,
+          args: build_arg_tree(arg_names),
+          visibility: :public,
+          nodes: GlobalTree::Method::Nodes.new(build_nodes_hash(arg_nodes), @graph.add_vertex(Node.new(:method_result)), [])))
+        str_node = Node.new(:str)
+        @graph.add_edge(str_node, metod.nodes.result)
       end
 
       def build_arg_names(n)
