@@ -469,6 +469,17 @@ module Orbacle
         expect(result).to eq(generic("Array", [nominal("String")]))
       end
 
+      specify "Array#each" do
+        snippet = <<-END
+        x = [1,2]
+        x.each {|y| y.to_s }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
       specify "Integer#+" do
         snippet = <<-END
         42 + 78

@@ -447,7 +447,7 @@ module Orbacle
         cvar_name = ast.children[0].to_s
         expr = ast.children[1]
 
-        node_cvasgn = add_vertex(Node.new(:cvasgn, { var_name: cvar_name }))
+        node_cvasgn = add_vertex(Node.new(:cvasgn, { var_name: cvar_name }, build_location_from_ast(context, ast)))
 
         if expr
           expr_result = process(expr, context)

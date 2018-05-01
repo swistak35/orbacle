@@ -477,6 +477,7 @@ module Orbacle
         },
         "Array" => {
           "map" => method(:send_primitive_array_map),
+          "each" => method(:send_primitive_array_each),
         },
       }
     end
@@ -541,6 +542,20 @@ module Orbacle
       @graph.add_edge(message_send.block.result, wrapping_node)
       @worklist.enqueue_node(wrapping_node)
       @graph.add_edge(wrapping_node, message_send.send_result)
+      @worklist.enqueue_node(message_send.send_result)
+    end
+
+    def send_primitive_array_each(_class_name, message_send)
+      raise if message_send.block.nil?
+
+      unwrapping_node = DataFlowGraph::Node.new(:primitive_array_map_1)
+      @graph.add_vertex(unwrapping_node)
+      @graph.add_edge(message_send.send_obj, unwrapping_node)
+      @worklist.enqueue_node(unwrapping_node)
+      @graph.add_edge(unwrapping_node, message_send.block.args.first)
+      @worklist.enqueue_node(message_send.block.args.first)
+
+      @graph.add_edge(message_send.send_obj, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
     end
 
