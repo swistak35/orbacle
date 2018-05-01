@@ -347,12 +347,12 @@ module Orbacle
         range_node = Node.new(:range, { inclusive: inclusive }, build_location_from_ast(context, ast))
 
         range_from_ast_result = process(range_from_ast, context)
-        from_node = Node.new(:range_from)
+        from_node = Node.new(:range_from, {})
         @graph.add_edge(range_from_ast_result.node, from_node)
         @graph.add_edge(from_node, range_node)
 
         range_to_ast_result = process(range_to_ast, range_from_ast_result.context)
-        to_node = Node.new(:range_to)
+        to_node = Node.new(:range_to, {})
         @graph.add_edge(range_to_ast_result.node, to_node)
         @graph.add_edge(to_node, range_node)
 
@@ -468,7 +468,7 @@ module Orbacle
 
         cvar_definition_node = get_cvar_definition_node(context, cvar_name)
 
-        node = Node.new(:cvar)
+        node = Node.new(:cvar, {}, build_location_from_ast(context, ast))
         @graph.add_edge(cvar_definition_node, node)
 
         return Result.new(node, context)
@@ -478,7 +478,7 @@ module Orbacle
         gvar_name = ast.children[0].to_s
         expr = ast.children[1]
 
-        node_gvasgn = add_vertex(Node.new(:gvasgn, { var_name: gvar_name }))
+        node_gvasgn = add_vertex(Node.new(:gvasgn, { var_name: gvar_name }, build_location_from_ast(context, ast)))
 
         expr_result = process(expr, context)
         @graph.add_edge(expr_result.node, node_gvasgn)
@@ -494,7 +494,7 @@ module Orbacle
 
         gvar_definition_node = @graph.get_gvar_definition_node(gvar_name)
 
-        node = add_vertex(Node.new(:gvar))
+        node = add_vertex(Node.new(:gvar, {}, build_location_from_ast(context, ast)))
         @graph.add_edge(gvar_definition_node, node)
 
         return Result.new(node, context)
@@ -640,7 +640,7 @@ module Orbacle
       end
 
       def handle_self(ast, context)
-        node = add_vertex(Node.new(:self, { selfie: context.selfie }))
+        node = add_vertex(Node.new(:self, { selfie: context.selfie }, build_location_from_ast(context, ast)))
         return Result.new(node, context)
       end
 
@@ -660,7 +660,7 @@ module Orbacle
 
         args_ast_nodes = []
         context_with_args = args_ast.children.reduce(send_context) do |current_context, arg_ast|
-          arg_node = add_vertex(Node.new(:block_arg))
+          arg_node = add_vertex(Node.new(:block_arg, {}, build_location_from_ast(context, ast)))
           args_ast_nodes << arg_node
           case arg_ast.type
           when :arg
@@ -741,7 +741,7 @@ module Orbacle
           @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
         end
 
-        node = add_vertex(Node.new(:sym, { value: method_name }))
+        node = add_vertex(Node.new(:sym, { value: method_name }, build_location_from_ast(context, ast)))
 
         return Result.new(node, context)
       end
