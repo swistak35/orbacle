@@ -409,7 +409,7 @@ module Orbacle
           raise
         end
 
-        node = Node.new(:ivar, {}, build_location_from_ast(context, ast))
+        node = Node.new(:ivar, { var_name: ivar_name }, build_location_from_ast(context, ast))
         @graph.add_edge(ivar_definition_node, node)
 
         return Result.new(node, context)
@@ -468,7 +468,7 @@ module Orbacle
 
         cvar_definition_node = @graph.get_cvar_definition_node(context.scope, cvar_name)
 
-        node = Node.new(:cvar, {}, build_location_from_ast(context, ast))
+        node = Node.new(:cvar, { var_name: cvar_name }, build_location_from_ast(context, ast))
         @graph.add_edge(cvar_definition_node, node)
 
         return Result.new(node, context)
@@ -494,7 +494,7 @@ module Orbacle
 
         gvar_definition_node = @graph.get_gvar_definition_node(gvar_name)
 
-        node = add_vertex(Node.new(:gvar, {}, build_location_from_ast(context, ast)))
+        node = add_vertex(Node.new(:gvar, { var_name: gvar_name }, build_location_from_ast(context, ast)))
         @graph.add_edge(gvar_definition_node, node)
 
         return Result.new(node, context)

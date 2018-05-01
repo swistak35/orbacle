@@ -242,7 +242,7 @@ module Orbacle
 
         result = full_type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar)).to eq(nil)
+        expect(find_by_node(result, :ivar, { var_name: "@baz" })).to eq(nil)
       end
 
       specify "assignment of instance variable" do
@@ -274,7 +274,7 @@ module Orbacle
 
         result = full_type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar)).to eq(nominal("Integer"))
+        expect(find_by_node(result, :ivar, { var_name: "@baz" })).to eq(nominal("Integer"))
       end
 
       specify "distinguish instance variables from class level instance variables" do
@@ -311,7 +311,7 @@ module Orbacle
 
         result = full_type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar)).to eq(nominal("Integer"))
+        expect(find_by_node(result, :ivar, { var_name: "@baz" })).to eq(nominal("Integer"))
       end
     end
 

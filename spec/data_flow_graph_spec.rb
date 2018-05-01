@@ -934,7 +934,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:ivar_definition),
-          node(:ivar))
+          node(:ivar, { var_name: "@baz" }))
       end
 
       specify "usage of instance variable in nested class" do
@@ -952,7 +952,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:ivar_definition),
-          node(:ivar))
+          node(:ivar, { var_name: "@baz" }))
       end
 
       specify "usage of instance variable in main" do
@@ -964,7 +964,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:ivar_definition),
-          node(:ivar))
+          node(:ivar, { var_name: "@baz" }))
       end
 
       specify "assignment of instance variable" do
@@ -1021,7 +1021,7 @@ module Orbacle
         int_57 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 57 }
         ivasgn_to_57 = result.graph.adjacent_vertices(int_57).first
         instance_level_baz = result.graph.adjacent_vertices(ivasgn_to_57).first
-        expect(result.graph.adjacent_vertices(instance_level_baz)).to match_array([node(:ivar)])
+        expect(result.graph.adjacent_vertices(instance_level_baz)).to match_array([node(:ivar, { var_name: "@baz" })])
 
         int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
         ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
@@ -1045,7 +1045,7 @@ module Orbacle
         int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
         ivasgn_to_42 = result.graph.adjacent_vertices(int_42).first
         class_level_baz = result.graph.adjacent_vertices(ivasgn_to_42).first
-        expect(result.graph.adjacent_vertices(class_level_baz)).to match_array([node(:ivar)])
+        expect(result.graph.adjacent_vertices(class_level_baz)).to match_array([node(:ivar, { var_name: "@baz" })])
       end
     end
 
@@ -1061,7 +1061,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:cvar_definition),
-          node(:cvar))
+          node(:cvar, { var_name: "@@baz" }))
       end
 
       specify "assignment of class variable" do
@@ -1090,10 +1090,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:gvar))
+        expect(result.final_node).to eq(node(:gvar, { var_name: "$baz" }))
         expect(result.graph).to include_edge(
           node(:gvar_definition),
-          node(:gvar))
+          node(:gvar, { var_name: "$baz" }))
       end
 
       specify "regexp-specific global variables" do
@@ -1152,7 +1152,7 @@ module Orbacle
         int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
         gvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
         global_baz = result.graph.adjacent_vertices(gvasgn_to_42).first
-        expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar)])
+        expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar, { var_name: "$baz" })])
       end
     end
 
@@ -2013,7 +2013,7 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("+")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar, { var_name: "@a" })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:ivasgn, { var_name: "@a" })])
@@ -2030,7 +2030,7 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("+")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar)])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:cvar, { var_name: "@@a" })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
@@ -2047,7 +2047,7 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("a")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar, { var_name: "@b" })])
         expect(msend0.send_args.size).to eq(0)
 
         msend1 = result.message_sends[1]
@@ -2059,7 +2059,7 @@ module Orbacle
 
         msend2 = result.message_sends[2]
         expect(msend2.message_send).to eq("a=")
-        expect(result.graph.reverse.adjacent_vertices(msend2.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend2.send_obj)).to eq([node(:ivar, { var_name: "@b" })])
         expect(msend2.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend2.send_args[0])).to eq([node(:call_result, { csend: false })])
       end
@@ -2115,7 +2115,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:ivar),
+          node(:ivar, { var_name: "@a" }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
@@ -2135,7 +2135,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:cvar),
+          node(:cvar, { var_name: "@@a" }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
@@ -2156,13 +2156,13 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("a")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar, { var_name: "@b" })])
         expect(msend0.send_args.size).to eq(0)
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:or)])
 
         msend1 = result.message_sends[1]
         expect(msend1.message_send).to eq("a=")
-        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:ivar, { var_name: "@b" })])
         expect(msend1.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:or)])
       end
@@ -2221,7 +2221,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:ivar),
+          node(:ivar, { var_name: "@a" }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
@@ -2241,7 +2241,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:cvar),
+          node(:cvar, { var_name: "@@a" }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
@@ -2262,13 +2262,13 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq("a")
-        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend0.send_obj)).to eq([node(:ivar, { var_name: "@b" })])
         expect(msend0.send_args.size).to eq(0)
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:and)])
 
         msend1 = result.message_sends[1]
         expect(msend1.message_send).to eq("a=")
-        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:ivar)])
+        expect(result.graph.reverse.adjacent_vertices(msend1.send_obj)).to eq([node(:ivar, { var_name: "@b" })])
         expect(msend1.send_args.size).to eq(1)
         expect(result.graph.reverse.adjacent_vertices(msend1.send_args[0])).to eq([node(:and)])
       end
