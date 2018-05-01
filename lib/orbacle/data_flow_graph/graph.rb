@@ -9,6 +9,8 @@ module Orbacle
         @global_variables = {}
         @constants = {}
         @main_ivariables = {}
+        @instance_ivariables = {}
+        @class_ivariables = {}
       end
 
       attr_reader :constants
@@ -51,31 +53,34 @@ module Orbacle
       end
 
       def get_gvar_definition_node(gvar_name)
-        if !global_variables[gvar_name]
-          global_variables[gvar_name] = add_vertex(Node.new(:gvar_definition))
-        end
-
+        global_variables[gvar_name] ||= add_vertex(Node.new(:gvar_definition))
         return global_variables[gvar_name]
       end
 
       def get_main_ivar_definition_node(ivar_name)
-        if !main_ivariables[ivar_name]
-          main_ivariables[ivar_name] = add_vertex(Node.new(:ivar_definition))
-        end
-
+        main_ivariables[ivar_name] ||= add_vertex(Node.new(:ivar_definition))
         return main_ivariables[ivar_name]
       end
 
       def get_constant_definition_node(const_name)
-        if !constants[const_name]
-          constants[const_name] = add_vertex(Node.new(:const_definition))
-        end
-
+        constants[const_name] ||= add_vertex(Node.new(:const_definition))
         return constants[const_name]
       end
 
+      def get_ivar_definition_node(scope, ivar_name)
+        instance_ivariables[scope.absolute_str] ||= {}
+        instance_ivariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:ivar_definition))
+        return instance_ivariables[scope.absolute_str][ivar_name]
+      end
+
+      def get_class_level_ivar_definition_node(scope, ivar_name)
+        class_ivariables[scope.absolute_str] ||= {}
+        class_ivariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:clivar_definition))
+        return class_ivariables[scope.absolute_str][ivar_name]
+      end
+
       private
-      attr_reader :global_variables, :main_ivariables
+      attr_reader :global_variables, :main_ivariables, :instance_ivariables, :class_ivariables
     end
   end
 end

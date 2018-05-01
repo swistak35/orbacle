@@ -27,12 +27,10 @@ module Orbacle
 
     class Klass
       class Nodes
-        def initialize(instance_variables = {}, class_level_instance_variables = {}, class_variables = {})
-          @instance_variables = instance_variables
-          @class_level_instance_variables = class_level_instance_variables
+        def initialize(class_variables = {})
           @class_variables = class_variables
         end
-        attr_accessor :instance_variables, :class_variables, :class_level_instance_variables
+        attr_accessor :class_variables
       end
 
       def initialize(name:, scope:, location:, parent_ref:, nodes: Nodes.new)

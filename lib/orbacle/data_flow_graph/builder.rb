@@ -400,9 +400,9 @@ module Orbacle
         ivar_name = ast.children.first.to_s
 
         ivar_definition_node = if context.selfie.klass?
-          get_class_level_ivar_definition_node(context, ivar_name)
+          @graph.get_class_level_ivar_definition_node(context.scope, ivar_name)
         elsif context.selfie.instance?
-          get_ivar_definition_node(context, ivar_name)
+          @graph.get_ivar_definition_node(context.scope, ivar_name)
         elsif context.selfie.main?
           @graph.get_main_ivar_definition_node(ivar_name)
         else
@@ -430,9 +430,9 @@ module Orbacle
         end
 
         ivar_definition_node = if context.selfie.klass?
-          get_class_level_ivar_definition_node(context, ivar_name)
+          @graph.get_class_level_ivar_definition_node(context.scope, ivar_name)
         elsif context.selfie.instance?
-          get_ivar_definition_node(context_after_expr, ivar_name)
+          @graph.get_ivar_definition_node(context_after_expr.scope, ivar_name)
         elsif context.selfie.main?
           @graph.get_main_ivar_definition_node(ivar_name)
         else
@@ -609,7 +609,7 @@ module Orbacle
       end
 
       def define_attr_reader_method(context, ivar_name, location)
-        ivar_definition_node = get_ivar_definition_node(context, "@#{ivar_name}")
+        ivar_definition_node = @graph.get_ivar_definition_node(context.scope, "@#{ivar_name}")
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
@@ -623,7 +623,7 @@ module Orbacle
       end
 
       def define_attr_writer_method(context, ivar_name, location)
-        ivar_definition_node = get_ivar_definition_node(context, "@#{ivar_name}")
+        ivar_definition_node = @graph.get_ivar_definition_node(context.scope, "@#{ivar_name}")
 
         arg_name = "_attr_writer"
         arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
@@ -1354,34 +1354,6 @@ module Orbacle
         expr.type == :send &&
           expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
           expr.children[1] == :new
-      end
-
-      def get_ivar_definition_node(context, ivar_name)
-        klass = @tree.constants.find do |c|
-          c.full_name == context.scope.absolute_str
-        end
-
-        raise if klass.nil?
-
-        if !klass.nodes.instance_variables[ivar_name]
-          klass.nodes.instance_variables[ivar_name] = add_vertex(Node.new(:ivar_definition))
-        end
-
-        return klass.nodes.instance_variables[ivar_name]
-      end
-
-      def get_class_level_ivar_definition_node(context, ivar_name)
-        klass = @tree.constants.find do |c|
-          c.full_name == context.scope.absolute_str
-        end
-
-        raise if klass.nil?
-
-        if !klass.nodes.class_level_instance_variables[ivar_name]
-          klass.nodes.class_level_instance_variables[ivar_name] = add_vertex(Node.new(:clivar_definition))
-        end
-
-        return klass.nodes.class_level_instance_variables[ivar_name]
       end
 
       def get_cvar_definition_node(context, cvar_name)
