@@ -213,7 +213,7 @@ module Orbacle
         else raise ArgumentError.new(ast.type)
         end
 
-        if process_result.node && ast.loc && !process_result.node.location
+        if process_result.node && !process_result.node.location
           process_result.node.location = build_location_from_ast(context, ast)
         end
         return process_result
@@ -223,7 +223,7 @@ module Orbacle
         var_name = ast.children[0].to_s
         expr = ast.children[1]
 
-        node_lvasgn = add_vertex(Node.new(:lvasgn, { var_name: var_name }))
+        node_lvasgn = add_vertex(Node.new(:lvasgn, { var_name: var_name }, build_location_from_ast(context, ast)))
 
         if expr
           expr_result = process(expr, context)
@@ -238,45 +238,45 @@ module Orbacle
 
       def handle_int(ast, context)
         value = ast.children[0]
-        n = add_vertex(Node.new(:int, { value: value }))
+        n = add_vertex(Node.new(:int, { value: value }, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_float(ast, context)
         value = ast.children[0]
-        n = add_vertex(Node.new(:float, { value: value }))
+        n = add_vertex(Node.new(:float, { value: value }, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_true(ast, context)
-        n = add_vertex(Node.new(:bool, { value: true }))
+        n = add_vertex(Node.new(:bool, { value: true }, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_false(ast, context)
-        n = add_vertex(Node.new(:bool, { value: false }))
+        n = add_vertex(Node.new(:bool, { value: false }, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_nil(ast, context)
-        n = add_vertex(Node.new(:nil))
+        n = add_vertex(Node.new(:nil, {}, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_str(ast, context)
         value = ast.children[0]
-        n = add_vertex(Node.new(:str, { value: value }))
+        n = add_vertex(Node.new(:str, { value: value }, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_dstr(ast, context)
-        node_dstr = add_vertex(Node.new(:dstr))
+        node_dstr = add_vertex(Node.new(:dstr, {}, build_location_from_ast(context, ast)))
 
         final_context, nodes = fold_context(ast.children, context)
         add_edges(nodes, node_dstr)
@@ -286,13 +286,13 @@ module Orbacle
 
       def handle_sym(ast, context)
         value = ast.children[0]
-        n = add_vertex(Node.new(:sym, { value: value }))
+        n = add_vertex(Node.new(:sym, { value: value }, build_location_from_ast(context, ast)))
 
         return Result.new(n, context)
       end
 
       def handle_dsym(ast, context)
-        node_dsym = add_vertex(Node.new(:dsym))
+        node_dsym = add_vertex(Node.new(:dsym, {}, build_location_from_ast(context, ast)))
 
         final_context, nodes = fold_context(ast.children, context)
         add_edges(nodes, node_dsym)
@@ -301,7 +301,7 @@ module Orbacle
       end
 
       def handle_array(ast, context)
-        node_array = add_vertex(Node.new(:array))
+        node_array = add_vertex(Node.new(:array, {}, build_location_from_ast(context, ast)))
 
         final_context, nodes = fold_context(ast.children, context)
         add_edges(nodes, node_array)
@@ -314,7 +314,7 @@ module Orbacle
 
         expr_result = process(expr, context)
 
-        node_splat = Node.new(:splat_array)
+        node_splat = Node.new(:splat_array, {}, build_location_from_ast(context, ast))
         @graph.add_edge(expr_result.node, node_splat)
 
         return Result.new(node_splat, expr_result.context)
@@ -324,7 +324,7 @@ module Orbacle
         expr_nodes = ast.children[0..-2]
         regopt = ast.children[-1]
 
-        node_regexp = Node.new(:regexp, { regopt: regopt.children })
+        node_regexp = Node.new(:regexp, { regopt: regopt.children }, build_location_from_ast(context, ast))
 
         final_context, nodes = fold_context(expr_nodes, context)
         add_edges(nodes, node_regexp)
@@ -344,7 +344,7 @@ module Orbacle
         range_from_ast = ast.children[0]
         range_to_ast = ast.children[1]
 
-        range_node = Node.new(:range, { inclusive: inclusive })
+        range_node = Node.new(:range, { inclusive: inclusive }, build_location_from_ast(context, ast))
 
         range_from_ast_result = process(range_from_ast, context)
         from_node = Node.new(:range_from)
@@ -367,14 +367,14 @@ module Orbacle
         else
           raise
         end
-        node = add_vertex(Node.new(node_type, { ref: ref }))
+        node = add_vertex(Node.new(node_type, { ref: ref }, build_location_from_ast(context, ast)))
         return Result.new(node, context)
       end
 
       def handle_defined(ast, context)
         _expr = ast.children[0]
 
-        node = add_vertex(Node.new(:defined))
+        node = add_vertex(Node.new(:defined, {}, build_location_from_ast(context, ast)))
 
         return Result.new(node, context)
       end
@@ -387,7 +387,7 @@ module Orbacle
       def handle_lvar(ast, context)
         var_name = ast.children[0].to_s
 
-        node_lvar = add_vertex(Node.new(:lvar, { var_name: var_name }))
+        node_lvar = add_vertex(Node.new(:lvar, { var_name: var_name }, build_location_from_ast(context, ast)))
 
         context.lenv_fetch(var_name).each do |var_definition_node|
           @graph.add_edge(var_definition_node, node_lvar)
@@ -409,7 +409,7 @@ module Orbacle
           raise
         end
 
-        node = Node.new(:ivar)
+        node = Node.new(:ivar, {}, build_location_from_ast(context, ast))
         @graph.add_edge(ivar_definition_node, node)
 
         return Result.new(node, context)
@@ -419,7 +419,7 @@ module Orbacle
         ivar_name = ast.children[0].to_s
         expr = ast.children[1]
 
-        node_ivasgn = add_vertex(Node.new(:ivasgn, { var_name: ivar_name }))
+        node_ivasgn = add_vertex(Node.new(:ivasgn, { var_name: ivar_name }, build_location_from_ast(context, ast)))
 
         if expr
           expr_result = process(expr, context)
@@ -1538,11 +1538,13 @@ module Orbacle
       end
 
       def build_location_from_ast(context, ast)
-        Location.new(
-          context.filepath,
-          PositionRange.new(
-            Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
-            Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
+        if ast.loc
+          Location.new(
+            context.filepath,
+            PositionRange.new(
+              Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
+              Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
+        end
       end
 
       def add_vertex(v)
