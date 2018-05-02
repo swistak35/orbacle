@@ -63,7 +63,7 @@ module Orbacle
         arg_names = build_arg_names(1)
         arg_nodes = build_arg_nodes(arg_names)
         metod = @tree.add_method(GlobalTree::Method.new(
-          scope: Scope.new(["Dir"], false),
+          scope: Scope.new(["Dir"], true),
           name: "glob",
           location: nil,
           args: build_arg_tree(arg_names),
@@ -79,7 +79,7 @@ module Orbacle
         arg_names = build_arg_names(1)
         arg_nodes = build_arg_nodes(arg_names)
         metod = @tree.add_method(GlobalTree::Method.new(
-          scope: Scope.new(["File"], false),
+          scope: Scope.new(["File"], true),
           name: "read",
           location: nil,
           args: build_arg_tree(arg_names),

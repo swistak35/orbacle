@@ -242,7 +242,7 @@ module Orbacle
 
         result = full_type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar, { var_name: "@baz" })).to eq(nil)
+        expect(find_by_node(result, :ivar_definition)).to eq(nil)
       end
 
       specify "assignment of instance variable" do
@@ -435,18 +435,18 @@ module Orbacle
       end
     end
 
-    specify "Integer#succ" do
-      snippet = <<-END
-      x = 42
-      x.succ
-      END
-
-      result = type_snippet(snippet)
-
-      expect(result).to eq(nominal("Integer"))
-    end
-
     describe "built-in message sends" do
+      specify "Integer#succ" do
+        snippet = <<-END
+        x = 42
+        x.succ
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
       specify "Array#map" do
         snippet = <<-END
         x = [1,2]
