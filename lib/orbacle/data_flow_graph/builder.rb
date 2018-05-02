@@ -568,6 +568,9 @@ module Orbacle
               m.visibility = new_visibility
             end
           end
+          methods_to_change_visibility.each do |name|
+            @tree.change_metod_visibility(context.scope, name, new_visibility)
+          end
 
           final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name(context.analyzed_klass.klass.full_name, Nesting.empty) }))
           return Result.new(final_node, context)
