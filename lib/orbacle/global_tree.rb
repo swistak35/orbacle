@@ -1,8 +1,8 @@
+require 'securerandom'
+
 module Orbacle
   class GlobalTree
     class Method
-      Nodes = Struct.new(:args, :result, :yields)
-
       class ArgumentsTree < Struct.new(:args, :kwargs, :blockarg)
         Regular = Struct.new(:name)
         Optional = Struct.new(:name)
@@ -10,18 +10,18 @@ module Orbacle
         Nested = Struct.new(:args)
       end
 
-      def initialize(scope:, name:, location:, visibility:, args:, nodes:)
+      def initialize(id: SecureRandom.uuid, scope:, name:, location:, visibility:, args:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
+        @id = id
         @name = name
         @location = location
         @visibility = visibility
         @args = args
-        @nodes = nodes
         @scope = scope
       end
 
-      attr_reader :name, :location, :scope, :args, :nodes
+      attr_reader :id, :name, :location, :scope, :args
       attr_accessor :visibility
     end
 

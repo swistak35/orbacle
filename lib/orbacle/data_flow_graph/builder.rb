@@ -47,8 +47,8 @@ module Orbacle
           self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(analyzed_klass.klass, new_visibility), analyzed_method, lenv)
         end
 
-        def with_analyzed_method(new_analyzed_method)
-          self.class.new(filepath, selfie, nesting, analyzed_klass, new_analyzed_method, lenv)
+        def with_analyzed_method(new_analyzed_method_id)
+          self.class.new(filepath, selfie, nesting, analyzed_klass, new_analyzed_method_id, lenv)
         end
 
         def merge_lenv(new_lenv)
@@ -617,9 +617,9 @@ module Orbacle
             name: ivar_name,
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
-            visibility: context.analyzed_klass.method_visibility,
-            nodes: GlobalTree::Method::Nodes.new([], add_vertex(Node.new(:method_result)), [])))
-        @graph.add_edge(ivar_definition_node, metod.nodes.result)
+            visibility: context.analyzed_klass.method_visibility))
+        @graph.store_metod_nodes(metod.id, [])
+        @graph.add_edge(ivar_definition_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def define_attr_writer_method(context, ivar_name, location)
@@ -633,10 +633,10 @@ module Orbacle
             name: "#{ivar_name}=",
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
-            visibility: context.analyzed_klass.method_visibility,
-            nodes: GlobalTree::Method::Nodes.new({arg_name => arg_node}, add_vertex(Node.new(:method_result)), [])))
+            visibility: context.analyzed_klass.method_visibility))
+        @graph.store_metod_nodes(metod.id, { arg_name => arg_node })
         @graph.add_edge(arg_node, ivar_definition_node)
-        @graph.add_edge(ivar_definition_node, metod.nodes.result)
+        @graph.add_edge(ivar_definition_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def handle_self(ast, context)
@@ -722,18 +722,18 @@ module Orbacle
             name: method_name.to_s,
             location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
             args: arguments_tree,
-            visibility: context.analyzed_klass.method_visibility,
-            nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
+            visibility: context.analyzed_klass.method_visibility))
+        @graph.store_metod_nodes(metod.id, arguments_nodes)
 
-        context.with_analyzed_method(metod).tap do |context2|
+        context.with_analyzed_method(metod.id).tap do |context2|
           if method_body
             context2.with_selfie(Selfie.instance_from_scope(context2.scope)).tap do |context3|
               final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
-              @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
+              @graph.add_edge(final_node, @graph.get_metod_nodes(context3.analyzed_method).result)
             end
           else
             final_node = add_vertex(Node.new(:nil))
-            @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
+            @graph.add_edge(final_node, @graph.get_metod_nodes(context2.analyzed_method).result)
           end
         end
 
@@ -848,18 +848,18 @@ module Orbacle
             name: method_name.to_s,
             location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
             args: arguments_tree,
-            visibility: context.analyzed_klass.method_visibility,
-            nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
+            visibility: context.analyzed_klass.method_visibility))
+        @graph.store_metod_nodes(metod.id, arguments_nodes)
 
-        context.with_analyzed_method(metod).tap do |context2|
+        context.with_analyzed_method(metod.id).tap do |context2|
           if method_body
             context2.with_selfie(Selfie.klass_from_scope(context2.scope)).tap do |context3|
               final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
-              @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
+              @graph.add_edge(final_node, @graph.get_metod_nodes(context3.analyzed_method).result)
             end
           else
             final_node = add_vertex(Node.new(:nil))
-            @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
+            @graph.add_edge(final_node, @graph.get_metod_nodes(context2.analyzed_method).result)
           end
         end
 
@@ -987,7 +987,7 @@ module Orbacle
           final_context, nodes = fold_context(ast.children, context)
           add_edges(nodes, node_expr)
         end
-        @graph.add_edge(node_expr, context.analyzed_method.nodes.result)
+        @graph.add_edge(node_expr, @graph.get_metod_nodes(context.analyzed_method).result)
 
         return Result.new(node_expr, final_context)
       end
@@ -1107,7 +1107,7 @@ module Orbacle
           end
         end
         if context.analyzed_method
-          context.analyzed_method.nodes.yields << node_yield
+          @graph.get_metod_nodes(context.analyzed_method).yields << node_yield
         end
         result_node = add_vertex(Node.new(:nil))
 

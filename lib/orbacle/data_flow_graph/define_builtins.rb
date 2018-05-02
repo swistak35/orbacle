@@ -69,10 +69,10 @@ module Orbacle
           name: "==",
           location: nil,
           args: build_arg_tree(arg_names),
-          visibility: :public,
-          nodes: GlobalTree::Method::Nodes.new(build_nodes_hash(arg_nodes), @graph.add_vertex(Node.new(:method_result)), [])))
+          visibility: :public))
+        @graph.store_metod_nodes(metod.id, build_nodes_hash(arg_nodes))
         bool_node = Node.new(:bool)
-        @graph.add_edge(bool_node, metod.nodes.result)
+        @graph.add_edge(bool_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def define_dir_glob
@@ -83,12 +83,12 @@ module Orbacle
           name: "glob",
           location: nil,
           args: build_arg_tree(arg_names),
-          visibility: :public,
-          nodes: GlobalTree::Method::Nodes.new(build_nodes_hash(arg_nodes), @graph.add_vertex(Node.new(:method_result)), [])))
+          visibility: :public))
+        @graph.store_metod_nodes(metod.id, build_nodes_hash(arg_nodes))
         str_node = Node.new(:str)
         array_node = Node.new(:array)
         @graph.add_edge(str_node, array_node)
-        @graph.add_edge(array_node, metod.nodes.result)
+        @graph.add_edge(array_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def build_arg_names(n)
@@ -117,25 +117,26 @@ module Orbacle
       def template_just_int(scope, name, args)
         metod = template_args(scope, name, args)
         int_node = Node.new(:int)
-        @graph.add_edge(int_node, metod.nodes.result)
+        @graph.add_edge(int_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def template_just_str(scope, name, args)
         metod = template_args(scope, name, args)
         str_node = Node.new(:str)
-        @graph.add_edge(str_node, metod.nodes.result)
+        @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def template_args(scope, name, args)
         arg_names = build_arg_names(args)
         arg_nodes = build_arg_nodes(arg_names)
-        @tree.add_method(GlobalTree::Method.new(
+        metod = @tree.add_method(GlobalTree::Method.new(
           scope: scope,
           name: name,
           location: nil,
           args: build_arg_tree(arg_names),
-          visibility: :public,
-          nodes: GlobalTree::Method::Nodes.new(build_nodes_hash(arg_nodes), @graph.add_vertex(Node.new(:method_result)), [])))
+          visibility: :public))
+        @graph.store_metod_nodes(metod.id, build_nodes_hash(arg_nodes))
+        return metod
       end
     end
   end

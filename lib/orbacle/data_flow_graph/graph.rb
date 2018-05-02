@@ -3,6 +3,8 @@ require 'rgl/adjacency'
 module Orbacle
   module DataFlowGraph
     class Graph
+      Metod = Struct.new(:args, :result, :yields)
+
       def initialize
         @graph = RGL::DirectedAdjacencyGraph.new
 
@@ -12,6 +14,7 @@ module Orbacle
         @instance_ivariables = {}
         @class_ivariables = {}
         @cvariables = {}
+        @metods = {}
       end
 
       attr_reader :constants
@@ -86,8 +89,16 @@ module Orbacle
         return cvariables[scope.absolute_str][ivar_name]
       end
 
+      def get_metod_nodes(metod_id)
+        return metods[metod_id]
+      end
+
+      def store_metod_nodes(metod_id, arguments_nodes)
+        metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])
+      end
+
       private
-      attr_reader :global_variables, :main_ivariables, :instance_ivariables, :class_ivariables, :cvariables
+      attr_reader :global_variables, :main_ivariables, :instance_ivariables, :class_ivariables, :cvariables, :metods
     end
   end
 end

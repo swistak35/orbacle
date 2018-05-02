@@ -398,7 +398,7 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
 
-        method_result_node = found_method.nodes.result
+        method_result_node = @graph.original.get_metod_nodes(found_method.id).result
         if !@graph.original.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
@@ -418,7 +418,7 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
 
-        method_result_node = found_method.nodes.result
+        method_result_node = @graph.original.get_metod_nodes(found_method.id).result
         if !@graph.original.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
@@ -436,7 +436,8 @@ module Orbacle
       end
       found_method.args.args.each_with_index do |formal_arg, i|
         next if formal_arg.name.nil?
-        node_formal_arg = found_method.nodes.args[formal_arg.name]
+        found_method_args = @graph.original.get_metod_nodes(found_method.id).args
+        node_formal_arg = found_method_args[formal_arg.name]
 
         case formal_arg
         when GlobalTree::Method::ArgumentsTree::Regular
@@ -464,7 +465,7 @@ module Orbacle
 
         found_method.args.kwargs.each do |formal_kwarg|
           next if formal_kwarg.name.nil?
-          node_formal_kwarg = found_method.nodes.args[formal_kwarg.name]
+          node_formal_kwarg = @graph.original.get_metod_nodes(found_method.id).args[formal_kwarg.name]
 
           case formal_kwarg
           when GlobalTree::Method::ArgumentsTree::Regular
@@ -481,8 +482,8 @@ module Orbacle
         end
       end
 
-      if !found_method.nodes.yields.empty?
-        found_method.nodes.yields.each do |node_yield|
+      if !@graph.original.get_metod_nodes(found_method.id).yields.empty?
+        @graph.original.get_metod_nodes(found_method.id).yields.each do |node_yield|
           @graph.add_edge(node_yield, message_send.block.args[0])
           @worklist.enqueue_node(message_send.block.args[0])
         end
