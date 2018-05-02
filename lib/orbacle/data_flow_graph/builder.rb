@@ -660,7 +660,7 @@ module Orbacle
 
         args_ast_nodes = []
         context_with_args = args_ast.children.reduce(send_context) do |current_context, arg_ast|
-          arg_node = add_vertex(Node.new(:block_arg, {}, build_location_from_ast(context, ast)))
+          arg_node = add_vertex(Node.new(:block_arg, {}, build_location_from_ast(context, arg_ast)))
           args_ast_nodes << arg_node
           case arg_ast.type
           when :arg
