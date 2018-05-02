@@ -21,7 +21,7 @@ module Orbacle
           @selfie = selfie.freeze
           @nesting = nesting.freeze
           @analyzed_klass = analyzed_klass.freeze
-          @analyzed_method = analyzed_method
+          @analyzed_method = analyzed_method.freeze
           @lenv = lenv.freeze
         end
 
