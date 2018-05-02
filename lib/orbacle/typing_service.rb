@@ -501,13 +501,6 @@ module Orbacle
 
     def primitive_mapping
       {
-        "Integer" => {
-          "succ" => method(:send_primitive_templ_just_int),
-          "to_s" => method(:send_primitive_templ_just_str),
-          "+" => method(:send_primitive_templ_just_int),
-          "-" => method(:send_primitive_templ_just_int),
-          "*" => method(:send_primitive_templ_just_int),
-        },
         "Array" => {
           "map" => method(:send_primitive_array_map),
           "each" => method(:send_primitive_array_each),
@@ -544,20 +537,6 @@ module Orbacle
       @worklist.enqueue_node(node)
       @graph.add_edge(node, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
-    end
-
-    def send_primitive_templ_just_int(_class_name, message_send)
-      node = DataFlowGraph::Node.new(:int)
-      @graph.add_vertex(node)
-      @graph.add_edge(node, message_send.send_result)
-      @worklist.enqueue_node(node)
-    end
-
-    def send_primitive_templ_just_str(_class_name, message_send)
-      node = DataFlowGraph::Node.new(:str)
-      @graph.add_vertex(node)
-      @graph.add_edge(node, message_send.send_result)
-      @worklist.enqueue_node(node)
     end
 
     def send_primitive_array_map(_class_name, message_send)

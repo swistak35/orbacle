@@ -10,6 +10,7 @@ module Orbacle
         add_object_klass
         add_dir_klass
         add_file_klass
+        add_integer_klass
       end
 
       def add_object_klass
@@ -21,6 +22,21 @@ module Orbacle
             location: nil))
 
         define_object_opeq
+        template_just_str(Scope.new(["Object"], false), "to_s", 0)
+      end
+
+      def add_integer_klass
+        klass = @tree.add_klass(
+          GlobalTree::Klass.new(
+            name: "Integer",
+            scope: Scope.empty,
+            parent_ref: nil,
+            location: nil))
+
+        template_just_int(Scope.new(["Integer"], false), "succ", 0)
+        template_just_int(Scope.new(["Integer"], false), "+", 1)
+        template_just_int(Scope.new(["Integer"], false), "-", 1)
+        template_just_int(Scope.new(["Integer"], false), "*", 1)
       end
 
       def add_dir_klass
@@ -42,7 +58,7 @@ module Orbacle
             parent_ref: nil,
             location: nil))
 
-        define_file_read
+        template_just_str(Scope.new(["File"], true), "read", 1)
       end
 
       def define_object_opeq
@@ -75,20 +91,6 @@ module Orbacle
         @graph.add_edge(array_node, metod.nodes.result)
       end
 
-      def define_file_read
-        arg_names = build_arg_names(1)
-        arg_nodes = build_arg_nodes(arg_names)
-        metod = @tree.add_method(GlobalTree::Method.new(
-          scope: Scope.new(["File"], true),
-          name: "read",
-          location: nil,
-          args: build_arg_tree(arg_names),
-          visibility: :public,
-          nodes: GlobalTree::Method::Nodes.new(build_nodes_hash(arg_nodes), @graph.add_vertex(Node.new(:method_result)), [])))
-        str_node = Node.new(:str)
-        @graph.add_edge(str_node, metod.nodes.result)
-      end
-
       def build_arg_names(n)
         n.times.map {|i| "_arg#{i}" }
       end
@@ -110,6 +112,30 @@ module Orbacle
           GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
         end
         GlobalTree::Method::ArgumentsTree.new(regular_args, [], nil)
+      end
+
+      def template_just_int(scope, name, args)
+        metod = template_args(scope, name, args)
+        int_node = Node.new(:int)
+        @graph.add_edge(int_node, metod.nodes.result)
+      end
+
+      def template_just_str(scope, name, args)
+        metod = template_args(scope, name, args)
+        str_node = Node.new(:str)
+        @graph.add_edge(str_node, metod.nodes.result)
+      end
+
+      def template_args(scope, name, args)
+        arg_names = build_arg_names(args)
+        arg_nodes = build_arg_nodes(arg_names)
+        @tree.add_method(GlobalTree::Method.new(
+          scope: scope,
+          name: name,
+          location: nil,
+          args: build_arg_tree(arg_names),
+          visibility: :public,
+          nodes: GlobalTree::Method::Nodes.new(build_nodes_hash(arg_nodes), @graph.add_vertex(Node.new(:method_result)), [])))
       end
     end
   end
