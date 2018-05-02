@@ -7,7 +7,8 @@ module Orbacle
       Lambda = Struct.new(:args, :result)
 
       def initialize
-        @graph = RGL::DirectedAdjacencyGraph.new
+        @original = RGL::DirectedAdjacencyGraph.new
+        @reversed = RGL::DirectedAdjacencyGraph.new
 
         @global_variables = {}
         @constants = {}
@@ -19,43 +20,45 @@ module Orbacle
         @lambdas = {}
       end
 
-      attr_reader :constants
+      attr_reader :constants, :original, :reversed
 
       def add_vertex(node)
-        @graph.add_vertex(node)
+        @original.add_vertex(node)
+        @reversed.add_vertex(node)
         node
       end
 
       def add_edges(nodes_source, nodes_target)
         Array(nodes_source).each do |source|
           Array(nodes_target).each do |target|
-            @graph.add_edge(source, target)
+            add_edge(source, target)
           end
         end
       end
 
       def add_edge(x, y)
-        @graph.add_edge(x, y)
+        @original.add_edge(x, y)
+        @reversed.add_edge(y, x)
       end
 
       def edges
-        @graph.edges
+        @original.edges
       end
 
       def vertices
-        @graph.vertices
+        @original.vertices
       end
 
       def adjacent_vertices(v)
-        @graph.adjacent_vertices(v)
+        @original.adjacent_vertices(v)
       end
 
       def reverse
-        @graph.reverse
+        @reversed
       end
 
       def has_edge?(x, y)
-        @graph.has_edge?(x, y)
+        @original.has_edge?(x, y)
       end
 
       def get_gvar_definition_node(gvar_name)

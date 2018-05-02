@@ -2,25 +2,6 @@ require 'rgl/adjacency'
 
 module Orbacle
   class TypingService
-    class DoubleEdgedGraph
-      def initialize(graph)
-        @original = graph
-        @reversed = graph.reverse
-      end
-
-      def add_vertex(node)
-        @original.add_vertex(node)
-        @reversed.add_vertex(node)
-      end
-
-      def add_edge(u, v)
-        @original.add_edge(u, v)
-        @reversed.add_edge(v, u)
-      end
-
-      attr_reader :original, :reversed
-    end
-
     class NominalType < Struct.new(:name)
       def each_possible_type
         yield self
@@ -74,7 +55,7 @@ module Orbacle
 
     def call(graph, worklist, tree)
       @worklist = worklist
-      @graph = DoubleEdgedGraph.new(graph)
+      @graph = graph
       @tree = tree
 
       @result = {}
@@ -316,8 +297,8 @@ module Orbacle
       if !sources.empty?
         handle_group(node, sources)
       else
-        if ref_result && @graph.original.constants[ref_result.full_name]
-          const_definition_node = @graph.original.constants[ref_result.full_name]
+        if ref_result && @graph.constants[ref_result.full_name]
+          const_definition_node = @graph.constants[ref_result.full_name]
           @graph.add_edge(const_definition_node, node)
           @worklist.enqueue_node(const_definition_node)
           @result[const_definition_node]
@@ -398,7 +379,7 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
 
-        method_result_node = @graph.original.get_metod_nodes(found_method.id).result
+        method_result_node = @graph.get_metod_nodes(found_method.id).result
         if !@graph.original.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
@@ -418,7 +399,7 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
 
-        method_result_node = @graph.original.get_metod_nodes(found_method.id).result
+        method_result_node = @graph.get_metod_nodes(found_method.id).result
         if !@graph.original.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
@@ -436,7 +417,7 @@ module Orbacle
       end
       found_method.args.args.each_with_index do |formal_arg, i|
         next if formal_arg.name.nil?
-        found_method_args = @graph.original.get_metod_nodes(found_method.id).args
+        found_method_args = @graph.get_metod_nodes(found_method.id).args
         node_formal_arg = found_method_args[formal_arg.name]
 
         case formal_arg
@@ -465,7 +446,7 @@ module Orbacle
 
         found_method.args.kwargs.each do |formal_kwarg|
           next if formal_kwarg.name.nil?
-          node_formal_kwarg = @graph.original.get_metod_nodes(found_method.id).args[formal_kwarg.name]
+          node_formal_kwarg = @graph.get_metod_nodes(found_method.id).args[formal_kwarg.name]
 
           case formal_kwarg
           when GlobalTree::Method::ArgumentsTree::Regular
@@ -482,8 +463,8 @@ module Orbacle
         end
       end
 
-      if !@graph.original.get_metod_nodes(found_method.id).yields.empty?
-        @graph.original.get_metod_nodes(found_method.id).yields.each do |node_yield|
+      if !@graph.get_metod_nodes(found_method.id).yields.empty?
+        @graph.get_metod_nodes(found_method.id).yields.each do |node_yield|
           @graph.add_edge(node_yield, message_send.block.args[0])
           @worklist.enqueue_node(message_send.block.args[0])
         end
