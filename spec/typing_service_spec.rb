@@ -113,7 +113,7 @@ module Orbacle
       end
     end
 
-    describe "arrays" do
+    describe "arrays / tuples" do
       specify "empty array" do
         snippet = <<-END
         []

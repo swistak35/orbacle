@@ -134,7 +134,7 @@ module Orbacle
       when :range then handle_range(node, sources)
       when :self then handle_self(node, sources)
       when :lvar then handle_group(node, sources)
-      when :array then handle_group_into_array(node, sources)
+      when :array then handle_wrap_array(node, sources)
       when :splat_array then handle_unwrap_array(node, sources)
       when :lvasgn then handle_pass_lte1(node, sources)
       when :call_obj then handle_pass1(node, sources)
@@ -142,7 +142,7 @@ module Orbacle
       when :call_arg then handle_group(node, sources)
       when :formal_arg then handle_group(node, sources)
       when :formal_optarg then handle_group(node, sources)
-      when :formal_restarg then handle_group_into_array(node, sources)
+      when :formal_restarg then handle_wrap_array(node, sources)
       when :formal_kwarg then handle_group(node, sources)
       when :formal_kwoptarg then handle_group(node, sources)
       when :formal_kwrestarg then handle_pass_lte1(node, sources)
@@ -266,11 +266,6 @@ module Orbacle
       else
         raise
       end
-    end
-
-    def handle_group_into_array(_node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      GenericType.new("Array", [build_union(sources_types)])
     end
 
     def handle_unwrap_array(node, sources)
