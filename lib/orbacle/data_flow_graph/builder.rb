@@ -517,7 +517,7 @@ module Orbacle
         call_arg_nodes = []
         final_context = arg_exprs.reduce(obj_context) do |current_context, ast_child|
           ast_child_result = process(ast_child, current_context)
-          call_arg_node = add_vertex(Node.new(:call_arg))
+          call_arg_node = add_vertex(Node.new(:call_arg, {}))
           call_arg_nodes << call_arg_node
           @graph.add_edge(ast_child_result.node, call_arg_node)
           ast_child_result.context
@@ -530,7 +530,7 @@ module Orbacle
         return handle_custom_class_send(context, obj_node) if message_name == "class"
         return handle_custom_freeze_send(context, obj_node) if message_name == "freeze"
 
-        call_obj_node = add_vertex(Node.new(:call_obj))
+        call_obj_node = add_vertex(Node.new(:call_obj, {}))
         @graph.add_edge(obj_node, call_obj_node)
 
         call_result_node = add_vertex(Node.new(:call_result, { csend: csend }))
@@ -542,14 +542,14 @@ module Orbacle
       end
 
       def handle_custom_class_send(context, obj_node)
-        extract_class_node = @graph.add_vertex(Node.new(:extract_class))
+        extract_class_node = @graph.add_vertex(Node.new(:extract_class, {}))
         @graph.add_edge(obj_node, extract_class_node)
 
         return Result.new(extract_class_node, context)
       end
 
       def handle_custom_freeze_send(context, obj_node)
-        freeze_node = @graph.add_vertex(Node.new(:freeze))
+        freeze_node = @graph.add_vertex(Node.new(:freeze, {}))
         @graph.add_edge(obj_node, freeze_node)
 
         return Result.new(freeze_node, context)
@@ -584,7 +584,7 @@ module Orbacle
           define_attr_reader_method(context, ivar_name, location)
         end
 
-        return Result.new(Node.new(:nil), context)
+        return Result.new(Node.new(:nil, {}), context)
       end
 
       def handle_custom_attr_writer_send(context, arg_exprs, ast)
@@ -594,7 +594,7 @@ module Orbacle
           define_attr_writer_method(context, ivar_name, location)
         end
 
-        return Result.new(Node.new(:nil), context)
+        return Result.new(Node.new(:nil, {}), context)
       end
 
       def handle_custom_attr_accessor_send(context, arg_exprs, ast)
@@ -605,7 +605,7 @@ module Orbacle
           define_attr_writer_method(context, ivar_name, location)
         end
 
-        return Result.new(Node.new(:nil), context)
+        return Result.new(Node.new(:nil, {}), context)
       end
 
       def define_attr_reader_method(context, ivar_name, location)
@@ -677,7 +677,7 @@ module Orbacle
         block_expr_result = process(block_expr, context_with_args)
         block_final_node = block_expr_result.node
         block_result_context = block_expr_result.context
-        block_result_node = add_vertex(Node.new(:block_result))
+        block_result_node = add_vertex(Node.new(:block_result, {}))
         @graph.add_edge(block_final_node, block_result_node)
 
         if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
@@ -693,7 +693,7 @@ module Orbacle
       end
 
       def handle_mlhs_for_block(ast, context, node)
-        unwrap_array_node = Node.new(:unwrap_array)
+        unwrap_array_node = Node.new(:unwrap_array, {})
         @graph.add_edge(node, unwrap_array_node)
 
         final_context = ast.children.reduce(context) do |current_context, ast_child|
@@ -733,7 +733,7 @@ module Orbacle
               @graph.add_edge(final_node, @graph.get_metod_nodes(context3.analyzed_method).result)
             end
           else
-            final_node = add_vertex(Node.new(:nil))
+            final_node = add_vertex(Node.new(:nil, {}))
             @graph.add_edge(final_node, @graph.get_metod_nodes(context2.analyzed_method).result)
           end
         end
@@ -744,9 +744,9 @@ module Orbacle
       end
 
       def handle_hash(ast, context)
-        node_hash_keys = add_vertex(Node.new(:hash_keys))
-        node_hash_values = add_vertex(Node.new(:hash_values))
-        node_hash = add_vertex(Node.new(:hash))
+        node_hash_keys = add_vertex(Node.new(:hash_keys, {}))
+        node_hash_values = add_vertex(Node.new(:hash_values, {}))
+        node_hash = add_vertex(Node.new(:hash, {}))
         @graph.add_edge(node_hash_keys, node_hash)
         @graph.add_edge(node_hash_values, node_hash)
 
@@ -764,8 +764,8 @@ module Orbacle
 
             kwsplat_expr_result = process(kwsplat_expr, context)
 
-            node_unwrap_hash_keys = Node.new(:unwrap_hash_keys)
-            node_unwrap_hash_values = Node.new(:unwrap_hash_values)
+            node_unwrap_hash_keys = Node.new(:unwrap_hash_keys, {})
+            node_unwrap_hash_values = Node.new(:unwrap_hash_values, {})
 
             @graph.add_edge(kwsplat_expr_result.node, node_unwrap_hash_keys)
             @graph.add_edge(kwsplat_expr_result.node, node_unwrap_hash_values)
@@ -801,7 +801,7 @@ module Orbacle
           process(klass_body, new_context)
         end
 
-        node = add_vertex(Node.new(:nil))
+        node = add_vertex(Node.new(:nil, {}))
 
         return Result.new(node, context)
       end
@@ -824,7 +824,7 @@ module Orbacle
           end
         end
 
-        return Result.new(Node.new(:nil), context)
+        return Result.new(Node.new(:nil, {}), context)
       end
 
       def handle_sclass(ast, context)
@@ -832,7 +832,7 @@ module Orbacle
         sklass_body = ast.children[1]
         process(sklass_body, context.with_nesting(context.nesting.increase_nesting_self))
 
-        return Result.new(Node.new(:nil), context)
+        return Result.new(Node.new(:nil, {}), context)
       end
 
       def handle_defs(ast, context)
@@ -859,7 +859,7 @@ module Orbacle
               @graph.add_edge(final_node, @graph.get_metod_nodes(context3.analyzed_method).result)
             end
           else
-            final_node = add_vertex(Node.new(:nil))
+            final_node = add_vertex(Node.new(:nil, {}))
             @graph.add_edge(final_node, @graph.get_metod_nodes(context2.analyzed_method).result)
           end
         end
@@ -883,7 +883,7 @@ module Orbacle
               parent_ref: parent_name_ref,
               location: build_location_from_ast(context, ast)))
 
-          return Result.new(Node.new(:nil), context)
+          return Result.new(Node.new(:nil, {}), context)
         elsif expr_is_module_definition?(expr)
           @tree.add_mod(
             GlobalTree::Mod.new(
@@ -891,7 +891,7 @@ module Orbacle
               scope: context.scope.increase_by_ref(const_name_ref).decrease,
               location: build_location_from_ast(context, ast)))
 
-          return Result.new(Node.new(:nil), context)
+          return Result.new(Node.new(:nil, {}), context)
         else
           @tree.add_constant(
             GlobalTree::Constant.new(
@@ -932,7 +932,7 @@ module Orbacle
         expr_left_result = process(expr_left, context)
         expr_right_result = process(expr_right, expr_left_result.context)
 
-        node_or = add_vertex(Node.new(node_type))
+        node_or = add_vertex(Node.new(node_type, {}))
         @graph.add_edge(expr_left_result.node, node_or)
         @graph.add_edge(expr_right_result.node, node_or)
 
@@ -952,7 +952,7 @@ module Orbacle
           node_iftrue = expr_iftrue_result.node
           context_after_iftrue = expr_iftrue_result.context
         else
-          node_iftrue = add_vertex(Node.new(:nil))
+          node_iftrue = add_vertex(Node.new(:nil, {}))
           context_after_iftrue = context
         end
 
@@ -962,11 +962,11 @@ module Orbacle
           node_iffalse = expr_iffalse_result.node
           context_after_iffalse = expr_iffalse_result.context
         else
-          node_iffalse = add_vertex(Node.new(:nil))
+          node_iffalse = add_vertex(Node.new(:nil, {}))
           context_after_iffalse = context
         end
 
-        node_if_result = add_vertex(Node.new(:if_result))
+        node_if_result = add_vertex(Node.new(:if_result, {}))
         @graph.add_edge(node_iftrue, node_if_result)
         @graph.add_edge(node_iffalse, node_if_result)
 
@@ -977,14 +977,14 @@ module Orbacle
         exprs = ast.children
 
         if exprs.size == 0
-          node_expr = add_vertex(Node.new(:nil))
+          node_expr = add_vertex(Node.new(:nil, {}))
           final_context = context
         elsif exprs.size == 1
           expr_result = process(exprs[0], context)
           node_expr = expr_result.node
           final_context = expr_result.context
         else
-          node_expr = add_vertex(Node.new(:array))
+          node_expr = add_vertex(Node.new(:array, {}))
           final_context, nodes = fold_context(ast.children, context)
           add_edges(nodes, node_expr)
         end
@@ -1007,7 +1007,7 @@ module Orbacle
       end
 
       def handle_mlhs_for_masgn(ast, context, rhs_expr)
-        result_node = add_vertex(Node.new(:array))
+        result_node = add_vertex(Node.new(:array, {}))
 
         i = 0
         final_context = ast.children.reduce(context) do |current_context, ast_child|
@@ -1032,7 +1032,7 @@ module Orbacle
       end
 
       def handle_alias(ast, context)
-        node = add_vertex(Node.new(:nil))
+        node = add_vertex(Node.new(:nil, {}))
         return Result.new(node, context)
       end
 
@@ -1042,13 +1042,13 @@ module Orbacle
         call_arg_nodes = []
         final_context = arg_exprs.reduce(context) do |current_context, ast_child|
           ast_child_result = process(ast_child, current_context)
-          call_arg_node = add_vertex(Node.new(:call_arg))
+          call_arg_node = add_vertex(Node.new(:call_arg, {}))
           call_arg_nodes << call_arg_node
           @graph.add_edge(ast_child_result.node, call_arg_node)
           ast_child_result.context
         end
 
-        call_result_node = add_vertex(Node.new(:call_result))
+        call_result_node = add_vertex(Node.new(:call_result, {}))
 
         super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, nil)
         @worklist.add_message_send(super_send)
@@ -1057,7 +1057,7 @@ module Orbacle
       end
 
       def handle_zsuper(ast, context)
-        call_result_node = add_vertex(Node.new(:call_result))
+        call_result_node = add_vertex(Node.new(:call_result, {}))
 
         zsuper_send = Worklist::Super0Send.new(call_result_node, nil)
         @worklist.add_message_send(zsuper_send)
@@ -1072,7 +1072,7 @@ module Orbacle
         new_context = process(expr_cond, context).context
         final_context = process(expr_body, new_context).context
 
-        node = add_vertex(Node.new(:nil))
+        node = add_vertex(Node.new(:nil, {}))
 
         return Result.new(node, final_context)
       end
@@ -1083,7 +1083,7 @@ module Orbacle
 
         new_context = process(expr_cond, context).context
 
-        node_case_result = add_vertex(Node.new(:case_result))
+        node_case_result = add_vertex(Node.new(:case_result, {}))
         final_context = expr_branches.reduce(new_context) do |current_context, expr_when|
           expr_when_result = process(expr_when, current_context)
           @graph.add_edge(expr_when_result.node, node_case_result)
@@ -1096,9 +1096,9 @@ module Orbacle
       def handle_yield(ast, context)
         exprs = ast.children
 
-        node_yield = add_vertex(Node.new(:yield))
+        node_yield = add_vertex(Node.new(:yield, {}))
         final_context = if exprs.empty?
-          @graph.add_edge(Node.new(:nil), node_yield)
+          @graph.add_edge(Node.new(:nil, {}), node_yield)
           context
         else
           exprs.reduce(context) do |current_context, current_expr|
@@ -1110,7 +1110,7 @@ module Orbacle
         if context.analyzed_method
           @graph.get_metod_nodes(context.analyzed_method).yields << node_yield
         end
-        result_node = add_vertex(Node.new(:nil))
+        result_node = add_vertex(Node.new(:nil, {}))
 
         return Result.new(result_node, final_context)
       end
@@ -1126,7 +1126,7 @@ module Orbacle
       end
 
       def handle_break(ast, context)
-        return Result.new(Node.new(:bottom), context)
+        return Result.new(Node.new(:bottom, {}), context)
       end
 
       def handle_block_pass(ast, context)
@@ -1144,7 +1144,7 @@ module Orbacle
 
         context_after_errors = if error_array_expr
           error_array_expr_result = process(error_array_expr, context)
-          unwrap_node = add_vertex(Node.new(:unwrap_array))
+          unwrap_node = add_vertex(Node.new(:unwrap_array, {}))
           @graph.add_edge(error_array_expr_result.node, unwrap_node)
           error_array_expr_result.context
         else
@@ -1164,7 +1164,7 @@ module Orbacle
           node_rescue_body = rescue_body_expr_result.node
           final_context = rescue_body_expr_result.context
         else
-          node_rescue_body = add_vertex(Node.new(:nil))
+          node_rescue_body = add_vertex(Node.new(:nil, {}))
           final_context = context
         end
 
@@ -1181,7 +1181,7 @@ module Orbacle
           node_try = try_expr_result.node
           context_after_try = try_expr_result.context
         else
-          node_try = add_vertex(Node.new(:nil))
+          node_try = add_vertex(Node.new(:nil, {}))
           context_after_try = context
         end
 
@@ -1189,7 +1189,7 @@ module Orbacle
         node_resbody = resbody_result.node
         context_after_resbody = resbody_result.context
 
-        node = add_vertex(Node.new(:rescue))
+        node = add_vertex(Node.new(:rescue, {}))
         @graph.add_edge(node_resbody, node)
 
         if elsebody
@@ -1205,14 +1205,14 @@ module Orbacle
       end
 
       def handle_retry(ast, context)
-        return Result.new(add_vertex(Node.new(:bottom)), context)
+        return Result.new(add_vertex(Node.new(:bottom, {})), context)
       end
 
       def handle_ensure(ast, context)
         expr_pre = ast.children[0]
         expr_ensure_body = ast.children[1]
 
-        node_ensure = add_vertex(Node.new(:ensure))
+        node_ensure = add_vertex(Node.new(:ensure, {}))
 
         expr_pre_result = process(expr_pre, context)
         @graph.add_edge(expr_pre_result.node, node_ensure) if expr_pre_result.node
@@ -1425,7 +1425,7 @@ module Orbacle
             nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
             current_context.merge(arg_name => [nodes[arg_name]])
           when :mlhs
-            mlhs_node = add_vertex(Node.new(:formal_mlhs))
+            mlhs_node = add_vertex(Node.new(:formal_mlhs, {}))
             nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context, mlhs_node)
             args << nested_arg
             next_context

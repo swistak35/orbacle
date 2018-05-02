@@ -439,7 +439,7 @@ module Orbacle
       end
 
       if kwarg_arg
-        unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values)
+        unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values, {})
         @graph.add_vertex(unwrapping_node)
         @graph.add_edge(kwarg_arg, unwrapping_node)
         @worklist.enqueue_node(unwrapping_node)
@@ -526,14 +526,14 @@ module Orbacle
     def send_primitive_array_map(_class_name, message_send)
       raise if message_send.block.nil?
 
-      unwrapping_node = DataFlowGraph::Node.new(:unwrap_array)
+      unwrapping_node = DataFlowGraph::Node.new(:unwrap_array, {})
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
       @graph.add_edge(unwrapping_node, message_send.block.args.first)
       @worklist.enqueue_node(message_send.block.args.first)
 
-      wrapping_node = DataFlowGraph::Node.new(:wrap_array)
+      wrapping_node = DataFlowGraph::Node.new(:wrap_array, {})
       @graph.add_vertex(wrapping_node)
       @graph.add_edge(message_send.block.result, wrapping_node)
       @worklist.enqueue_node(wrapping_node)
@@ -544,7 +544,7 @@ module Orbacle
     def send_primitive_array_each(_class_name, message_send)
       raise if message_send.block.nil?
 
-      unwrapping_node = DataFlowGraph::Node.new(:unwrap_array)
+      unwrapping_node = DataFlowGraph::Node.new(:unwrap_array, {})
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)

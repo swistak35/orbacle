@@ -71,7 +71,7 @@ module Orbacle
           args: build_arg_tree(arg_names),
           visibility: :public))
         @graph.store_metod_nodes(metod.id, build_nodes_hash(arg_nodes))
-        bool_node = Node.new(:bool)
+        bool_node = Node.new(:bool, {})
         @graph.add_edge(bool_node, @graph.get_metod_nodes(metod.id).result)
       end
 
@@ -85,8 +85,8 @@ module Orbacle
           args: build_arg_tree(arg_names),
           visibility: :public))
         @graph.store_metod_nodes(metod.id, build_nodes_hash(arg_nodes))
-        str_node = Node.new(:str)
-        array_node = Node.new(:array)
+        str_node = Node.new(:str, {})
+        array_node = Node.new(:array, {})
         @graph.add_edge(str_node, array_node)
         @graph.add_edge(array_node, @graph.get_metod_nodes(metod.id).result)
       end
@@ -116,13 +116,13 @@ module Orbacle
 
       def template_just_int(scope, name, args)
         metod = template_args(scope, name, args)
-        int_node = Node.new(:int)
+        int_node = Node.new(:int, {})
         @graph.add_edge(int_node, @graph.get_metod_nodes(metod.id).result)
       end
 
       def template_just_str(scope, name, args)
         metod = template_args(scope, name, args)
-        str_node = Node.new(:str)
+        str_node = Node.new(:str, {})
         @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
       end
 

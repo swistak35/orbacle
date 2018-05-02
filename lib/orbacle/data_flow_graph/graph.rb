@@ -62,35 +62,35 @@ module Orbacle
       end
 
       def get_gvar_definition_node(gvar_name)
-        global_variables[gvar_name] ||= add_vertex(Node.new(:gvar_definition))
+        global_variables[gvar_name] ||= add_vertex(Node.new(:gvar_definition, {}))
         return global_variables[gvar_name]
       end
 
       def get_main_ivar_definition_node(ivar_name)
-        main_ivariables[ivar_name] ||= add_vertex(Node.new(:ivar_definition))
+        main_ivariables[ivar_name] ||= add_vertex(Node.new(:ivar_definition, {}))
         return main_ivariables[ivar_name]
       end
 
       def get_constant_definition_node(const_name)
-        constants[const_name] ||= add_vertex(Node.new(:const_definition))
+        constants[const_name] ||= add_vertex(Node.new(:const_definition, {}))
         return constants[const_name]
       end
 
       def get_ivar_definition_node(scope, ivar_name)
         instance_ivariables[scope.absolute_str] ||= {}
-        instance_ivariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:ivar_definition))
+        instance_ivariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:ivar_definition, {}))
         return instance_ivariables[scope.absolute_str][ivar_name]
       end
 
       def get_class_level_ivar_definition_node(scope, ivar_name)
         class_ivariables[scope.absolute_str] ||= {}
-        class_ivariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:clivar_definition))
+        class_ivariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:clivar_definition, {}))
         return class_ivariables[scope.absolute_str][ivar_name]
       end
 
       def get_cvar_definition_node(scope, ivar_name)
         cvariables[scope.absolute_str] ||= {}
-        cvariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:cvar_definition))
+        cvariables[scope.absolute_str][ivar_name] ||= add_vertex(Node.new(:cvar_definition, {}))
         return cvariables[scope.absolute_str][ivar_name]
       end
 
@@ -99,7 +99,7 @@ module Orbacle
       end
 
       def store_metod_nodes(metod_id, arguments_nodes)
-        metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])
+        metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result, {})), [])
       end
 
       def get_lambda_nodes(lambda_id)

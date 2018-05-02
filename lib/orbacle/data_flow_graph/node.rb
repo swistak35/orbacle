@@ -1,7 +1,7 @@
 module Orbacle
   module DataFlowGraph
     class Node
-      def initialize(type, params = {}, location = nil)
+      def initialize(type, params, location = nil)
         @type = type
         @params = params
         @location = location
