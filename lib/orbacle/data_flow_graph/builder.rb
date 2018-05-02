@@ -681,8 +681,9 @@ module Orbacle
         @graph.add_edge(block_final_node, block_result_node)
 
         if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
-          lamb = @tree.add_lambda(GlobalTree::Lambda::Nodes.new(args_ast_nodes, block_result_node))
-          lambda_node = add_vertex(Node.new(:lambda, { id: lamb.id }))
+          lambda_id = @tree.add_lambda
+          @graph.store_lambda_nodes(lambda_id, args_ast_nodes, block_result_node)
+          lambda_node = add_vertex(Node.new(:lambda, { id: lambda_id }))
           return Result.new(lambda_node, block_result_context)
         else
           block = Block.new(args_ast_nodes, block_result_node)

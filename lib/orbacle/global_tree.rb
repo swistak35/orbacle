@@ -87,21 +87,10 @@ module Orbacle
       end
     end
 
-    class Lambda
-      Nodes = Struct.new(:args, :result)
-      def initialize(id, nodes)
-        @id = id
-        @nodes = nodes
-      end
-
-      attr_reader :id, :nodes
-    end
-
     def initialize
       @constants = []
       @metods = []
       @lambdas = []
-      @lambda_counter = 0
     end
 
     attr_reader :metods, :constants, :nodes
@@ -126,11 +115,10 @@ module Orbacle
       return constant
     end
 
-    def add_lambda(nodes)
-      lamb = Lambda.new(@lambda_counter, nodes)
-      @lambda_counter += 1
-      @lambdas << lamb
-      return lamb
+    def add_lambda
+      lambda_id = SecureRandom.uuid
+      @lambdas << lambda_id
+      return lambda_id
     end
 
     def solve_reference(const_ref)

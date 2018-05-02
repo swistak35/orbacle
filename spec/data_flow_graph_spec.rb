@@ -2319,7 +2319,8 @@ module Orbacle
         END
 
         result = generate_cfg(snippet)
-        expect(result.final_node).to eq(node(:lambda, { id: 0 }))
+        expect(result.final_node.type).to eq(:lambda)
+        expect(result.final_node.params[:id]).not_to be_empty
       end
 
       specify "with one argument" do
@@ -2329,7 +2330,8 @@ module Orbacle
         END
 
         result = generate_cfg(snippet)
-        expect(result.final_node).to eq(node(:lambda, { id: 1 }))
+        expect(result.final_node.type).to eq(:lambda)
+        expect(result.final_node.params[:id]).not_to be_empty
       end
     end
 
