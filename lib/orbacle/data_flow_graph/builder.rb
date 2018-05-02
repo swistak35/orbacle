@@ -725,14 +725,16 @@ module Orbacle
             visibility: context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
-        context2 = context.with_analyzed_method(metod)
-        if method_body
-          context3 = context2.with_selfie(Selfie.instance_from_scope(context2.scope))
-          final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
-          @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
-        else
-          final_node = add_vertex(Node.new(:nil))
-          @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
+        context.with_analyzed_method(metod).tap do |context2|
+          if method_body
+            context2.with_selfie(Selfie.instance_from_scope(context2.scope)).tap do |context3|
+              final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
+              @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
+            end
+          else
+            final_node = add_vertex(Node.new(:nil))
+            @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
+          end
         end
 
         node = add_vertex(Node.new(:sym, { value: method_name }, build_location_from_ast(context, ast)))
@@ -816,8 +818,9 @@ module Orbacle
             location: build_location(context, Position.new(module_name_ast.loc.line, nil), Position.new(module_name_ast.loc.line, nil))))
 
         if module_body
-          context2 = context.with_nesting(context.nesting.increase_nesting_const(module_name_ref))
-          process(module_body, context2)
+          context.with_nesting(context.nesting.increase_nesting_const(module_name_ref)).tap do |context2|
+            process(module_body, context2)
+          end
         end
 
         return Result.new(Node.new(:nil), context)
@@ -848,14 +851,16 @@ module Orbacle
             visibility: context.analyzed_klass.method_visibility,
             nodes: GlobalTree::Method::Nodes.new(arguments_nodes, add_vertex(Node.new(:method_result)), [])))
 
-        context2 = context.with_analyzed_method(metod)
-        if method_body
-          context3 = context2.with_selfie(Selfie.klass_from_scope(context2.scope))
-          final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
-          @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
-        else
-          final_node = add_vertex(Node.new(:nil))
-          @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
+        context.with_analyzed_method(metod).tap do |context2|
+          if method_body
+            context2.with_selfie(Selfie.klass_from_scope(context2.scope)).tap do |context3|
+              final_node = process(method_body, context3.merge_lenv(arguments_context.lenv)).node
+              @graph.add_edge(final_node, context3.analyzed_method.nodes.result)
+            end
+          else
+            final_node = add_vertex(Node.new(:nil))
+            @graph.add_edge(final_node, context2.analyzed_method.nodes.result)
+          end
         end
 
         node = add_vertex(Node.new(:sym, { value: method_name }))
@@ -1120,7 +1125,7 @@ module Orbacle
       end
 
       def handle_break(ast, context)
-        return Result.new(Node.new(:nil), context)
+        return Result.new(Node.new(:bottom), context)
       end
 
       def handle_block_pass(ast, context)
@@ -1199,7 +1204,7 @@ module Orbacle
       end
 
       def handle_retry(ast, context)
-        return Result.new(add_vertex(Node.new(:nil)), context)
+        return Result.new(add_vertex(Node.new(:bottom)), context)
       end
 
       def handle_ensure(ast, context)
@@ -1348,39 +1353,6 @@ module Orbacle
         expr.type == :send &&
           expr.children[0] == Parser::AST::Node.new(:const, [nil, :Module]) &&
           expr.children[1] == :new
-      end
-
-      def build_arguments(formal_arguments, context)
-        formal_arguments_nodes = []
-        formal_arguments_hash = formal_arguments.children.each_with_object({}) do |arg_ast, h|
-          arg_name = arg_ast.children[0]&.to_s
-          maybe_arg_default_expr = arg_ast.children[1]
-
-          arg_node = if arg_ast.type == :arg
-            Node.new(:formal_arg, { var_name: arg_name })
-          elsif arg_ast.type == :optarg
-            Node.new(:formal_optarg, { var_name: arg_name })
-          elsif arg_ast.type == :restarg
-            Node.new(:formal_restarg, { var_name: arg_name })
-          elsif arg_ast.type == :kwarg
-            Node.new(:formal_kwarg, { var_name: arg_name })
-          elsif arg_ast.type == :kwoptarg
-            Node.new(:formal_kwoptarg, { var_name: arg_name })
-          elsif arg_ast.type == :kwrestarg
-            Node.new(:formal_kwrestarg, { var_name: arg_name })
-          else raise
-          end
-
-          if maybe_arg_default_expr
-            node_arg_default = process(maybe_arg_default_expr, context).node
-            @graph.add_edge(node_arg_default, arg_node)
-          end
-
-          formal_arguments_nodes << arg_node
-          add_vertex(arg_node)
-          h[arg_name] = [arg_node]
-        end
-        return Result.new(formal_arguments_hash, formal_arguments_nodes)
       end
 
       def build_def_arguments(formal_arguments, context)

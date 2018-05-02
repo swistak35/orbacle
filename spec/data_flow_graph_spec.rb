@@ -1945,7 +1945,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:nil),
+          node(:bottom),
           node(:rescue))
         expect(result.final_node).to eq(node(:rescue))
       end

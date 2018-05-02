@@ -112,14 +112,12 @@ module Orbacle
       when :float then handle_float(node, sources)
       when :nil then handle_nil(node, sources)
       when :bool then handle_bool(node, sources)
-
       when :str then handle_just_string(node, sources)
       when :dstr then handle_just_string(node, sources)
-
       when :sym then handle_just_symbol(node, sources)
       when :dsym then handle_just_symbol(node, sources)
-
       when :regexp then handle_regexp(node, sources)
+      when :bottom then handle_bottom(node, sources)
 
       when :hash_keys then handle_group(node, sources)
       when :hash_values then handle_group(node, sources)
@@ -221,6 +219,10 @@ module Orbacle
 
     def handle_just_symbol(node, sources)
       NominalType.new("Symbol")
+    end
+
+    def handle_bottom(node, sources)
+      nil
     end
 
     def handle_unwrap_hash_keys(node, sources)
