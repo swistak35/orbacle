@@ -577,6 +577,21 @@ module Orbacle
             [],
             node(:call_result, { csend: false })))
       end
+
+      specify "method call with csend" do
+        snippet = <<-END
+        $x&.bar
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.message_sends).to include(
+          msend(
+            "bar",
+            node(:call_obj),
+            [],
+            node(:call_result, { csend: true })))
+      end
     end
 
     describe "block arguments formats" do
