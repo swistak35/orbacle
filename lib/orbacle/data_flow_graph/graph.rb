@@ -20,7 +20,7 @@ module Orbacle
         @lambdas = {}
       end
 
-      attr_reader :constants, :original, :reversed
+      attr_reader :constants
 
       def add_vertex(node)
         @original.add_vertex(node)
@@ -53,8 +53,8 @@ module Orbacle
         @original.adjacent_vertices(v)
       end
 
-      def reverse
-        @reversed
+      def parent_vertices(v)
+        @reversed.adjacent_vertices(v)
       end
 
       def has_edge?(x, y)

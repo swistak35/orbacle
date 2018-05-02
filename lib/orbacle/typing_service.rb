@@ -60,16 +60,16 @@ module Orbacle
 
       @result = {}
 
-      @worklist.nodes = @graph.original.vertices.to_a
+      @worklist.nodes = @graph.vertices.to_a
       while !@worklist.nodes.empty?
         while !@worklist.nodes.empty?
           node = @worklist.nodes.shift
           @worklist.count_node(node)
           if !@worklist.limit_exceeded?(node)
             current_result = @result[node]
-            @result[node] = compute_result(node, @graph.reversed.adjacent_vertices(node))
+            @result[node] = compute_result(node, @graph.parent_vertices(node))
             if current_result != @result[node]
-              @graph.original.adjacent_vertices(node).each do |adjacent_node|
+              @graph.adjacent_vertices(node).each do |adjacent_node|
                 @worklist.enqueue_node(adjacent_node)
               end
             end
@@ -380,7 +380,7 @@ module Orbacle
         handle_custom_message_send(found_method, message_send)
 
         method_result_node = @graph.get_metod_nodes(found_method.id).result
-        if !@graph.original.has_edge?(method_result_node, message_send.send_result)
+        if !@graph.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
         end
@@ -400,7 +400,7 @@ module Orbacle
         handle_custom_message_send(found_method, message_send)
 
         method_result_node = @graph.get_metod_nodes(found_method.id).result
-        if !@graph.original.has_edge?(method_result_node, message_send.send_result)
+        if !@graph.has_edge?(method_result_node, message_send.send_result)
           @graph.add_edge(method_result_node, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
         end
@@ -510,7 +510,7 @@ module Orbacle
     end
 
     def send_constructor(type, message_send)
-      already_handled = @graph.original.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
+      already_handled = @graph.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
         adjacent_node.type == :constructor
       end
       return if already_handled
