@@ -721,7 +721,7 @@ module Orbacle
           GlobalTree::Method.new(
             scope: context.scope,
             name: method_name.to_s,
-            location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
+            location: build_location_from_ast(context, ast),
             args: arguments_tree,
             visibility: context.analyzed_klass.method_visibility))
         @graph.store_metod_nodes(metod.id, arguments_nodes)
@@ -791,7 +791,7 @@ module Orbacle
             name: klass_name_ref.name,
             scope: context.scope.increase_by_ref(klass_name_ref).decrease,
             parent_ref: parent_name_ref,
-            location: build_location(context, Position.new(klass_name_ast.loc.line, nil), Position.new(klass_name_ast.loc.line, nil))))
+            location: build_location_from_ast(context, ast)))
 
         new_context = context
           .with_analyzed_klass(klass)
@@ -816,7 +816,7 @@ module Orbacle
           GlobalTree::Mod.new(
             name: module_name_ref.name,
             scope: context.scope.increase_by_ref(module_name_ref).decrease,
-            location: build_location(context, Position.new(module_name_ast.loc.line, nil), Position.new(module_name_ast.loc.line, nil))))
+            location: build_location_from_ast(context, ast)))
 
         if module_body
           context.with_nesting(context.nesting.increase_nesting_const(module_name_ref)).tap do |context2|
@@ -847,7 +847,7 @@ module Orbacle
           GlobalTree::Method.new(
             scope: context.scope.increase_by_metaklass,
             name: method_name.to_s,
-            location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil)),
+            location: build_location_from_ast(context, ast),
             args: arguments_tree,
             visibility: context.analyzed_klass.method_visibility))
         @graph.store_metod_nodes(metod.id, arguments_nodes)
@@ -881,7 +881,7 @@ module Orbacle
               name: const_name_ref.name,
               scope: context.scope.increase_by_ref(const_name_ref).decrease,
               parent_ref: parent_name_ref,
-              location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
+              location: build_location_from_ast(context, ast)))
 
           return Result.new(Node.new(:nil), context)
         elsif expr_is_module_definition?(expr)
@@ -889,7 +889,7 @@ module Orbacle
             GlobalTree::Mod.new(
               name: const_name_ref.name,
               scope: context.scope.increase_by_ref(const_name_ref).decrease,
-              location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
+              location: build_location_from_ast(context, ast)))
 
           return Result.new(Node.new(:nil), context)
         else
@@ -897,7 +897,7 @@ module Orbacle
             GlobalTree::Constant.new(
               name: const_name_ref.name,
               scope: context.scope.increase_by_ref(const_name_ref).decrease,
-              location: build_location(context, Position.new(ast.loc.line, nil), Position.new(ast.loc.line, nil))))
+              location: build_location_from_ast(context, ast)))
 
           expr_result = process(expr, context)
 
@@ -1456,10 +1456,6 @@ module Orbacle
           child_result.context
         end
         return final_context, nodes
-      end
-
-      def build_location(context, pstart, pend)
-        Location.new(context.filepath, PositionRange.new(pstart, pend))
       end
 
       def build_location_from_ast(context, ast)
