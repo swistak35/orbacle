@@ -2442,21 +2442,6 @@ module Orbacle
       end
     end
 
-    describe "custom - freeze send" do
-      specify "simple example" do
-        file = <<-END
-        [1,2].freeze
-        END
-
-        result = generate_cfg(file)
-
-        expect(result.graph).to include_edge(
-          node(:array),
-          node(:freeze))
-        expect(result.final_node).to eq(node(:freeze))
-      end
-    end
-
     def generate_cfg(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new

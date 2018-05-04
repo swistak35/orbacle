@@ -532,7 +532,6 @@ module Orbacle
         return handle_custom_attr_writer_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_writer"
         return handle_custom_attr_accessor_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_accessor"
         return handle_custom_class_send(context, obj_node) if message_name == "class"
-        return handle_custom_freeze_send(context, obj_node) if message_name == "freeze"
 
         call_obj_node = add_vertex(Node.new(:call_obj, {}))
         @graph.add_edge(obj_node, call_obj_node)
@@ -550,13 +549,6 @@ module Orbacle
         @graph.add_edge(obj_node, extract_class_node)
 
         return Result.new(extract_class_node, context)
-      end
-
-      def handle_custom_freeze_send(context, obj_node)
-        freeze_node = @graph.add_vertex(Node.new(:freeze, {}))
-        @graph.add_edge(obj_node, freeze_node)
-
-        return Result.new(freeze_node, context)
       end
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
