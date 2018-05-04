@@ -4,6 +4,7 @@ require 'orbacle/nesting'
 module Orbacle
   module DataFlowGraph
     class Builder
+      BuilderError = Class.new(StandardError)
       class Result
         def initialize(node, context, data = {})
           @node = node
@@ -217,6 +218,13 @@ module Orbacle
           process_result.node.location = build_location_from_ast(context, ast)
         end
         return process_result
+      rescue BuilderError
+        raise
+      rescue => e
+        puts "Error #{e} happened when parsing file #{context.filepath}"
+        puts ast
+        puts e.backtrace
+        raise BuilderError
       end
 
       def handle_lvasgn(ast, context)
