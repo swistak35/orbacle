@@ -484,7 +484,11 @@ module Orbacle
     end
 
     def handle_class_send(class_name, message_send)
-      handle_class_nonprimitive_send(class_name, message_send)
+      if primitive_class_send?(class_name, message_send.message_send)
+        handle_class_primitive(class_name, message_send)
+      else
+        handle_class_nonprimitive_send(class_name, message_send)
+      end
     end
 
     def primitive_mapping
@@ -495,12 +499,29 @@ module Orbacle
         },
         "Object" => {
           "freeze" => method(:send_primitive_object_freeze),
+          "class" => method(:send_primitive_object_class),
+        },
+      }
+    end
+
+    def primitive_class_mapping
+      {
+        "Object" => {
+          "class" => method(:send_class_primitive_object_class),
         },
       }
     end
 
     def primitive_send?(class_name, message_name)
       if primitive_mapping[class_name] && primitive_mapping[class_name][message_name]
+        true
+      else
+        false
+      end
+    end
+
+    def primitive_class_send?(class_name, message_name)
+      if primitive_class_mapping[class_name] && primitive_class_mapping[class_name][message_name]
         true
       else
         false
@@ -514,6 +535,11 @@ module Orbacle
     def handle_primitive(class_name, message_send)
       message_name = message_send.message_send
       primitive_mapping[class_name][message_name].(class_name, message_send)
+    end
+
+    def handle_class_primitive(class_name, message_send)
+      message_name = message_send.message_send
+      primitive_class_mapping[class_name][message_name].(class_name, message_send)
     end
 
     def send_constructor(type, message_send)
@@ -564,6 +590,26 @@ module Orbacle
 
     def send_primitive_object_freeze(_class_name, message_send)
       @graph.add_edge(message_send.send_obj, message_send.send_result)
+      @worklist.enqueue_node(message_send.send_result)
+    end
+
+    def send_primitive_object_class(_class_name, message_send)
+      extract_class_node = DataFlowGraph::Node.new(:extract_class, {}, nil)
+      @graph.add_vertex(extract_class_node)
+      @graph.add_edge(message_send.send_obj, extract_class_node)
+      @worklist.enqueue_node(extract_class_node)
+
+      @graph.add_edge(extract_class_node, message_send.send_result)
+      @worklist.enqueue_node(message_send.send_result)
+    end
+
+    def send_class_primitive_object_class(_class_name, message_send)
+      extract_class_node = DataFlowGraph::Node.new(:extract_class, {}, nil)
+      @graph.add_vertex(extract_class_node)
+      @graph.add_edge(message_send.send_obj, extract_class_node)
+      @worklist.enqueue_node(extract_class_node)
+
+      @graph.add_edge(extract_class_node, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
     end
 
