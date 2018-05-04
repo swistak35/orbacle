@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
   
-  spec.add_dependency 'parser', '~> 2.5.0.0'
+  spec.add_dependency 'parser', '~> 2.4.0.2'
   spec.add_dependency 'sqlite3', '~> 1.3.13'
   spec.add_dependency 'rubytree', '~> 0.9.7'
   spec.add_dependency 'rgl', '~> 0.5.3'
