@@ -603,6 +603,17 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
+
+      specify "freeze is message independent" do
+        snippet = <<-END
+        "foo".freeze
+        42.freeze
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "constructors" do

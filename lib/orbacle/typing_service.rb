@@ -493,6 +493,9 @@ module Orbacle
           "map" => method(:send_primitive_array_map),
           "each" => method(:send_primitive_array_each),
         },
+        "Object" => {
+          "freeze" => method(:send_primitive_object_freeze),
+        },
       }
     end
 
@@ -555,6 +558,11 @@ module Orbacle
       @graph.add_edge(unwrapping_node, message_send.block.args.first)
       @worklist.enqueue_node(message_send.block.args.first)
 
+      @graph.add_edge(message_send.send_obj, message_send.send_result)
+      @worklist.enqueue_node(message_send.send_result)
+    end
+
+    def send_primitive_object_freeze(_class_name, message_send)
       @graph.add_edge(message_send.send_obj, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
     end
