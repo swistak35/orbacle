@@ -133,6 +133,7 @@ module Orbacle
       when :const_definition then handle_group(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
+      when :method_caller then handle_group(node, sources)
 
       when :yield then handle_group(node, sources)
 
@@ -379,10 +380,14 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
 
-        method_result_node = @graph.get_metod_nodes(found_method.id).result
-        if !@graph.has_edge?(method_result_node, message_send.send_result)
-          @graph.add_edge(method_result_node, message_send.send_result)
+        method_nodes = @graph.get_metod_nodes(found_method.id)
+        if !@graph.has_edge?(method_nodes.result, message_send.send_result)
+          @graph.add_edge(method_nodes.result, message_send.send_result)
           @worklist.enqueue_node(message_send.send_result)
+        end
+        if !@graph.has_edge?(message_send.send_obj, method_nodes.caller)
+          @graph.add_edge(message_send.send_obj, method_nodes.caller)
+          @worklist.enqueue_node(method_nodes.caller)
         end
       end
     end

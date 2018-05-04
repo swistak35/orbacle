@@ -3,7 +3,7 @@ require 'rgl/adjacency'
 module Orbacle
   module DataFlowGraph
     class Graph
-      Metod = Struct.new(:args, :result, :yields)
+      Metod = Struct.new(:caller, :args, :result, :yields)
       Lambda = Struct.new(:args, :result)
 
       def initialize
@@ -99,7 +99,11 @@ module Orbacle
       end
 
       def store_metod_nodes(metod_id, arguments_nodes)
-        metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result, {})), [])
+        metods[metod_id] ||= Metod.new(
+          add_vertex(Node.new(:method_caller, {})),
+          arguments_nodes,
+          add_vertex(Node.new(:method_result, {})),
+          [])
       end
 
       def get_lambda_nodes(lambda_id)
