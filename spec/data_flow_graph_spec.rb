@@ -1644,6 +1644,31 @@ module Orbacle
       generate_cfg(snippet)
     end
 
+    describe "begin..end" do
+      specify "empty" do
+        snippet = <<-END
+        begin
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:nil))
+      end
+
+      specify "not empty" do
+        snippet = <<-END
+        begin
+          42
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:int, { value: 42 }))
+      end
+    end
+
     describe "loops" do
       specify "empty while loop" do
         snippet = <<-END

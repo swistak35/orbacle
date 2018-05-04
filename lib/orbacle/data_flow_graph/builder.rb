@@ -381,7 +381,11 @@ module Orbacle
 
       def handle_begin(ast, context)
         final_context, nodes = fold_context(ast.children, context)
-        return Result.new(nodes.last, final_context)
+        if ast.children.empty?
+          return Result.new(add_vertex(Node.new(:nil, {}, ast)), context)
+        else
+          return Result.new(nodes.last, final_context)
+        end
       end
 
       def handle_lvar(ast, context)
