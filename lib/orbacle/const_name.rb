@@ -23,5 +23,9 @@ module Orbacle
     def to_string
       elems.join("::")
     end
+
+    def scope
+      Scope.new(elems[0..-2], false)
+    end
   end
 end

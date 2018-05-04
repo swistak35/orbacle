@@ -33,7 +33,7 @@ module Orbacle
         @parent_ref = parent_ref
       end
 
-      attr_reader :name, :scope, :location, :parent_ref, :nodes
+      attr_reader :name, :scope, :location, :parent_ref
 
       def ==(other)
         @name == other.name &&
@@ -93,7 +93,7 @@ module Orbacle
       @lambdas = []
     end
 
-    attr_reader :metods, :constants, :nodes
+    attr_reader :metods, :constants
 
     def add_method(metod)
       @metods << metod

@@ -20,91 +20,106 @@ module Orbacle
       expect(klass.location.position_range.start.line).to eq(1)
       expect(klass.parent_ref).to eq(nil)
     end
-    location
-    specify "private method in class declaration" do
-      file = <<-END
-      class Foo
+
+    describe "visibility" do
+      specify "public by default" do
+        file = <<-END
+        class Foo
+          def bar
+          end
+        end
+        END
+
+        result = compute_graph(file)
+
+        meth = find_method(result, "Foo", "bar")
+        expect(meth.visibility).to eq(:public)
+      end
+
+      specify "private method in class declaration" do
+        file = <<-END
+        class Foo
+          private
+          def bar
+          end
+        end
+        END
+
+        result = compute_graph(file)
+        meth = find_method(result, "Foo", "bar")
+        expect(meth.visibility).to eq(:private)
+      end
+
+      specify "rechanging visibility of methods in class declaration" do
+        file = <<-END
+        class Foo
+          private
+          public
+          def bar
+          end
+        end
+        END
+
+        result = compute_graph(file)
+        meth = find_method(result, "Foo", "bar")
+        expect(meth.visibility).to eq(:public)
+      end
+
+      specify "changing visibility to protected" do
+        file = <<-END
+        class Foo
+          protected
+          def bar
+          end
+        end
+        END
+
+        result = compute_graph(file)
+        meth = find_method(result, "Foo", "bar")
+        expect(meth.visibility).to eq(:protected)
+      end
+
+      specify "private keyword does not work if not used inside object declaration" do
+        file = <<-END
         private
         def bar
         end
+        END
+
+        result = compute_graph(file)
+        meth = find_method(result, "", "bar")
+        expect(meth.visibility).to eq(:public)
       end
-      END
 
-      result = compute_graph(file)
-      meth = find_method(result, "Foo", "bar")
-      expect(meth.visibility).to eq(:private)
-      expect(meth.location.position_range.start.line).to eq(3)
-    end
-
-    specify "rechanging visibility of methods in class declaration" do
-      file = <<-END
-      class Foo
-        private
-        public
-        def bar
+      specify "using private with passing a symbol" do
+        file = <<-END
+        class Foo
+          def bar
+          end
+          private :bar
         end
+        END
+
+        result = compute_graph(file)
+        meth = find_method(result, "Foo", "bar")
+        expect(meth.visibility).to eq(:private)
       end
-      END
 
-      result = compute_graph(file)
-      meth = find_method(result, "Foo", "bar")
-      expect(meth.visibility).to eq(:public)
-    end
-
-    specify "changing visibility to protected" do
-      file = <<-END
-      class Foo
-        protected
-        def bar
+      specify "using private with passing a symbol does not change visibility of future methods" do
+        file = <<-END
+        class Foo
+          def bar
+          end
+          private :bar
+          def baz
+          end
         end
+        END
+
+        result = compute_graph(file)
+        meth = find_method(result, "Foo", "baz")
+        expect(meth.visibility).to eq(:public)
       end
-      END
-
-      result = compute_graph(file)
-      meth = find_method(result, "Foo", "bar")
-      expect(meth.visibility).to eq(:protected)
-    end
-
-    specify "private keyword does not work if not used inside object declaration" do
-      file = <<-END
-      private
-      def bar
-      end
-      END
-
-      result = compute_graph(file)
-      meth = find_method(result, "", "bar")
-      expect(meth.visibility).to eq(:public)
-    end
-
-    specify "using private with passing a symbol" do
-      file = <<-END
-      class Foo
-        def bar
-        end
-        private :bar
-      end
-      END
-
-      result = compute_graph(file)
-      meth = find_method(result, "Foo", "bar")
-      expect(meth.visibility).to eq(:private)
-    end
-
-    specify "using private with passing a symbol does not change visibility of future methods" do
-      file = <<-END
-      class Foo
-        def bar
-        end
-        private :bar
-        def baz
-        end
-      end
-      END
-
-      result = compute_graph(file)
-      meth = find_method(result, "Foo", "baz")
-      expect(meth.visibility).to eq(:public)
     end
 
     specify "method with one yield" do
@@ -168,15 +183,12 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo", "bar", { line: 3 }],
-        ["Some::Foo", "baz", { line: 6 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(name: "Some"),
-        build_klass(scope: "Some", name: "Foo"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_method(result, "Some::Foo", "bar")).not_to be_nil
+      expect(find_method(result, "Some::Foo", "baz")).not_to be_nil
+      expect(find_module(result, "Some")).not_to be_nil
+      expect(find_klass(result, "Some::Foo")).not_to be_nil
     end
 
     it do
@@ -731,6 +743,16 @@ module Orbacle
 
     def find_constant(result, scope, name)
       find_constants(result, scope, name).first
+    end
+
+    def find_module(result, name)
+      const_name = ConstName.from_string(name)
+      find_constants(result, const_name.scope, const_name.name).select {|c| c.is_a?(GlobalTree::Mod) }
+    end
+
+    def find_klass(result, name)
+      const_name = ConstName.from_string(name)
+      find_constants(result, const_name.scope, const_name.name).select {|c| c.is_a?(GlobalTree::Klass) }
     end
 
     def build_klass(scope: "", name:, inheritance: nil, nesting: [])
