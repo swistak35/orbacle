@@ -9,7 +9,6 @@ module Orbacle
       when 'init' then init(options)
       when 'index' then index(options)
       when 'file-server' then file_server(options)
-      when 'generate-class-hierarchy' then generate_class_hierarchy(options)
       when 'generate-datajs' then generate_datajs(options)
       else no_command
       end
@@ -25,7 +24,7 @@ module Orbacle
 
     def index(options)
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+      indexer = Orbacle::Indexer.new
       indexer.(project_root: project_root)
     end
 
@@ -34,11 +33,10 @@ module Orbacle
       logger.level = Logger::INFO
 
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+      indexer = Orbacle::Indexer.new
       indexer.(project_root: project_root)
 
       lang_server = Orbacle::LangServer.new(
-        db_adapter: SQLDatabaseAdapter,
         logger: logger)
       file_server = Orbacle::LangFileServer.new(
         lang_server: lang_server,
@@ -46,24 +44,15 @@ module Orbacle
       file_server.start
     end
 
-    def generate_class_hierarchy(options)
-      puts "Generating class hierarchy"
-      project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
-      db = SQLDatabaseAdapter.new(project_root: project_root)
-      Orbacle::GenerateClassHierarchy.new(db).()
-    end
-
     def generate_datajs(options)
       require 'base64'
       project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
-      db = SQLDatabaseAdapter.new(project_root: project_root)
 
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+      indexer = Orbacle::Indexer.new
       tree, typing_result, graph = indexer.(project_root: project_root)
 
       nodes = graph.vertices
-      # filepaths = nodes.map(&:location_uri).compact.uniq
       filepaths = nodes.map {|n| n.location&.uri }.compact.uniq
 
       File.open("data.js", "w") do |f|

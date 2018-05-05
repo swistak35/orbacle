@@ -1,12 +1,10 @@
 require 'json'
 require 'pathname'
 require 'uri'
-require 'orbacle/sql_database_adapter'
 
 module Orbacle
   class LangServer
-    def initialize(db_adapter:, logger:)
-      @db_adapter = db_adapter
+    def initialize(logger:)
       @logger = logger
     end
 
