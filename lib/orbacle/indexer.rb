@@ -37,9 +37,9 @@ module Orbacle
       typing_result = TypingService.new.(graph, worklist, tree)
 
       puts "Saving..."
-      store_result(tree, typing_result)
+      # store_result(tree, typing_result)
 
-      return tree, typing_result
+      return tree, typing_result, graph
     end
 
     def store_result(tree, typing_result)

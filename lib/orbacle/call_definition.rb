@@ -4,7 +4,7 @@ module Orbacle
   class CallDefinition
     include SomeUtils
 
-    def initialize(tree, typing_result)
+    def initialize(tree, typing_result, *args)
       @tree = tree
       @typing_result = typing_result
     end
@@ -12,8 +12,6 @@ module Orbacle
     def call(params)
       textDocument = params[:textDocument]
       fileuri = textDocument[:uri]
-      # project_path = find_project_root(fileuri)
-      # db = @db_adapter.new(project_root: project_path)
       file_content = File.read(URI(fileuri).path)
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]

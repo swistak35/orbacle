@@ -57,8 +57,14 @@ module Orbacle
       require 'base64'
       project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
       db = SQLDatabaseAdapter.new(project_root: project_root)
-      nodes = db.find_all_nodes
-      filepaths = nodes.map(&:location_uri).compact.uniq
+
+      project_root = options.fetch(:dir, Dir.pwd)
+      indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+      tree, typing_result, graph = indexer.(project_root: project_root)
+
+      nodes = graph.vertices
+      # filepaths = nodes.map(&:location_uri).compact.uniq
+      filepaths = nodes.map {|n| n.location&.uri }.compact.uniq
 
       File.open("data.js", "w") do |f|
         f.puts "window.orbacleFiles = ["
@@ -67,10 +73,10 @@ module Orbacle
         end
         f.puts "];"
         f.puts "window.orbacleNodes = ["
-        sorted_nodes = nodes.reject {|n| n.location_uri.nil? }
+        sorted_nodes = nodes.reject {|n| n.location&.uri.nil? }
         sorted_nodes.each do |node|
-          filepath = node.location_uri[project_root.to_s.size..-1]
-          f.puts "['#{node.kind}', '#{node.type}', '#{filepath}', #{node.location_start_line.to_i}, #{node.location_start_char.to_i}, #{node.location_end_line.to_i}, #{node.location_end_char.to_i}],"
+          filepath = node.location.uri[project_root.to_s.size..-1]
+          f.puts "['#{node.type.to_s}', '#{typing_result[node]&.pretty}', '#{filepath}', #{node.location&.start&.line&.to_i}, #{node.location&.start&.character&.to_i}, #{node.location&.end&.line&.to_i}, #{node.location&.end&.character&.to_i}],"
         end
         f.puts "];"
       end
