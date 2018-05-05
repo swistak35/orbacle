@@ -19,9 +19,9 @@ module Orbacle
             end
           END
         )
-      test_indexer.(project_root: Pathname.new(project.root))
+      indexing_result = test_indexer.(project_root: Pathname.new(project.root))
 
-      result = call_definition.({
+      result = call_definition(indexing_result, {
         textDocument: { uri: "file://#{project.root}/bar.rb" },
         position: { line: 2, character: 18 },
       })
@@ -57,9 +57,9 @@ module Orbacle
             end
           END
         )
-      test_indexer.(project_root: Pathname.new(project.root))
+      indexing_result = test_indexer.(project_root: Pathname.new(project.root))
 
-      result = call_definition.({
+      result = call_definition(indexing_result, {
         textDocument: { uri: "file://#{project.root}/some.rb" },
         position: { line: 2, character: 17 },
       })
@@ -93,9 +93,9 @@ module Orbacle
             end
           END
         )
-      test_indexer.(project_root: Pathname.new(project.root))
+      indexing_result = test_indexer.(project_root: Pathname.new(project.root))
 
-      result = call_definition.({
+      result = call_definition(indexing_result, {
         textDocument: { uri: "file://#{project.root}/some.rb" },
         position: { line: 2, character: 19 },
       })
@@ -112,9 +112,9 @@ module Orbacle
                   content: "module Baz; module Bar; class Foo; end; end; end"
         ).add_file(path: "some.rb",
                    content: "module Baz; module Bar; def x; Foo; end; end; end")
-      test_indexer.(project_root: Pathname.new(project.root))
+      indexing_result = test_indexer.(project_root: Pathname.new(project.root))
 
-      result = call_definition.({
+      result = call_definition(indexing_result, {
         textDocument: { uri: "file://#{project.root}/some.rb" },
         position: { line: 0, character: 32 },
       })
@@ -130,9 +130,9 @@ module Orbacle
                   content: "module Baz; module Bar; class Foo; end; end; end"
         ).add_file(path: "some.rb",
                    content: "module Baz; def x; Bar::Foo; end; end")
-      test_indexer.(project_root: Pathname.new(project.root))
+      indexing_result = test_indexer.(project_root: Pathname.new(project.root))
 
-      result = call_definition.({
+      result = call_definition(indexing_result, {
         textDocument: { uri: "file://#{project.root}/some.rb" },
         position: { line: 0, character: 24 },
       })
@@ -148,9 +148,9 @@ module Orbacle
                   content: "class Foo; def bar; end; end"
         ).add_file(path: "some.rb",
                    content: "class Some; def x; y.bar; end; end")
-      test_indexer.(project_root: Pathname.new(project.root))
+      indexing_result = test_indexer.(project_root: Pathname.new(project.root))
 
-      result = call_definition.({
+      result = call_definition(indexing_result, {
         textDocument: { uri: "file://#{project.root}/some.rb" },
         position: { line: 0, character: 22 },
       })
@@ -165,8 +165,8 @@ module Orbacle
       test_indexer = Indexer.new(db_adapter: SQLDatabaseAdapter)
     end
 
-    def call_definition
-      call_definition = CallDefinition.new(db_adapter: SQLDatabaseAdapter)
+    def call_definition(indexing_result, cmd)
+      CallDefinition.new(*indexing_result).(cmd)
     end
   end
 end

@@ -4,52 +4,50 @@ module Orbacle
   class CallDefinition
     include SomeUtils
 
-    def initialize(db_adapter:)
-      @db_adapter = db_adapter
+    def initialize(tree, typing_result)
+      @tree = tree
+      @typing_result = typing_result
     end
 
     def call(params)
       textDocument = params[:textDocument]
       fileuri = textDocument[:uri]
-      project_path = find_project_root(fileuri)
-      db = @db_adapter.new(project_root: project_path)
+      # project_path = find_project_root(fileuri)
+      # db = @db_adapter.new(project_root: project_path)
       file_content = File.read(URI(fileuri).path)
       searched_line = params[:position][:line]
       searched_character = params[:position][:character]
       searched_constant, found_nesting, found_type = Orbacle::DefinitionProcessor.new.process_file(file_content, searched_line + 1, searched_character + 1)
       if found_type == "constant"
-        possible_nestings, searched_constant_name = generate_nestings(searched_constant, found_nesting)
-        results = db.find_constants(searched_constant_name, possible_nestings)
-        best_result = results[0]
+        best_result = @tree.solve_reference(ConstRef.from_full_name(searched_constant, found_nesting))
         return nil if best_result.nil?
-        scope, _name, _type, targetfile, targetline = best_result
         return {
-          uri: "file://#{targetfile}",
+          uri: "file://#{best_result.location.uri}",
           range: {
             start: {
-              line: targetline - 1,
+              line: best_result.location.start.line - 1,
               character: 0,
             },
             end: {
-              line: targetline - 1,
+              line: best_result.location.end.line - 1,
               character: 1,
             }
           },
-          _count: results.size,
+          _count: 1,
         }
       elsif found_type == "send"
-        results = db.find_metods(searched_constant)
+        results = @tree.find_any_methods(searched_constant)
         best_result = results[0]
         return nil if best_result.nil?
         return {
-          uri: "file://#{best_result.file}",
+          uri: "file://#{best_result.location.uri}",
           range: {
             start: {
-              line: best_result.line - 1,
+              line: best_result.location.start.line - 1,
               character: 0,
             },
             end: {
-              line: best_result.line - 1,
+              line: best_result.location.end.line - 1,
               character: 1,
             }
           },

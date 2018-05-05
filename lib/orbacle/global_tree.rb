@@ -161,6 +161,10 @@ module Orbacle
       @metods.find {|m| !m.scope.empty? && m.scope.to_const_name.to_string == class_name && m.scope.metaklass? && m.name == method_name }
     end
 
+    def find_any_methods(method_name)
+      @metods.select {|m| m.name == method_name }
+    end
+
     def change_metod_visibility(scope, name, new_visibility)
       @metods.each do |m|
         if m.scope == scope && m.name == name

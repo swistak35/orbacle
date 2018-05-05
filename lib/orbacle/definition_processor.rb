@@ -23,8 +23,10 @@ module Orbacle
       if @searched_line == name_loc_range.line && ast_all_ranges.any? {|r| r.include?(@searched_character) }
         @found_type = "constant"
         @found_constant = const_to_string(ast)
-        @found_nesting = current_nesting.to_primitive
+        @found_nesting = current_nesting.dup
       end
+
+      return ast
     end
 
     def on_module(ast)
@@ -50,7 +52,7 @@ module Orbacle
       if @searched_line == selector_loc.line && selector_loc.column_range.include?(@searched_character)
         @found_type = "send"
         @found_constant = ast.children[1].to_s
-        @found_nesting = current_nesting.to_primitive
+        @found_nesting = current_nesting.dup
       end
 
       super(ast)
@@ -81,8 +83,9 @@ module Orbacle
     def with_new_nesting(new_nesting)
       previous = @current_nesting
       @current_nesting = new_nesting
-      yield
+      result = yield
       @current_nesting = previous
+      return result
     end
   end
 end

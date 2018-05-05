@@ -10,13 +10,13 @@ module Orbacle
       @logger = logger
     end
 
-    def call_method(json)
+    def call_method(indexing_result, json)
       request_id = json[:id]
       method_name = json[:method]
       params = json[:params]
       result = case method_name
         when "textDocument/definition"
-          call_definition(params)
+          call_definition(indexing_result, params)
         else
           logger.info("unsupported_method_called #{method_name}")
           nil
@@ -32,8 +32,8 @@ module Orbacle
       e.backtrace.each {|l| logger.error("error #{l}") }
     end
 
-    def call_definition(params)
-      call_definition = CallDefinition.new(db_adapter: @db_adapter)
+    def call_definition(indexing_result, params)
+      call_definition = CallDefinition.new(*indexing_result)
       call_definition.(params)
     end
 

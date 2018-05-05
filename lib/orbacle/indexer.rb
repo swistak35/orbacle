@@ -38,6 +38,8 @@ module Orbacle
 
       puts "Saving..."
       store_result(tree, typing_result)
+
+      return tree, typing_result
     end
 
     def store_result(tree, typing_result)

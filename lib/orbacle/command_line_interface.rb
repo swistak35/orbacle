@@ -32,6 +32,11 @@ module Orbacle
     def file_server(options)
       logger = Logger.new('/tmp/orbacle.log', 'monthly')
       logger.level = Logger::INFO
+
+      project_root = options.fetch(:dir, Dir.pwd)
+      indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
+      indexer.(project_root: project_root)
+
       lang_server = Orbacle::LangServer.new(
         db_adapter: SQLDatabaseAdapter,
         logger: logger)

@@ -6,12 +6,12 @@ RSpec.describe Orbacle do
     integration_app_path = "#{Dir.pwd}/spec/support/integration_app"
 
     indexer = Orbacle::Indexer.new(db_adapter: SQLDatabaseAdapter)
-    indexer.(project_root: Pathname.new(integration_app_path))
+    indexing_result = indexer.(project_root: Pathname.new(integration_app_path))
 
     lang_server = Orbacle::LangServer.new(
       db_adapter: SQLDatabaseAdapter,
       logger: Logger.new(nil))
-    result = lang_server.call_method({
+    result = lang_server.call_method(indexing_result, {
       id: 1,
       method: "textDocument/definition",
       jsonrpc: "2.0",
@@ -35,7 +35,7 @@ RSpec.describe Orbacle do
             character: 0,
           },
           end: {
-            line: 0,
+            line: 1,
             character: 1,
           }
         },
