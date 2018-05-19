@@ -27,15 +27,17 @@ module Orbacle
     end
 
     class Klass
-      def initialize(id: SecureRandom.uuid, name:, scope:, location:, parent_ref:)
+      def initialize(id: SecureRandom.uuid, name:, scope:, location:, parent_ref:, eigenclass_id: nil)
         @id = id
         @name = name
         @scope = scope
         @location = location
         @parent_ref = parent_ref
+        @eigenclass_id = eigenclass_id
       end
 
-      attr_reader :id, :name, :scope, :location, :parent_ref
+      attr_reader :id, :name, :scope, :location, :parent_ref, :eigenclass_id
+      attr_writer :eigenclass_id
 
       def ==(other)
         @id == other.id &&
@@ -124,6 +126,21 @@ module Orbacle
       lambda_id = SecureRandom.uuid
       @lambdas << lambda_id
       return lambda_id
+    end
+
+    def get_class(klass_id)
+      @constants.find {|c| c.id == klass_id }
+    end
+
+    def get_eigenclass_of_klass(klass_id)
+      klass = get_class(klass_id)
+      if klass.eigenclass_id
+        return get_class(klass.eigenclass_id)
+      else
+        eigenclass = add_klass(Klass.new(name: nil, scope: nil, location: nil, parent_ref: nil, eigenclass_id: nil))
+        klass.eigenclass_id = eigenclass.id
+        return eigenclass
+      end
     end
 
     def solve_reference(const_ref)
