@@ -10,7 +10,7 @@ module Orbacle
         Nested = Struct.new(:args)
       end
 
-      def initialize(id: SecureRandom.uuid, place_of_definition_id:, scope:, name:, location:, visibility:, args:)
+      def initialize(id: SecureRandom.uuid, place_of_definition_id:, name:, location:, visibility:, args:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @id = id
@@ -19,10 +19,9 @@ module Orbacle
         @location = location
         @visibility = visibility
         @args = args
-        @scope = scope
       end
 
-      attr_reader :id, :name, :location, :scope, :args, :place_of_definition_id
+      attr_reader :id, :name, :location, :args, :place_of_definition_id
       attr_accessor :visibility
     end
 
@@ -48,7 +47,11 @@ module Orbacle
       end
 
       def full_name
-        [*scope.elems, @name].join("::")
+        if scope
+          [*scope.elems, @name].join("::")
+        else
+          ""
+        end
       end
     end
 
@@ -60,7 +63,7 @@ module Orbacle
         @location = location
       end
 
-      attr_reader :name, :scope, :location
+      attr_reader :id, :name, :scope, :location
 
       def ==(other)
         @id = other.id &&
@@ -129,7 +132,7 @@ module Orbacle
     end
 
     def get_class(klass_id)
-      @constants.find {|c| c.id == klass_id }
+      @constants.find {|c| (c.is_a?(Klass) || c.is_a?(Mod)) && c.id == klass_id }
     end
 
     def get_eigenclass_of_klass(klass_id)
@@ -148,12 +151,12 @@ module Orbacle
       while !nesting.empty?
         scope = nesting.to_scope
         @constants.each do |constant|
-          return constant if scope.increase_by_ref(const_ref).to_const_name == ConstName.from_string(constant.full_name)
+          return constant if constant.name && scope.increase_by_ref(const_ref).to_const_name == ConstName.from_string(constant.full_name)
         end
         nesting = nesting.decrease_nesting
       end
       @constants.find do |constant|
-        const_ref.const_name == ConstName.from_string(constant.full_name)
+        constant.full_name != "" && const_ref.const_name == ConstName.from_string(constant.full_name)
       end
     end
 
@@ -176,11 +179,16 @@ module Orbacle
     end
 
     def find_instance_method(class_name, method_name)
-      @metods.find {|m| m.scope.to_s == class_name && m.name == method_name }
+      klass = find_class_by_name(class_name)
+      return nil if klass.nil?
+      @metods.find {|m| m.place_of_definition_id == klass.id && m.name == method_name }
     end
 
     def find_class_method(class_name, method_name)
-      @metods.find {|m| !m.scope.empty? && m.scope.to_const_name.to_string == class_name && m.scope.metaklass? && m.name == method_name }
+      klass = find_class_by_name(class_name)
+      return nil if klass.nil?
+      eigenclass = get_eigenclass_of_klass(klass.id)
+      @metods.find {|m| m.place_of_definition_id == eigenclass.id && m.name == method_name }
     end
 
     def find_any_methods(method_name)
@@ -189,13 +197,13 @@ module Orbacle
 
     def find_super_method(method_id)
       analyzed_method = get_method(method_id)
-      if analyzed_method.scope.metaklass?
-        raise
-      else
-        klass_of_this_method = find_constants_by_const_name(analyzed_method.scope.to_const_name)[0]
-        parent_klass = solve_reference(klass_of_this_method.parent_ref)
-        find_instance_method(parent_klass.full_name, analyzed_method.name)
-      end
+      klass_of_this_method = get_class(analyzed_method.place_of_definition_id)
+      parent_klass = solve_reference(klass_of_this_method.parent_ref)
+      find_instance_method(parent_klass.full_name, analyzed_method.name)
+    end
+
+    def find_kernel_method(method_name)
+      @metods.find {|m| m.name == method_name }
     end
 
     def get_method(method_id)
@@ -208,9 +216,15 @@ module Orbacle
       end
     end
 
-    def change_metod_visibility(scope, name, new_visibility)
+    def find_class_by_name(full_name)
+      @constants.find do |constant|
+        !constant.name.nil? && constant.full_name == full_name
+      end
+    end
+
+    def change_metod_visibility(klass_id, name, new_visibility)
       @metods.each do |m|
-        if m.scope == scope && m.name == name
+        if m.place_of_definition_id == klass_id && m.name == name
           m.visibility = new_visibility
         end
       end

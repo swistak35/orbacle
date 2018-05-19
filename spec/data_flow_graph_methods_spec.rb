@@ -87,7 +87,7 @@ module Orbacle
         END
 
         result = compute_graph(file)
-        meth = find_method(result, "", "bar")
+        meth = find_root_method(result, "bar")
         expect(meth.visibility).to eq(:public)
       end
 
@@ -349,7 +349,7 @@ module Orbacle
 
       r = parse_file_methods.(file)
       expect(r[:methods]).to eq([
-        ["", "xxx", { line: 1 }],
+        [nil, "xxx", { line: 1 }],
       ])
       expect(r[:constants]).to be_empty
     end
@@ -568,7 +568,7 @@ module Orbacle
 
       r = parse_file_methods.(file)
       expect(r[:methods]).to eq([
-        ["Metaklass(Foo)", "bar", { line: 2 }],
+        ["", "bar", { line: 2 }],
       ])
     end
 
@@ -584,7 +584,7 @@ module Orbacle
 
       r = parse_file_methods.(file)
       expect(r[:methods]).to eq([
-        ["Metaklass(Foo)", "foo", { line: 3 }],
+        ["", "foo", { line: 3 }],
       ])
     end
 
@@ -703,13 +703,13 @@ module Orbacle
         service = DataFlowGraph::Builder.new(graph, worklist, tree)
         result = service.process_file(file, nil)
         {
-          methods: tree.metods.map {|m| [m.scope.to_s, m.name, { line: m.location&.position_range&.start&.line }] }
+          methods: tree.metods.map {|m| [tree.get_class(m.place_of_definition_id)&.full_name, m.name, { line: m.location&.position_range&.start&.line }] }
             .reject {|m| m[0] == "Object" },
           constants: tree.constants.reject {|c| c.full_name == "Object" }.map do |c|
             if c.is_a?(GlobalTree::Klass)
-              [c.class, c.scope.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]
+              [c.class, c.scope&.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]
             else
-              [c.class, c.scope.absolute_str, c.name]
+              [c.class, c.scope&.absolute_str, c.name]
             end
           end
         }
@@ -729,12 +729,12 @@ module Orbacle
         tree: tree)
     end
 
-    def find_methods(result, scope, name)
-      result.tree.metods.select {|m| m.name == name && m.scope.to_s == scope }
+    def find_method(result, scope, name)
+      result.tree.find_instance_method(scope, name)
     end
 
-    def find_method(result, scope, name)
-      find_methods(result, scope, name).first
+    def find_root_method(result, name)
+      result.tree.find_kernel_method(name)
     end
 
     def find_constants(result, scope, name)

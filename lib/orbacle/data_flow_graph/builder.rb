@@ -569,7 +569,7 @@ module Orbacle
             [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
           end.compact
           methods_to_change_visibility.each do |name|
-            @tree.change_metod_visibility(context.scope, name, new_visibility)
+            @tree.change_metod_visibility(context.analyzed_klass_id, name, new_visibility)
           end
 
           final_node = add_vertex(Node.new(:class_by_id, { id: context.analyzed_klass_id }))
@@ -617,7 +617,6 @@ module Orbacle
         metod = @tree.add_method(
           GlobalTree::Method.new(
             place_of_definition_id: context.analyzed_klass_id,
-            scope: context.scope,
             name: ivar_name,
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
@@ -634,7 +633,6 @@ module Orbacle
         metod = @tree.add_method(
           GlobalTree::Method.new(
             place_of_definition_id: context.analyzed_klass_id,
-            scope: context.scope,
             name: "#{ivar_name}=",
             location: location,
             args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
@@ -725,7 +723,6 @@ module Orbacle
         metod = @tree.add_method(
           GlobalTree::Method.new(
             place_of_definition_id: context.analyzed_klass_id,
-            scope: context.scope,
             name: method_name.to_s,
             location: build_location_from_ast(context, ast),
             args: arguments_tree,
@@ -818,14 +815,16 @@ module Orbacle
 
         module_name_ref = ConstRef.from_ast(module_name_ast, context.nesting)
 
-        @tree.add_mod(
+        mod = @tree.add_mod(
           GlobalTree::Mod.new(
             name: module_name_ref.name,
             scope: context.scope.increase_by_ref(module_name_ref).decrease,
             location: build_location_from_ast(context, ast)))
 
         if module_body
-          context.with_nesting(context.nesting.increase_nesting_const(module_name_ref)).tap do |context2|
+          context
+            .with_analyzed_klass(mod.id)
+            .with_nesting(context.nesting.increase_nesting_const(module_name_ref)).tap do |context2|
             process(module_body, context2)
           end
         end
@@ -836,7 +835,13 @@ module Orbacle
       def handle_sclass(ast, context)
         self_name = ast.children[0]
         sklass_body = ast.children[1]
-        process(sklass_body, context.with_nesting(context.nesting.increase_nesting_self))
+
+        eigenclass_of_analyzed_klass = @tree.get_eigenclass_of_klass(context.analyzed_klass_id)
+        context
+          .with_nesting(context.nesting.increase_nesting_self)
+          .with_analyzed_klass(eigenclass_of_analyzed_klass.id).tap do |context2|
+            process(sklass_body, context2)
+          end
 
         return Result.new(Node.new(:nil, {}), context)
       end
@@ -849,10 +854,10 @@ module Orbacle
 
         arguments_tree, arguments_context, arguments_nodes = build_def_arguments(formal_arguments.children, context)
 
+        eigenclass_of_analyzed_klass = @tree.get_eigenclass_of_klass(context.analyzed_klass_id)
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            place_of_definition_id: context.analyzed_klass_id,
-            scope: context.scope.increase_by_metaklass,
+            place_of_definition_id: eigenclass_of_analyzed_klass.id,
             name: method_name.to_s,
             location: build_location_from_ast(context, ast),
             args: arguments_tree,

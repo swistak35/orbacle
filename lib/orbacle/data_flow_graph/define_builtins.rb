@@ -22,7 +22,7 @@ module Orbacle
             location: nil))
 
         define_object_opeq(klass)
-        template_just_str(klass, Scope.new(["Object"], false), "to_s", 0)
+        template_just_str(klass, "to_s", 0)
       end
 
       def add_integer_klass
@@ -33,10 +33,10 @@ module Orbacle
             parent_ref: nil,
             location: nil))
 
-        template_just_int(klass, Scope.new(["Integer"], false), "succ", 0)
-        template_just_int(klass, Scope.new(["Integer"], false), "+", 1)
-        template_just_int(klass, Scope.new(["Integer"], false), "-", 1)
-        template_just_int(klass, Scope.new(["Integer"], false), "*", 1)
+        template_just_int(klass, "succ", 0)
+        template_just_int(klass, "+", 1)
+        template_just_int(klass, "-", 1)
+        template_just_int(klass, "*", 1)
       end
 
       def add_dir_klass
@@ -46,8 +46,9 @@ module Orbacle
             scope: Scope.empty,
             parent_ref: nil,
             location: nil))
+        eigenklass = @tree.get_eigenclass_of_klass(klass.id)
 
-        define_dir_glob(klass)
+        define_dir_glob(eigenklass)
       end
 
       def add_file_klass
@@ -57,8 +58,9 @@ module Orbacle
             scope: Scope.empty,
             parent_ref: nil,
             location: nil))
+        eigenklass = @tree.get_eigenclass_of_klass(klass.id)
 
-        template_just_str(klass, Scope.new(["File"], true), "read", 1)
+        template_just_str(eigenklass, "read", 1)
       end
 
       def define_object_opeq(klass)
@@ -66,7 +68,6 @@ module Orbacle
         arg_nodes = build_arg_nodes(arg_names)
         metod = @tree.add_method(GlobalTree::Method.new(
           place_of_definition_id: klass.id,
-          scope: Scope.new(["Object"], false),
           name: "==",
           location: nil,
           args: build_arg_tree(arg_names),
@@ -81,7 +82,6 @@ module Orbacle
         arg_nodes = build_arg_nodes(arg_names)
         metod = @tree.add_method(GlobalTree::Method.new(
           place_of_definition_id: klass.id,
-          scope: Scope.new(["Dir"], true),
           name: "glob",
           location: nil,
           args: build_arg_tree(arg_names),
@@ -116,24 +116,23 @@ module Orbacle
         GlobalTree::Method::ArgumentsTree.new(regular_args, [], nil)
       end
 
-      def template_just_int(klass, scope, name, args)
-        metod = template_args(klass, scope, name, args)
+      def template_just_int(klass, name, args)
+        metod = template_args(klass, name, args)
         int_node = Node.new(:int, {})
         @graph.add_edge(int_node, @graph.get_metod_nodes(metod.id).result)
       end
 
-      def template_just_str(klass, scope, name, args)
-        metod = template_args(klass, scope, name, args)
+      def template_just_str(klass, name, args)
+        metod = template_args(klass, name, args)
         str_node = Node.new(:str, {})
         @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
       end
 
-      def template_args(klass, scope, name, args)
+      def template_args(klass, name, args)
         arg_names = build_arg_names(args)
         arg_nodes = build_arg_nodes(arg_names)
         metod = @tree.add_method(GlobalTree::Method.new(
           place_of_definition_id: klass.id,
-          scope: scope,
           name: name,
           location: nil,
           args: build_arg_tree(arg_names),

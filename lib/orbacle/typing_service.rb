@@ -357,7 +357,7 @@ module Orbacle
     end
 
     def handle_constructor_send(original_class_name, class_name, message_send)
-      found_method = @tree.metods.find {|m| m.scope.to_s == class_name && m.name == "initialize" }
+      found_method = @tree.find_instance_method(class_name, "initialize")
       if found_method.nil?
         parent_name = @tree.get_parent_of(class_name)
         if parent_name
