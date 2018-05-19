@@ -1,5 +1,9 @@
 module Orbacle
   class Indexer
+    def initialize(logger)
+      @logger = logger
+    end
+
     def call(project_root:)
       project_root_path = Pathname.new(project_root)
 
@@ -13,17 +17,20 @@ module Orbacle
       files.each do |file_path|
         begin
           file_content = File.read(file_path)
-          puts "Processing #{file_path}"
+          logger.info "Processing #{file_path}"
           @parser.process_file(file_content, file_path)
         rescue Parser::SyntaxError
-          puts "Warning: Skipped #{file_path} because of syntax error"
+          logger.warn "Warning: Skipped #{file_path} because of syntax error"
         end
       end
 
-      puts "Typing..."
-      typing_result = TypingService.new.(graph, worklist, tree)
+      logger.info "Typing..."
+      typing_result = TypingService.new(logger).(graph, worklist, tree)
 
       return tree, typing_result, graph
     end
+
+    private
+    attr_reader :logger
   end
 end

@@ -51,6 +51,10 @@ module Orbacle
       end
     end
 
+    def initialize(logger)
+      @logger = logger
+    end
+
     def call(graph, worklist, tree)
       @worklist = worklist
       @graph = graph
@@ -93,6 +97,9 @@ module Orbacle
 
       return @result
     end
+
+    private
+    attr_reader :logger
 
     def compute_result(node, sources)
       case node.type
@@ -384,7 +391,7 @@ module Orbacle
         if parent_name
           handle_instance_send(parent_name, message_send)
         else
-          warn("Method #{message_send.message_send} not found\n")
+          logger.warn("Method #{message_send.message_send} not found\n")
         end
       else
         handle_custom_message_send(found_method, message_send)
@@ -405,7 +412,7 @@ module Orbacle
         if parent_name
           handle_class_send(parent_name, message_send)
         else
-          warn("Method #{message_send.message_send} not found\n")
+          logger.warn("Method #{message_send.message_send} not found\n")
         end
       else
         handle_custom_message_send(found_method, message_send)
@@ -634,10 +641,6 @@ module Orbacle
 
     def handle_constructor(node, sources)
       NominalType.new(node.params.fetch(:name))
-    end
-
-    def warn(msg)
-      puts "Warning: #{msg}"
     end
   end
 end

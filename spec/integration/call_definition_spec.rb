@@ -162,7 +162,7 @@ module Orbacle
     end
 
     def test_indexer
-      test_indexer = Indexer.new
+      test_indexer = Indexer.new(Logger.new(nil))
     end
 
     def call_definition(indexing_result, cmd)

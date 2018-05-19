@@ -5,10 +5,11 @@ RSpec.describe Orbacle do
   specify do
     integration_app_path = "#{Dir.pwd}/spec/support/integration_app"
 
-    indexer = Orbacle::Indexer.new
+    logger = Logger.new(nil)
+    indexer = Orbacle::Indexer.new(logger)
     indexing_result = indexer.(project_root: Pathname.new(integration_app_path))
 
-    lang_server = Orbacle::LangServer.new(logger: Logger.new(nil))
+    lang_server = Orbacle::LangServer.new(logger: logger)
     result = lang_server.call_method(indexing_result, {
       id: 1,
       method: "textDocument/definition",

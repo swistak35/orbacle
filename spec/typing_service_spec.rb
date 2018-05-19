@@ -1073,27 +1073,13 @@ module Orbacle
       end
     end
 
-    describe "misbehaviours" do
-      xspecify "misbehaviour - super call without argument" do
-        snippet = <<-END
-        class Foo
-          def bar
-            super()
-          end
-        end
-        END
-
-        result = full_type_snippet(snippet)
-      end
-    end
-
     def type_snippet(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
       tree = GlobalTree.new
       DataFlowGraph::DefineBuiltins.new(graph, tree).()
       result = DataFlowGraph::Builder.new(graph, worklist, tree).process_file(snippet, nil)
-      typing_result = TypingService.new.(graph, worklist, tree)
+      typing_result = TypingService.new(Logger.new(nil)).(graph, worklist, tree)
       typing_result[result.node]
     end
 
@@ -1102,7 +1088,7 @@ module Orbacle
       graph = DataFlowGraph::Graph.new
       tree = GlobalTree.new
       result = DataFlowGraph::Builder.new(graph, worklist, tree).process_file(snippet, nil)
-      TypingService.new.(graph, worklist, tree)
+      TypingService.new(Logger.new(nil)).(graph, worklist, tree)
     end
 
     def nominal(*args)

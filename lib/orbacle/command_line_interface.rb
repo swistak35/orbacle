@@ -33,7 +33,7 @@ module Orbacle
       logger.level = Logger::INFO
 
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new
+      indexer = Orbacle::Indexer.new(logger)
       indexer.(project_root: project_root)
 
       lang_server = Orbacle::LangServer.new(
