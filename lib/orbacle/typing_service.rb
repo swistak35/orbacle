@@ -495,6 +495,8 @@ module Orbacle
 
     def handle_super_send(super_send)
       super_method = @tree.find_super_method(super_send.method_id)
+      return if super_method.nil?
+
       handle_custom_message_send(super_method, super_send)
 
       connect_method_result_to_node(super_method.id, super_send.send_result)

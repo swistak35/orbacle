@@ -1033,6 +1033,44 @@ module Orbacle
 
         expect(result).to eq(nominal("String"))
       end
+
+      specify "example in constructor" do
+        snippet = <<-END
+        class Parent
+          def initialize(x)
+            x.to_s
+          end
+        end
+        class Child < Parent
+          def initialize(x)
+            $y = super(x)
+          end
+        end
+        Child.new(42)
+        $y
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+      specify "example when no parent call" do
+        snippet = <<-END
+        class Parent
+        end
+        class Child < Parent
+          def foo(x)
+            super(x)
+          end
+        end
+        Child.new.foo(42)
+        END
+
+        expect do
+          type_snippet(snippet)
+        end.not_to raise_error
+      end
     end
 
     describe "misbehaviours" do
