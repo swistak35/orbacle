@@ -14,12 +14,8 @@ module Orbacle
 
       specify "simple reference" do
         tree = GlobalTree.new
-        klass = tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "Foo",
-            scope: Scope.empty,
-            location: nil,
-            parent_ref: nil))
+        klass = tree.add_constant(
+          GlobalTree::Constant.new("Foo", Scope.empty, nil))
 
         const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
 
@@ -28,12 +24,11 @@ module Orbacle
 
       specify "simple reference of a nested class" do
         tree = GlobalTree.new
-        klass = tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "Bar",
-            scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
-            location: nil,
-            parent_ref: nil))
+        klass = tree.add_constant(
+          GlobalTree::Constant.new(
+            "Bar",
+            Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
+            nil))
 
         const_ref = ConstRef.from_full_name("Foo::Bar", Nesting.empty)
 
@@ -42,12 +37,11 @@ module Orbacle
 
       specify "reference of a nested class from inside class" do
         tree = GlobalTree.new
-        klass = tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "Bar",
-            scope: Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
-            location: nil,
-            parent_ref: nil))
+        klass = tree.add_constant(
+          GlobalTree::Constant.new(
+            "Bar",
+            Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
+            nil))
 
         nesting = Nesting.empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))

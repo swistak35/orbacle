@@ -26,70 +26,49 @@ module Orbacle
     end
 
     class Klass
-      def initialize(id: SecureRandom.uuid, name:, scope:, location:, parent_ref:, eigenclass_id: nil)
+      def initialize(id: SecureRandom.uuid, parent_ref:, eigenclass_id: nil)
         @id = id
-        @name = name
-        @scope = scope
-        @location = location
         @parent_ref = parent_ref
         @eigenclass_id = eigenclass_id
       end
 
-      attr_reader :id, :name, :scope, :location, :parent_ref, :eigenclass_id
+      attr_reader :id, :parent_ref, :eigenclass_id
       attr_writer :eigenclass_id
 
       def ==(other)
         @id == other.id &&
-          @name == other.name &&
-          @scope == other.scope &&
           @parent_ref == other.parent_ref &&
-          @location == location
-      end
-
-      def full_name
-        if scope
-          [*scope.elems, @name].join("::")
-        else
-          ""
-        end
+          @eigenclass_id == other.eigenclass_id
       end
     end
 
     class Mod
-      def initialize(id: SecureRandom.uuid, name:, scope:, location:)
+      def initialize(id = SecureRandom.uuid)
         @id = id
-        @name = name
-        @scope = scope
-        @location = location
       end
 
-      attr_reader :id, :name, :scope, :location
+      attr_reader :id
 
       def ==(other)
-        @id = other.id &&
-          @name == other.name &&
-          @scope == other.scope &&
-          @location == location
-      end
-
-      def full_name
-        [*scope.elems, @name].join("::")
+        @id = other.id
       end
     end
 
     class Constant
-      def initialize(name:, scope:, location:)
+      def initialize(name, scope, location, definition_id = nil)
         @name = name
         @scope = scope
         @location = location
+        @definition_id = definition_id
       end
 
-      attr_reader :name, :scope, :location
+      attr_reader :name, :scope, :location, :definition_id
 
       def ==(other)
         @name == other.name &&
           @scope == other.scope &&
-          @location == location
+          @location == other.location &&
+          @definition_id == other.definition_id
       end
 
       def full_name
@@ -99,11 +78,13 @@ module Orbacle
 
     def initialize
       @constants = []
+      @classes = []
+      @modules = []
       @metods = []
       @lambdas = []
     end
 
-    attr_reader :metods, :constants
+    attr_reader :metods
 
     def add_method(metod)
       @metods << metod
@@ -111,12 +92,12 @@ module Orbacle
     end
 
     def add_klass(klass)
-      @constants << klass
+      @classes << klass
       return klass
     end
 
     def add_mod(mod)
-      @constants << mod
+      @modules << mod
       return mod
     end
 
@@ -131,8 +112,12 @@ module Orbacle
       return lambda_id
     end
 
-    def get_class(klass_id)
-      @constants.find {|c| (c.is_a?(Klass) || c.is_a?(Mod)) && c.id == klass_id }
+    def get_class(class_id)
+      @classes.find {|c| c.id == class_id }
+    end
+
+    def get_module(module_id)
+      @modules.find {|m| m.id == module_id }
     end
 
     def get_eigenclass_of_klass(klass_id)
@@ -140,7 +125,7 @@ module Orbacle
       if klass.eigenclass_id
         return get_class(klass.eigenclass_id)
       else
-        eigenclass = add_klass(Klass.new(name: nil, scope: nil, location: nil, parent_ref: nil, eigenclass_id: nil))
+        eigenclass = add_klass(Klass.new(parent_ref: nil))
         klass.eigenclass_id = eigenclass.id
         return eigenclass
       end
@@ -151,7 +136,7 @@ module Orbacle
       while !nesting.empty?
         scope = nesting.to_scope
         @constants.each do |constant|
-          return constant if constant.name && scope.increase_by_ref(const_ref).to_const_name == ConstName.from_string(constant.full_name)
+          return constant if scope.increase_by_ref(const_ref).to_const_name == ConstName.from_string(constant.full_name)
         end
         nesting = nesting.decrease_nesting
       end
@@ -161,21 +146,15 @@ module Orbacle
     end
 
     def get_parent_of(class_name)
-      possible_parents = @constants
-        .select {|c| c.is_a?(Klass) }
-        .select {|c| c.full_name == class_name }
-        .map(&:parent_ref)
-        .reject(&:nil?)
-        .map(&method(:solve_reference))
-        .reject(&:nil?)
-        .map(&:full_name)
-      if class_name == "Object"
-        nil
-      elsif possible_parents.empty?
-        "Object"
-      else
-        possible_parents[0]
-      end
+      return nil if class_name == "Object"
+
+      const = find_constant_by_name(class_name)
+      return "Object" if const.nil?
+
+      klass = get_class(const.definition_id)
+      return "Object" if klass.parent_ref.nil?
+      parent_const = solve_reference(klass.parent_ref)
+      parent_const.full_name
     end
 
     def find_instance_method(class_name, method_name)
@@ -211,20 +190,20 @@ module Orbacle
     end
 
     def find_class_by_name(full_name)
-      @constants.find do |constant|
-        !constant.name.nil? && constant.is_a?(Klass) && constant.full_name == full_name
-      end
+      const = find_constant_by_name(full_name)
+      return nil if const.nil?
+      get_class(const.definition_id)
     end
 
     def find_module_by_name(full_name)
-      @constants.find do |constant|
-        !constant.name.nil? && constant.is_a?(Mod) && constant.full_name == full_name
-      end
+      const = find_constant_by_name(full_name)
+      return nil if const.nil?
+      get_module(const.definition_id)
     end
 
     def find_constant_by_name(full_name)
       @constants.find do |constant|
-        !constant.name.nil? && constant.is_a?(Constant) && constant.full_name == full_name
+        constant.full_name == full_name
       end
     end
 

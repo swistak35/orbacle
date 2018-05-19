@@ -143,9 +143,10 @@ module Orbacle
 
       foo_class = find_class(result, "Foo")
       expect(foo_class).not_to be_nil
-
-      expect(foo_class.location.start_line).to eq(1)
       expect(foo_class.parent_ref).to eq(nil)
+
+      foo_const = find_constant(result, "Foo")
+      expect(foo_const.location.start_line).to eq(1)
     end
 
     specify "simple method in class declaration" do

@@ -789,12 +789,9 @@ module Orbacle
         klass_name_ref = ConstRef.from_ast(klass_name_ast, context.nesting)
         parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, context.nesting)
 
-        klass = @tree.add_klass(
-          GlobalTree::Klass.new(
-            name: klass_name_ref.name,
-            scope: context.scope.increase_by_ref(klass_name_ref).decrease,
-            parent_ref: parent_name_ref,
-            location: build_location_from_ast(context, ast)))
+        klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: parent_name_ref))
+        klass_constant = @tree.add_constant(
+          GlobalTree::Constant.new(klass_name_ref.name, context.scope.increase_by_ref(klass_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
 
         new_context = context
           .with_analyzed_klass(klass.id)
@@ -815,11 +812,10 @@ module Orbacle
 
         module_name_ref = ConstRef.from_ast(module_name_ast, context.nesting)
 
-        mod = @tree.add_mod(
-          GlobalTree::Mod.new(
-            name: module_name_ref.name,
-            scope: context.scope.increase_by_ref(module_name_ref).decrease,
-            location: build_location_from_ast(context, ast)))
+        mod = @tree.add_mod(GlobalTree::Mod.new)
+        @tree.add_constant(
+          GlobalTree::Constant.new(
+            module_name_ref.name, context.scope.increase_by_ref(module_name_ref).decrease, build_location_from_ast(context, ast), mod.id))
 
         if module_body
           context
@@ -888,28 +884,23 @@ module Orbacle
         if expr_is_class_definition?(expr)
           parent_klass_name_ast = expr.children[2]
           parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, context.nesting)
-          @tree.add_klass(
-            GlobalTree::Klass.new(
-              name: const_name_ref.name,
-              scope: context.scope.increase_by_ref(const_name_ref).decrease,
-              parent_ref: parent_name_ref,
-              location: build_location_from_ast(context, ast)))
+          klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: parent_name_ref))
+          @tree.add_constant(
+            GlobalTree::Constant.new(
+              const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
 
           return Result.new(Node.new(:nil, {}), context)
         elsif expr_is_module_definition?(expr)
-          @tree.add_mod(
-            GlobalTree::Mod.new(
-              name: const_name_ref.name,
-              scope: context.scope.increase_by_ref(const_name_ref).decrease,
-              location: build_location_from_ast(context, ast)))
+          mod = @tree.add_mod(GlobalTree::Mod.new)
+          @tree.add_constant(
+            GlobalTree::Constant.new(
+              const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast), mod.id))
 
           return Result.new(Node.new(:nil, {}), context)
         else
           @tree.add_constant(
             GlobalTree::Constant.new(
-              name: const_name_ref.name,
-              scope: context.scope.increase_by_ref(const_name_ref).decrease,
-              location: build_location_from_ast(context, ast)))
+              const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast)))
 
           expr_result = process(expr, context)
 

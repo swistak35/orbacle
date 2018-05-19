@@ -14,24 +14,18 @@ module Orbacle
       end
 
       def add_object_klass
-        klass = @tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "Object",
-            scope: Scope.empty,
-            parent_ref: nil,
-            location: nil))
+        klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: nil))
+        @tree.add_constant(
+          GlobalTree::Constant.new("Object", Scope.empty, nil, klass.id))
 
         define_object_opeq(klass)
         template_just_str(klass, "to_s", 0)
       end
 
       def add_integer_klass
-        klass = @tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "Integer",
-            scope: Scope.empty,
-            parent_ref: nil,
-            location: nil))
+        klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: nil))
+        @tree.add_constant(
+          GlobalTree::Constant.new("Integer", Scope.empty, nil, klass.id))
 
         template_just_int(klass, "succ", 0)
         template_just_int(klass, "+", 1)
@@ -40,24 +34,18 @@ module Orbacle
       end
 
       def add_dir_klass
-        klass = @tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "Dir",
-            scope: Scope.empty,
-            parent_ref: nil,
-            location: nil))
+        klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: nil))
+        @tree.add_constant(
+          GlobalTree::Constant.new("Dir", Scope.empty, nil, klass.id))
         eigenklass = @tree.get_eigenclass_of_klass(klass.id)
 
         define_dir_glob(eigenklass)
       end
 
       def add_file_klass
-        klass = @tree.add_klass(
-          GlobalTree::Klass.new(
-            name: "File",
-            scope: Scope.empty,
-            parent_ref: nil,
-            location: nil))
+        klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: nil))
+        @tree.add_constant(
+          GlobalTree::Constant.new("File", Scope.empty, nil, klass.id))
         eigenklass = @tree.get_eigenclass_of_klass(klass.id)
 
         template_just_str(eigenklass, "read", 1)
