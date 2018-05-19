@@ -1014,8 +1014,29 @@ module Orbacle
       end
     end
 
+    describe "super calls" do
+      specify "basic example" do
+        snippet = <<-END
+        class Parent
+          def foo(x)
+            x.to_s
+          end
+        end
+        class Child < Parent
+          def foo(x)
+            super(x)
+          end
+        end
+        Child.new.foo(42)
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+    end
+
     describe "misbehaviours" do
-      specify "misbehaviour - super call without argument" do
+      xspecify "misbehaviour - super call without argument" do
         snippet = <<-END
         class Foo
           def bar

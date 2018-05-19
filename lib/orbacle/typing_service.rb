@@ -1,5 +1,3 @@
-require 'rgl/adjacency'
-
 module Orbacle
   class TypingService
     class NominalType < Struct.new(:name)
@@ -80,9 +78,15 @@ module Orbacle
           case message_send
           when Worklist::MessageSend
             if satisfied_message_send?(message_send) && !@worklist.message_send_handled?(message_send)
-              handle_message_send(message_send, graph)
+              handle_message_send(message_send)
               @worklist.mark_message_send_as_handled(message_send)
             end
+          when Worklist::SuperSend
+            if satisfied_super_send?(message_send) && !@worklist.message_send_handled?(message_send)
+              handle_super_send(message_send)
+              @worklist.mark_message_send_as_handled(message_send)
+            end
+          else raise "Not handled message send"
           end
         end
       end
@@ -335,7 +339,11 @@ module Orbacle
         message_send.send_args.all? {|a| @result[a] }
     end
 
-    def handle_message_send(message_send, graph)
+    def satisfied_super_send?(super_send)
+      super_send.send_args.all? {|a| @result[a] }
+    end
+
+    def handle_message_send(message_send)
       message_name = message_send.message_send
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
@@ -491,6 +499,17 @@ module Orbacle
         handle_class_primitive(class_name, message_send)
       else
         handle_class_nonprimitive_send(class_name, message_send)
+      end
+    end
+
+    def handle_super_send(super_send)
+      super_method = @tree.find_super_method(super_send.method_id)
+      handle_custom_message_send(super_method, super_send)
+
+      method_result_node = @graph.get_metod_nodes(super_method.id).result
+      if !@graph.has_edge?(method_result_node, super_send.send_result)
+        @graph.add_edge(method_result_node, super_send.send_result)
+        @worklist.enqueue_node(super_send.send_result)
       end
     end
 

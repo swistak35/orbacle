@@ -165,6 +165,27 @@ module Orbacle
       @metods.select {|m| m.name == method_name }
     end
 
+    def find_super_method(method_id)
+      analyzed_method = get_method(method_id)
+      if analyzed_method.scope.metaklass?
+        raise
+      else
+        klass_of_this_method = find_constants_by_const_name(analyzed_method.scope.to_const_name)[0]
+        parent_klass = solve_reference(klass_of_this_method.parent_ref)
+        find_instance_method(parent_klass.full_name, analyzed_method.name)
+      end
+    end
+
+    def get_method(method_id)
+      @metods.find {|m| m.id == method_id }
+    end
+
+    def find_constants_by_const_name(const_name)
+      @constants.select do |constant|
+        constant.scope == const_name.scope && constant.name == const_name.name
+      end
+    end
+
     def change_metod_visibility(scope, name, new_visibility)
       @metods.each do |m|
         if m.scope == scope && m.name == name
