@@ -26,17 +26,19 @@ module Orbacle
     end
 
     class Klass
-      def initialize(name:, scope:, location:, parent_ref:)
+      def initialize(id: SecureRandom.uuid, name:, scope:, location:, parent_ref:)
+        @id = id
         @name = name
         @scope = scope
         @location = location
         @parent_ref = parent_ref
       end
 
-      attr_reader :name, :scope, :location, :parent_ref
+      attr_reader :id, :name, :scope, :location, :parent_ref
 
       def ==(other)
-        @name == other.name &&
+        @id == other.id &&
+          @name == other.name &&
           @scope == other.scope &&
           @parent_ref == other.parent_ref &&
           @location == location
@@ -48,7 +50,8 @@ module Orbacle
     end
 
     class Mod
-      def initialize(name:, scope:, location:)
+      def initialize(id: SecureRandom.uuid, name:, scope:, location:)
+        @id = id
         @name = name
         @scope = scope
         @location = location
@@ -57,7 +60,8 @@ module Orbacle
       attr_reader :name, :scope, :location
 
       def ==(other)
-        @name == other.name &&
+        @id = other.id &&
+          @name == other.name &&
           @scope == other.scope &&
           @location == location
       end
