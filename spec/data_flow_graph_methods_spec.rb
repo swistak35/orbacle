@@ -14,10 +14,10 @@ module Orbacle
 
       meth = find_method(result, "Foo", "bar")
       expect(meth.visibility).to eq(:public)
-      expect(meth.location.position_range.start.line).to eq(2)
+      expect(meth.location.start_line).to eq(2)
 
       klass = find_constant(result, "", "Foo")
-      expect(klass.location.position_range.start.line).to eq(1)
+      expect(klass.location.start_line).to eq(1)
       expect(klass.parent_ref).to eq(nil)
     end
 
@@ -164,10 +164,10 @@ module Orbacle
       result = compute_graph(file)
 
       meth = find_method(result, "Foo", "bar")
-      expect(meth.location.position_range.start.line).to eq(2)
+      expect(meth.location.start_line).to eq(2)
 
       meth = find_method(result, "Foo", "baz")
-      expect(meth.location.position_range.start.line).to eq(5)
+      expect(meth.location.start_line).to eq(5)
     end
 
     it do
@@ -471,7 +471,7 @@ module Orbacle
       result = compute_graph(file)
 
       meth = find_method(result, "Foo", "baz")
-      expect(meth.location.position_range.start.line).to eq(3)
+      expect(meth.location.start_line).to eq(3)
     end
 
     specify do
