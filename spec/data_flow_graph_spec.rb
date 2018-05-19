@@ -1213,40 +1213,59 @@ module Orbacle
               node(:call_result, { csend: false })))
     end
 
-    specify "super call without arguments" do
-      snippet = <<-END
-      class Foo
-        def bar
-          super()
+    describe "super calls" do
+      specify "super call without arguments" do
+        snippet = <<-END
+        class Foo
+          def bar
+            super()
+          end
         end
+        END
+
+        result = generate_cfg(snippet)
+
+        super_send = result.message_sends.first
+        expect(super_send).to be_a(Worklist::SuperSend)
+        expect(super_send.send_args).to match_array([])
+        expect(super_send.send_result).to eq(node(:call_result))
+        expect(super_send.block).to be_nil
+        expect(super_send.method_id).not_to be_nil
       end
-      END
 
-      result = generate_cfg(snippet)
-
-      super_send = result.message_sends.first
-      expect(super_send).to be_a(Worklist::SuperSend)
-      expect(super_send.send_args).to match_array([])
-      expect(super_send.send_result).to eq(node(:call_result))
-      expect(super_send.block).to be_nil
-    end
-
-    specify "super call with arguments" do
-      snippet = <<-END
-      class Foo
-        def bar
-          super(42)
+      specify "super call with arguments" do
+        snippet = <<-END
+        class Foo
+          def bar
+            super(42)
+          end
         end
+        END
+
+        result = generate_cfg(snippet)
+
+        super_send = result.message_sends.first
+        expect(super_send).to be_a(Worklist::SuperSend)
+        expect(super_send.send_args).to match_array([node(:call_arg)])
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "super call with block" do
+        snippet = <<-END
+        class Foo
+          def bar
+            super(42) do |x|
+              17
+            end
+          end
+        end
+        END
 
-      super_send = result.message_sends.first
-      expect(super_send).to be_a(Worklist::SuperSend)
-      expect(super_send.send_args).to match_array([node(:call_arg)])
-      expect(super_send.send_result).to eq(node(:call_result))
-      expect(super_send.block).to be_nil
+        result = generate_cfg(snippet)
+
+        super_send = result.message_sends.first
+        expect(super_send).to be_a(Worklist::SuperSend)
+        expect(super_send.block).not_to be_nil
+      end
     end
 
     specify "super zero-arity call" do

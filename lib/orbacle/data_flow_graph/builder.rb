@@ -1042,7 +1042,7 @@ module Orbacle
 
         call_result_node = add_vertex(Node.new(:call_result, {}))
 
-        super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, nil)
+        super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, nil, final_context.analyzed_method)
         @worklist.add_message_send(super_send)
 
         return Result.new(call_result_node, final_context, { message_send: super_send })
