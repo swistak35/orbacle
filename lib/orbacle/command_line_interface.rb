@@ -45,11 +45,13 @@ module Orbacle
     end
 
     def generate_datajs(options)
+      logger = Logger.new(STDOUT)
+
       require 'base64'
       project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
 
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new
+      indexer = Orbacle::Indexer.new(logger)
       tree, typing_result, graph = indexer.(project_root: project_root)
 
       nodes = graph.vertices
