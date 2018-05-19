@@ -181,7 +181,11 @@ module Orbacle
     def find_instance_method(class_name, method_name)
       klass = find_class_by_name(class_name)
       return nil if klass.nil?
-      @metods.find {|m| m.place_of_definition_id == klass.id && m.name == method_name }
+      find_instance_method2(klass.id, method_name)
+    end
+
+    def find_instance_method2(class_id, method_name)
+      @metods.find {|m| m.place_of_definition_id == class_id && m.name == method_name }
     end
 
     def find_class_method(class_name, method_name)
@@ -202,23 +206,25 @@ module Orbacle
       find_instance_method(parent_klass.full_name, analyzed_method.name)
     end
 
-    def find_kernel_method(method_name)
-      @metods.find {|m| m.name == method_name }
-    end
-
     def get_method(method_id)
       @metods.find {|m| m.id == method_id }
     end
 
-    def find_constants_by_const_name(const_name)
-      @constants.select do |constant|
-        constant.scope == const_name.scope && constant.name == const_name.name
+    def find_class_by_name(full_name)
+      @constants.find do |constant|
+        !constant.name.nil? && constant.is_a?(Klass) && constant.full_name == full_name
       end
     end
 
-    def find_class_by_name(full_name)
+    def find_module_by_name(full_name)
       @constants.find do |constant|
-        !constant.name.nil? && constant.full_name == full_name
+        !constant.name.nil? && constant.is_a?(Mod) && constant.full_name == full_name
+      end
+    end
+
+    def find_constant_by_name(full_name)
+      @constants.find do |constant|
+        !constant.name.nil? && constant.is_a?(Constant) && constant.full_name == full_name
       end
     end
 

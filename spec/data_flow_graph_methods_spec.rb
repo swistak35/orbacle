@@ -2,25 +2,6 @@ require 'spec_helper'
 
 module Orbacle
   RSpec.describe DataFlowGraph do
-    specify "simple method in class declaration" do
-      file = <<-END
-      class Foo
-        def bar
-        end
-      end
-      END
-
-      result = compute_graph(file)
-
-      meth = find_method(result, "Foo", "bar")
-      expect(meth.visibility).to eq(:public)
-      expect(meth.location.start_line).to eq(2)
-
-      klass = find_constant(result, "", "Foo")
-      expect(klass.location.start_line).to eq(1)
-      expect(klass.parent_ref).to eq(nil)
-    end
-
     describe "visibility" do
       specify "public by default" do
         file = <<-END
@@ -87,7 +68,7 @@ module Orbacle
         END
 
         result = compute_graph(file)
-        meth = find_root_method(result, "bar")
+        meth = find_kernel_method(result, "bar")
         expect(meth.visibility).to eq(:public)
       end
 
@@ -122,32 +103,66 @@ module Orbacle
       end
     end
 
-    specify "method with one yield" do
-      file = <<-END
-      def bar
-        yield
+    describe "collecting yields" do
+      specify "method with one yield" do
+        file = <<-END
+        def bar
+          yield
+        end
+        END
+
+        result = compute_graph(file)
+
+        last_method = result.tree.metods.last
+        expect(result.graph.get_metod_nodes(last_method.id).yields.size).to eq(1)
       end
-      END
 
-      result = compute_graph(file)
+      specify "method with more yields" do
+        file = <<-END
+        def bar
+          yield
+          yield
+          yield
+        end
+        END
 
-      last_method = result.tree.metods.last
-      expect(result.graph.get_metod_nodes(last_method.id).yields.size).to eq(1)
+        result = compute_graph(file)
+
+        last_method = result.tree.metods.last
+        expect(result.graph.get_metod_nodes(last_method.id).yields.size).to eq(3)
+      end
     end
 
-    specify "method with more yields" do
+    specify "simple class declaration" do
       file = <<-END
-      def bar
-        yield
-        yield
-        yield
+      class Foo
       end
       END
 
       result = compute_graph(file)
 
-      last_method = result.tree.metods.last
-      expect(result.graph.get_metod_nodes(last_method.id).yields.size).to eq(3)
+      foo_class = find_class(result, "Foo")
+      expect(foo_class).not_to be_nil
+
+      expect(foo_class.location.start_line).to eq(1)
+      expect(foo_class.parent_ref).to eq(nil)
+    end
+
+    specify "simple method in class declaration" do
+      file = <<-END
+      class Foo
+        def bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      foo_class = find_class(result, "Foo")
+
+      meth = find_method2(result, foo_class.id, "bar")
+      expect(meth.visibility).to eq(:public)
+      expect(meth.location.start_line).to eq(2)
     end
 
     specify do
@@ -163,14 +178,37 @@ module Orbacle
 
       result = compute_graph(file)
 
-      meth = find_method(result, "Foo", "bar")
-      expect(meth.location.start_line).to eq(2)
-
-      meth = find_method(result, "Foo", "baz")
-      expect(meth.location.start_line).to eq(5)
+      foo_class = find_class(result, "Foo")
+      expect(find_method2(result, foo_class.id, "bar")).not_to be_nil
+      expect(find_method2(result, foo_class.id, "baz")).not_to be_nil
     end
 
-    it do
+    specify do
+      file = <<-END
+      module Foo
+      end
+      END
+
+      result = compute_graph(file)
+
+      foo_module = find_module(result, "Foo")
+      expect(foo_module).not_to be_nil
+    end
+
+    specify do
+      file = <<-END
+      module Some
+        class Foo
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(find_class(result, "Some::Foo")).not_to be_nil
+    end
+
+    specify do
       file = <<-END
       module Some
         class Foo
@@ -185,13 +223,29 @@ module Orbacle
 
       result = compute_graph(file)
 
-      expect(find_method(result, "Some::Foo", "bar")).not_to be_nil
-      expect(find_method(result, "Some::Foo", "baz")).not_to be_nil
-      expect(find_module(result, "Some")).not_to be_nil
-      expect(find_klass(result, "Some::Foo")).not_to be_nil
+      foo_class = find_class(result, "Some::Foo")
+      expect(find_method2(result, foo_class.id, "bar")).not_to be_nil
+      expect(find_method2(result, foo_class.id, "baz")).not_to be_nil
     end
 
-    it do
+    specify do
+      file = <<-END
+      module Some
+        class Foo
+        end
+
+        class Bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(find_class(result, "Some::Foo")).not_to be_nil
+      expect(find_class(result, "Some::Bar")).not_to be_nil
+    end
+
+    specify do
       file = <<-END
       module Some
         class Foo
@@ -206,62 +260,44 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo", "oof", { line: 3 }],
-        ["Some::Bar", "rab", { line: 8 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(name: "Some"),
-        build_klass(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some", name: "Bar"),
-      ])
+      result = compute_graph(file)
+
+      foo = find_class(result, "Some::Foo")
+      bar = find_class(result, "Some::Bar")
+
+      expect(find_method2(result, foo.id, "oof")).not_to be_nil
+      expect(find_method2(result, bar.id, "rab")).not_to be_nil
     end
 
-    it do
+    specify do
       file = <<-END
       module Some
         module Foo
           class Bar
-            def baz
-            end
           end
         end
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo::Bar", "baz", { line: 4 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(name: "Some"),
-        build_module(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some::Foo", name: "Bar"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_class(result, "Some::Foo::Bar")).not_to be_nil
     end
 
-    it do
+    specify do
       file = <<-END
       module Some::Foo
         class Bar
-          def baz
-          end
         end
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo::Bar", "baz", { line: 3 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some::Foo", name: "Bar"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_class(result, "Some::Foo::Bar")).not_to be_nil
     end
 
-    it do
+    specify do
       file = <<-END
       module Some::Foo::Bar
         class Baz
@@ -271,37 +307,25 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo::Bar::Baz", "xxx", { line: 3 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(scope: "Some::Foo", name: "Bar"),
-        build_klass(scope: "Some::Foo::Bar", name: "Baz"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_class(result, "Some::Foo::Bar::Baz")).not_to be_nil
     end
 
-    it do
+    specify do
       file = <<-END
       module Some::Foo
         class Bar::Baz
-          def xxx
-          end
         end
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo::Bar::Baz", "xxx", { line: 3 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(scope: "Some", name: "Foo"),
-        build_klass(scope: "Some::Foo::Bar", name: "Baz")
-      ])
+      result = compute_graph(file)
+
+      expect(find_class(result, "Some::Foo::Bar::Baz")).not_to be_nil
     end
 
-    it do
+    specify do
       file = <<-END
       class Bar
         class ::Foo
@@ -311,17 +335,29 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Foo", "xxx", { line: 3 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Bar"),
-        build_klass(name: "Foo")
-      ])
+      result = compute_graph(file)
+
+      expect(find_class(result, "Foo")).not_to be_nil
+      expect(find_class(result, "Bar::Foo")).to be_nil
     end
 
-    it do
+    specify do
+      file = <<-END
+      class Bar
+        class ::Foo
+          def xxx
+          end
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      foo = find_class(result, "Foo")
+      expect(find_method2(result, foo.id, "xxx")).not_to be_nil
+    end
+
+    specify do
       file = <<-END
       class Bar
         module ::Foo
@@ -331,47 +367,52 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Foo", "xxx", { line: 3 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Bar"),
-        build_module(name: "Foo"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_module(result, "Foo")).not_to be_nil
+      expect(find_module(result, "Bar::Foo")).to be_nil
     end
 
-    it do
+    specify do
+      file = <<-END
+      class Bar
+        module ::Foo
+          def xxx
+          end
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      foo = find_module(result, "Foo")
+      expect(find_method2(result, foo.id, "xxx")).not_to be_nil
+    end
+
+    specify do
       file = <<-END
       def xxx
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        [nil, "xxx", { line: 1 }],
-      ])
-      expect(r[:constants]).to be_empty
+      result = compute_graph(file)
+
+      xxx = find_kernel_method(result, "xxx")
+      expect(xxx).not_to be_nil
+      expect(xxx.place_of_definition_id).to be_nil
     end
 
     specify do
       file = <<-END
       class Foo
         Bar = 32
-
-        def bar
-        end
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Foo", "bar", { line: 4 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo"),
-        build_constant(name: "Bar", scope: "Foo")
-      ])
+      result = compute_graph(file)
+
+      bar_const = find_constant(result, "Foo::Bar")
+      expect(bar_const).not_to be_nil
     end
 
     specify do
@@ -381,12 +422,10 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([])
-      expect(r[:constants]).to match_array([
-        build_constant(name: "Bar", scope: "Foo::Ban::Baz"),
-        build_klass(name: "Foo"),
-      ])
+      result = compute_graph(file)
+
+      bar_const = find_constant(result, "Foo::Ban::Baz::Bar")
+      expect(bar_const).not_to be_nil
     end
 
     specify do
@@ -396,11 +435,10 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_constant(name: "Bar"),
-        build_klass(name: "Foo"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_constant(result, "Foo::Bar")).to be_nil
+      expect(find_constant(result, "Bar")).not_to be_nil
     end
 
     specify do
@@ -410,11 +448,9 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_constant(name: "Bar", scope: "Baz"),
-        build_klass(name: "Foo"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_constant(result, "Baz::Bar")).not_to be_nil
     end
 
     specify do
@@ -424,14 +460,29 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_constant(name: "Bar", scope: "Baz::Bam"),
-        build_klass(name: "Foo"),
-      ])
+      result = compute_graph(file)
+
+      expect(find_constant(result, "Baz::Bam::Bar")).not_to be_nil
     end
 
-    it do
+    specify do
+      file = <<-END
+      module Some
+        module Foo
+        end
+
+        module Bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(find_module(result, "Some::Foo")).not_to be_nil
+      expect(find_module(result, "Some::Bar")).not_to be_nil
+    end
+
+    specify do
       file = <<-END
       module Some
         module Foo
@@ -446,19 +497,16 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["Some::Foo", "oof", { line: 3 }],
-        ["Some::Bar", "rab", { line: 8 }],
-      ])
-      expect(r[:constants]).to match_array([
-        build_module(name: "Some"),
-        build_module(scope: "Some", name: "Foo"),
-        build_module(scope: "Some", name: "Bar"),
-      ])
+      result = compute_graph(file)
+
+      foo = find_module(result, "Some::Foo")
+      bar = find_module(result, "Some::Bar")
+
+      expect(find_method2(result, foo.id, "oof")).not_to be_nil
+      expect(find_method2(result, bar.id, "rab")).not_to be_nil
     end
 
-    it "method in method definition" do
+    specify "method in method definition" do
       file = <<-END
       class Foo
         def bar
@@ -470,70 +518,77 @@ module Orbacle
 
       result = compute_graph(file)
 
-      meth = find_method(result, "Foo", "baz")
-      expect(meth.location.start_line).to eq(3)
+      foo = find_class(result, "Foo")
+
+      expect(find_method2(result, foo.id, "bar")).not_to be_nil
+      expect(find_method2(result, foo.id, "baz")).not_to be_nil
     end
 
-    specify do
-      file = <<-END
-      class Foo < Bar
-      end
-      END
-
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo", inheritance: "Bar")
-      ])
-    end
-
-    specify do
-      file = <<-END
-      class Foo < Bar::Baz
-      end
-      END
-
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo", inheritance: "Bar::Baz")
-      ])
-    end
-
-    specify do
-      file = <<-END
-      class Foo < ::Bar::Baz
-      end
-      END
-
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo", inheritance: "::Bar::Baz")
-      ])
-    end
-
-    specify do
-      file = <<-END
-      module Some
+    describe "inheritance of classes" do
+      specify do
+        file = <<-END
         class Foo < Bar
         end
+        END
+
+        result = compute_graph(file)
+
+        foo = find_class(result, "Foo")
+        expect(foo.parent_ref).to eq(ConstRef.from_full_name("Bar", Nesting.empty))
       end
-      END
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_module(name: "Some"),
-        build_klass(scope: "Some", name: "Foo", inheritance: "Bar", nesting: ["Some"]),
-      ])
-    end
+      specify do
+        file = <<-END
+        class Foo < Bar::Baz
+        end
+        END
 
-    specify do
-      file = <<-END
-      Foo = Class.new(Bar)
-      END
+        result = compute_graph(file)
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo", inheritance: "Bar")
-      ])
+        foo = find_class(result, "Foo")
+        expect(foo.parent_ref).to eq(ConstRef.from_full_name("Bar::Baz", Nesting.empty))
+      end
+
+      specify do
+        file = <<-END
+        class Foo < ::Bar::Baz
+        end
+        END
+
+        result = compute_graph(file)
+
+        foo = find_class(result, "Foo")
+        expect(foo.parent_ref).to eq(ConstRef.from_full_name("::Bar::Baz", Nesting.empty))
+      end
+
+      specify do
+        file = <<-END
+        module Some
+          class Foo < Bar
+          end
+        end
+        END
+
+        result = compute_graph(file)
+
+        foo = find_class(result, "Some::Foo")
+        expect(foo.parent_ref).to eq(
+          ConstRef.from_full_name(
+            "Bar",
+            Nesting.empty.increase_nesting_const(
+              ConstRef.from_full_name("Some", Nesting.empty))))
+      end
+
+      specify do
+        file = <<-END
+        Foo = Class.new(Bar)
+        END
+
+        result = compute_graph(file)
+
+        foo = find_class(result, "Foo")
+        expect(foo.parent_ref).to eq(ConstRef.from_full_name("Bar", Nesting.empty))
+      end
     end
 
     specify do
@@ -541,10 +596,9 @@ module Orbacle
       Foo = Class.new
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_klass(name: "Foo")
-      ])
+      result = compute_graph(file)
+
+      expect(find_class(result, "Foo")).not_to be_nil
     end
 
     specify do
@@ -552,10 +606,9 @@ module Orbacle
       Foo = Module.new
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:constants]).to match_array([
-        build_module(name: "Foo")
-      ])
+      result = compute_graph(file)
+
+      expect(find_module(result, "Foo")).not_to be_nil
     end
 
     specify do
@@ -566,26 +619,30 @@ module Orbacle
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["", "bar", { line: 2 }],
-      ])
+      result = compute_graph(file)
+
+      foo_class = find_class(result, "Foo")
+      foo_eigenclass = find_eigenclass(result, foo_class)
+      expect(find_method2(result, foo_class.id, "bar")).to be_nil
+      expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
     specify do
       file = <<-END
       class Foo
         class << self
-          def foo
+          def bar
           end
         end
       end
       END
 
-      r = parse_file_methods.(file)
-      expect(r[:methods]).to eq([
-        ["", "foo", { line: 3 }],
-      ])
+      result = compute_graph(file)
+
+      foo_class = find_class(result, "Foo")
+      foo_eigenclass = find_eigenclass(result, foo_class)
+      expect(find_method2(result, foo_class.id, "bar")).to be_nil
+      expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
     describe "attr_reader/accessor/writer" do
@@ -695,27 +752,6 @@ module Orbacle
       end
     end
 
-    def parse_file_methods
-      ->(file) {
-        worklist = Worklist.new
-        graph = DataFlowGraph::Graph.new
-        tree = GlobalTree.new
-        service = DataFlowGraph::Builder.new(graph, worklist, tree)
-        result = service.process_file(file, nil)
-        {
-          methods: tree.metods.map {|m| [tree.get_class(m.place_of_definition_id)&.full_name, m.name, { line: m.location&.position_range&.start&.line }] }
-            .reject {|m| m[0] == "Object" },
-          constants: tree.constants.reject {|c| c.full_name == "Object" }.map do |c|
-            if c.is_a?(GlobalTree::Klass)
-              [c.class, c.scope&.absolute_str, c.name, c.parent_ref&.full_name, c.parent_ref&.nesting&.to_primitive || []]
-            else
-              [c.class, c.scope&.absolute_str, c.name]
-            end
-          end
-        }
-      }
-    end
-
     def compute_graph(file)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
@@ -724,8 +760,6 @@ module Orbacle
       result = service.process_file(file, nil)
       OpenStruct.new(
         graph: graph,
-        final_lenv: result.context.lenv,
-        final_node: result.node,
         tree: tree)
     end
 
@@ -733,38 +767,28 @@ module Orbacle
       result.tree.find_instance_method(scope, name)
     end
 
-    def find_root_method(result, name)
-      result.tree.find_kernel_method(name)
+    def find_method2(result, klass_id, name)
+      result.tree.find_instance_method2(klass_id, name)
     end
 
-    def find_constants(result, scope, name)
-      result.tree.constants.select {|c| c.name == name && c.scope.to_s == scope }
+    def find_kernel_method(result, name)
+      find_method2(result, nil, name)
     end
 
-    def find_constant(result, scope, name)
-      find_constants(result, scope, name).first
+    def find_constant(result, name)
+      result.tree.find_constant_by_name(name)
+    end
+
+    def find_class(result, name)
+      result.tree.find_class_by_name(name)
     end
 
     def find_module(result, name)
-      const_name = ConstName.from_string(name)
-      find_constants(result, const_name.scope, const_name.name).select {|c| c.is_a?(GlobalTree::Mod) }
+      result.tree.find_module_by_name(name)
     end
 
-    def find_klass(result, name)
-      const_name = ConstName.from_string(name)
-      find_constants(result, const_name.scope, const_name.name).select {|c| c.is_a?(GlobalTree::Klass) }
-    end
-
-    def build_klass(scope: "", name:, inheritance: nil, nesting: [])
-      [GlobalTree::Klass, scope, name, inheritance, nesting]
-    end
-
-    def build_module(scope: "", name:)
-      [GlobalTree::Mod, scope, name]
-    end
-
-    def build_constant(scope: "", name:)
-      [GlobalTree::Constant, scope, name]
+    def find_eigenclass(result, klass)
+      result.tree.get_eigenclass_of_klass(klass.id)
     end
   end
 end
