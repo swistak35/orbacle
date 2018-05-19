@@ -526,14 +526,7 @@ module Orbacle
           obj_context = expr_result.context
         end
 
-        call_arg_nodes = []
-        final_context = arg_exprs.reduce(obj_context) do |current_context, ast_child|
-          ast_child_result = process(ast_child, current_context)
-          call_arg_node = add_vertex(Node.new(:call_arg, {}))
-          call_arg_nodes << call_arg_node
-          @graph.add_edge(ast_child_result.node, call_arg_node)
-          ast_child_result.context
-        end
+        final_context, call_arg_nodes = prepare_argument_nodes(obj_context, arg_exprs)
 
         return handle_changing_visibility(context, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
         return handle_custom_attr_reader_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_reader"
@@ -549,6 +542,18 @@ module Orbacle
         @worklist.add_message_send(message_send)
 
         return Result.new(call_result_node, final_context, { message_send: message_send })
+      end
+
+      def prepare_argument_nodes(context, arg_exprs)
+        call_arg_nodes = []
+        final_context = arg_exprs.reduce(context) do |current_context, ast_child|
+          ast_child_result = process(ast_child, current_context)
+          call_arg_node = add_vertex(Node.new(:call_arg, {}))
+          call_arg_nodes << call_arg_node
+          @graph.add_edge(ast_child_result.node, call_arg_node)
+          ast_child_result.context
+        end
+        return final_context, call_arg_nodes
       end
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
@@ -1033,14 +1038,7 @@ module Orbacle
       def handle_super(ast, context)
         arg_exprs = ast.children
 
-        call_arg_nodes = []
-        final_context = arg_exprs.reduce(context) do |current_context, ast_child|
-          ast_child_result = process(ast_child, current_context)
-          call_arg_node = add_vertex(Node.new(:call_arg, {}))
-          call_arg_nodes << call_arg_node
-          @graph.add_edge(ast_child_result.node, call_arg_node)
-          ast_child_result.context
-        end
+        final_context, call_arg_nodes = prepare_argument_nodes(context, arg_exprs)
 
         call_result_node = add_vertex(Node.new(:call_result, {}))
 
