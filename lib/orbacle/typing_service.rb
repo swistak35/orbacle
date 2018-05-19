@@ -396,12 +396,7 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
         connect_method_result_to_node(found_method.id, message_send.send_result)
-
-        method_nodes = @graph.get_metod_nodes(found_method.id)
-        if !@graph.has_edge?(message_send.send_obj, method_nodes.caller)
-          @graph.add_edge(message_send.send_obj, method_nodes.caller)
-          @worklist.enqueue_node(method_nodes.caller)
-        end
+        connect_node_to_method_caller(found_method.id, message_send.send_obj)
       end
     end
 
@@ -514,6 +509,14 @@ module Orbacle
       if !@graph.has_edge?(method_result_node, node)
         @graph.add_edge(method_result_node, node)
         @worklist.enqueue_node(node)
+      end
+    end
+
+    def connect_node_to_method_caller(method_id, node)
+      method_nodes = @graph.get_metod_nodes(method_id)
+      if !@graph.has_edge?(node, method_nodes.caller)
+        @graph.add_edge(node, method_nodes.caller)
+        @worklist.enqueue_node(method_nodes.caller)
       end
     end
 
