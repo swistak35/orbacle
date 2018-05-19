@@ -344,7 +344,6 @@ module Orbacle
     end
 
     def handle_message_send(message_send)
-      message_name = message_send.message_send
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, possible_type.name, message_send)
@@ -363,19 +362,19 @@ module Orbacle
         if parent_name
           handle_constructor_send(original_class_name, parent_name, message_send)
         else
-          node = DataFlowGraph::Node.new(:constructor, { name: original_class_name }, nil)
-          @graph.add_vertex(node)
-          @graph.add_edge(node, message_send.send_result)
-          @worklist.enqueue_node(node)
+          connect_constructor_to_node(original_class_name, message_send.send_result)
         end
       else
         handle_custom_message_send(found_method, message_send)
-
-        node = DataFlowGraph::Node.new(:constructor, { name: class_name }, nil)
-        @graph.add_vertex(node)
-        @graph.add_edge(node, message_send.send_result)
-        @worklist.enqueue_node(node)
+        connect_constructor_to_node(class_name, message_send.send_result)
       end
+    end
+
+    def connect_constructor_to_node(class_name, node)
+      constructor_node = DataFlowGraph::Node.new(:constructor, { name: class_name }, nil)
+      @graph.add_vertex(constructor_node)
+      @graph.add_edge(constructor_node, node)
+      @worklist.enqueue_node(constructor_node)
     end
 
     def handle_instance_nonprimitive_send(class_name, message_send)
@@ -389,12 +388,9 @@ module Orbacle
         end
       else
         handle_custom_message_send(found_method, message_send)
+        connect_method_result_to_node(found_method.id, message_send.send_result)
 
         method_nodes = @graph.get_metod_nodes(found_method.id)
-        if !@graph.has_edge?(method_nodes.result, message_send.send_result)
-          @graph.add_edge(method_nodes.result, message_send.send_result)
-          @worklist.enqueue_node(message_send.send_result)
-        end
         if !@graph.has_edge?(message_send.send_obj, method_nodes.caller)
           @graph.add_edge(message_send.send_obj, method_nodes.caller)
           @worklist.enqueue_node(method_nodes.caller)
@@ -413,12 +409,7 @@ module Orbacle
         end
       else
         handle_custom_message_send(found_method, message_send)
-
-        method_result_node = @graph.get_metod_nodes(found_method.id).result
-        if !@graph.has_edge?(method_result_node, message_send.send_result)
-          @graph.add_edge(method_result_node, message_send.send_result)
-          @worklist.enqueue_node(message_send.send_result)
-        end
+        connect_method_result_to_node(found_method.id, message_send.send_result)
       end
     end
 
@@ -506,10 +497,14 @@ module Orbacle
       super_method = @tree.find_super_method(super_send.method_id)
       handle_custom_message_send(super_method, super_send)
 
-      method_result_node = @graph.get_metod_nodes(super_method.id).result
-      if !@graph.has_edge?(method_result_node, super_send.send_result)
-        @graph.add_edge(method_result_node, super_send.send_result)
-        @worklist.enqueue_node(super_send.send_result)
+      connect_method_result_to_node(super_method.id, super_send.send_result)
+    end
+
+    def connect_method_result_to_node(method_id, node)
+      method_result_node = @graph.get_metod_nodes(method_id).result
+      if !@graph.has_edge?(method_result_node, node)
+        @graph.add_edge(method_result_node, node)
+        @worklist.enqueue_node(node)
       end
     end
 
