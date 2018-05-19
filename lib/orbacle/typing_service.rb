@@ -77,9 +77,12 @@ module Orbacle
         end
 
         @worklist.message_sends.each do |message_send|
-          if message_send.is_a?(Worklist::MessageSend) && satisfied_message_send?(message_send) && !@worklist.handled_message_sends.include?(message_send)
-            handle_message_send(message_send, graph)
-            @worklist.handled_message_sends << message_send
+          case message_send
+          when Worklist::MessageSend
+            if satisfied_message_send?(message_send) && !@worklist.message_send_handled?(message_send)
+              handle_message_send(message_send, graph)
+              @worklist.mark_message_send_as_handled(message_send)
+            end
           end
         end
       end

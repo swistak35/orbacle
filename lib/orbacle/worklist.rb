@@ -30,5 +30,13 @@ module Orbacle
       # @nodes_counter.fetch(node, 0) > 100
       false
     end
+
+    def message_send_handled?(message_send)
+      handled_message_sends.include?(message_send)
+    end
+
+    def mark_message_send_as_handled(message_send)
+      handled_message_sends << message_send
+    end
   end
 end
