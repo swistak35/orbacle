@@ -15,7 +15,7 @@ module Orbacle
       end
 
       class Context
-        AnalyzedKlass = Struct.new(:klass, :method_visibility)
+        AnalyzedKlass = Struct.new(:klass_id, :method_visibility)
 
         def initialize(filepath, selfie, nesting, analyzed_klass, analyzed_method, lenv)
           @filepath = filepath.freeze
@@ -40,12 +40,12 @@ module Orbacle
           nesting.to_scope
         end
 
-        def with_analyzed_klass(new_klass)
-          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(new_klass, :public), analyzed_method, lenv)
+        def with_analyzed_klass(new_klass_id)
+          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(new_klass_id, :public), analyzed_method, lenv)
         end
 
         def with_visibility(new_visibility)
-          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(analyzed_klass.klass, new_visibility), analyzed_method, lenv)
+          self.class.new(filepath, selfie, nesting, AnalyzedKlass.new(analyzed_klass.klass_id, new_visibility), analyzed_method, lenv)
         end
 
         def with_analyzed_method(new_analyzed_method_id)
@@ -70,6 +70,10 @@ module Orbacle
             nesting == other.nesting &&
             analyzed_klass == other.analyzed_klass &&
             analyzed_method == other.analyzed_method
+        end
+
+        def analyzed_klass_id
+          analyzed_klass.klass_id
         end
       end
 
@@ -557,10 +561,10 @@ module Orbacle
       end
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
-        if context.analyzed_klass.klass && arg_exprs.empty?
-          final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name(context.analyzed_klass.klass.full_name, Nesting.empty) }))
+        if context.analyzed_klass_id && arg_exprs.empty?
+          final_node = add_vertex(Node.new(:class_by_id, { id: context.analyzed_klass_id }))
           return Result.new(final_node, context.with_visibility(new_visibility))
-        elsif context.analyzed_klass.klass
+        elsif context.analyzed_klass_id
           methods_to_change_visibility = arg_exprs.map do |arg_expr|
             [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
           end.compact
@@ -568,7 +572,7 @@ module Orbacle
             @tree.change_metod_visibility(context.scope, name, new_visibility)
           end
 
-          final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name(context.analyzed_klass.klass.full_name, Nesting.empty) }))
+          final_node = add_vertex(Node.new(:class_by_id, { id: context.analyzed_klass_id }))
           return Result.new(final_node, context)
         else
           final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) }))
@@ -612,6 +616,7 @@ module Orbacle
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
+            place_of_definition_id: context.analyzed_klass_id,
             scope: context.scope,
             name: ivar_name,
             location: location,
@@ -628,6 +633,7 @@ module Orbacle
         arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
         metod = @tree.add_method(
           GlobalTree::Method.new(
+            place_of_definition_id: context.analyzed_klass_id,
             scope: context.scope,
             name: "#{ivar_name}=",
             location: location,
@@ -718,6 +724,7 @@ module Orbacle
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
+            place_of_definition_id: context.analyzed_klass_id,
             scope: context.scope,
             name: method_name.to_s,
             location: build_location_from_ast(context, ast),
@@ -793,7 +800,7 @@ module Orbacle
             location: build_location_from_ast(context, ast)))
 
         new_context = context
-          .with_analyzed_klass(klass)
+          .with_analyzed_klass(klass.id)
           .with_nesting(context.nesting.increase_nesting_const(klass_name_ref))
           .with_selfie(Selfie.klass_from_scope(context.scope))
         if klass_body
@@ -844,6 +851,7 @@ module Orbacle
 
         metod = @tree.add_method(
           GlobalTree::Method.new(
+            place_of_definition_id: context.analyzed_klass_id,
             scope: context.scope.increase_by_metaklass,
             name: method_name.to_s,
             location: build_location_from_ast(context, ast),

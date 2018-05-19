@@ -2391,7 +2391,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:const, { const_ref: ConstRef.from_full_name("Foo", Nesting.empty) }))
+        class_by_id_nodes = find_nodes_by_type(result.graph, :class_by_id)
+        expect(class_by_id_nodes.size).to eq(1)
+        expect(class_by_id_nodes).not_to be_nil
+        expect(class_by_id_nodes[0].params.fetch(:id)).not_to be_nil
       end
 
       specify "private send outside class definition" do
@@ -2462,6 +2465,10 @@ module Orbacle
 
     def block(args_node, result_node)
       DataFlowGraph::Block.new(args_node, result_node)
+    end
+
+    def find_nodes_by_type(graph, type)
+      graph.vertices.select {|n| n.type == type }
     end
   end
 end

@@ -10,10 +10,11 @@ module Orbacle
         Nested = Struct.new(:args)
       end
 
-      def initialize(id: SecureRandom.uuid, scope:, name:, location:, visibility:, args:)
+      def initialize(id: SecureRandom.uuid, place_of_definition_id:, scope:, name:, location:, visibility:, args:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @id = id
+        @place_of_definition_id = place_of_definition_id
         @name = name
         @location = location
         @visibility = visibility
@@ -21,7 +22,7 @@ module Orbacle
         @scope = scope
       end
 
-      attr_reader :id, :name, :location, :scope, :args
+      attr_reader :id, :name, :location, :scope, :args, :place_of_definition_id
       attr_accessor :visibility
     end
 
