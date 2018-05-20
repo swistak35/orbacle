@@ -1073,6 +1073,27 @@ module Orbacle
       end
     end
 
+    describe "zsuper calls" do
+      xspecify "basic example" do
+        snippet = <<-END
+        class Parent
+          def foo(x)
+            x.to_s
+          end
+        end
+        class Child < Parent
+          def foo(x)
+            super
+          end
+        end
+        Child.new.foo(42)
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+    end
+
     def type_snippet(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new

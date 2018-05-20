@@ -90,6 +90,11 @@ module Orbacle
               handle_super_send(message_send)
               @worklist.mark_message_send_as_handled(message_send)
             end
+          when Worklist::Super0Send
+            if !@worklist.message_send_handled?(message_send)
+              handle_super0_send(message_send)
+              @worklist.mark_message_send_as_handled(message_send)
+            end
           else raise "Not handled message send"
           end
         end
@@ -501,6 +506,13 @@ module Orbacle
 
       handle_custom_message_send(super_method, super_send)
 
+      connect_method_result_to_node(super_method.id, super_send.send_result)
+    end
+
+    def handle_super0_send(super_send)
+      super_method = @tree.find_super_method(super_send.method_id)
+      return if super_method.nil?
+      connect_formal_args_to_formal_args(super_send.method_id, super_method.id)
       connect_method_result_to_node(super_method.id, super_send.send_result)
     end
 

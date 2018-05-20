@@ -2,7 +2,7 @@ module Orbacle
   class Worklist
     MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
     SuperSend = Struct.new(:send_args, :send_result, :block, :method_id)
-    Super0Send = Struct.new(:send_result, :block)
+    Super0Send = Struct.new(:send_result, :block, :method_id)
 
     def initialize
       @message_sends = Set.new
