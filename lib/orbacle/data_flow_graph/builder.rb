@@ -832,10 +832,10 @@ module Orbacle
         self_name = ast.children[0]
         sklass_body = ast.children[1]
 
-        eigenclass_of_analyzed_klass = @tree.get_eigenclass_of_klass(context.analyzed_klass_id)
+        eigenclass_of_analyzed_definition = @tree.get_eigenclass_of_definition(context.analyzed_klass_id)
         context
           .with_nesting(context.nesting.increase_nesting_self)
-          .with_analyzed_klass(eigenclass_of_analyzed_klass.id).tap do |context2|
+          .with_analyzed_klass(eigenclass_of_analyzed_definition.id).tap do |context2|
             process(sklass_body, context2)
           end
 
@@ -850,10 +850,10 @@ module Orbacle
 
         arguments_tree, arguments_context, arguments_nodes = build_def_arguments(formal_arguments.children, context)
 
-        eigenclass_of_analyzed_klass = @tree.get_eigenclass_of_klass(context.analyzed_klass_id)
+        eigenclass_of_analyzed_definition = @tree.get_eigenclass_of_definition(context.analyzed_klass_id)
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            place_of_definition_id: eigenclass_of_analyzed_klass.id,
+            place_of_definition_id: eigenclass_of_analyzed_definition.id,
             name: method_name.to_s,
             location: build_location_from_ast(context, ast),
             args: arguments_tree,

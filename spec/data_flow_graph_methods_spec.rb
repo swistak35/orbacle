@@ -646,6 +646,22 @@ module Orbacle
       expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
+    specify do
+      file = <<-END
+      module Foo
+        def self.bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      foo_module = find_module(result, "Foo")
+      foo_eigenclass = find_eigenclass(result, foo_module)
+      expect(find_method2(result, foo_module.id, "bar")).to be_nil
+      expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
+    end
+
     describe "attr_reader/accessor/writer" do
       specify "simple attr_reader example" do
         file = <<-END
@@ -788,8 +804,8 @@ module Orbacle
       result.tree.find_module_by_name(name)
     end
 
-    def find_eigenclass(result, klass)
-      result.tree.get_eigenclass_of_klass(klass.id)
+    def find_eigenclass(result, definition)
+      result.tree.get_eigenclass_of_definition(definition.id)
     end
   end
 end

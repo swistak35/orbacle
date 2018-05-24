@@ -37,7 +37,7 @@ module Orbacle
         klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: nil))
         @tree.add_constant(
           GlobalTree::Constant.new("Dir", Scope.empty, nil, klass.id))
-        eigenklass = @tree.get_eigenclass_of_klass(klass.id)
+        eigenklass = @tree.get_eigenclass_of_definition(klass.id)
 
         define_dir_glob(eigenklass)
       end
@@ -46,7 +46,7 @@ module Orbacle
         klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: nil))
         @tree.add_constant(
           GlobalTree::Constant.new("File", Scope.empty, nil, klass.id))
-        eigenklass = @tree.get_eigenclass_of_klass(klass.id)
+        eigenklass = @tree.get_eigenclass_of_definition(klass.id)
 
         template_just_str(eigenklass, "read", 1)
       end

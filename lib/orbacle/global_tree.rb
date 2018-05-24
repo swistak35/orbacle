@@ -43,14 +43,17 @@ module Orbacle
     end
 
     class Mod
-      def initialize(id = SecureRandom.uuid)
+      def initialize(id = SecureRandom.uuid, eigenclass_id = nil)
         @id = id
+        @eigenclass_id = eigenclass_id
       end
 
-      attr_reader :id
+      attr_reader :id, :eigenclass_id
+      attr_writer :eigenclass_id
 
       def ==(other)
-        @id = other.id
+        @id == other.id &&
+          @eigenclass_id == other.eigenclass_id
       end
     end
 
@@ -120,13 +123,17 @@ module Orbacle
       @modules.find {|m| m.id == module_id }
     end
 
-    def get_eigenclass_of_klass(klass_id)
-      klass = get_class(klass_id)
-      if klass.eigenclass_id
-        return get_class(klass.eigenclass_id)
+    def get_definition(definition_id)
+      get_class(definition_id) || get_module(definition_id)
+    end
+
+    def get_eigenclass_of_definition(definition_id)
+      definition = get_definition(definition_id)
+      if definition.eigenclass_id
+        return get_class(definition.eigenclass_id)
       else
         eigenclass = add_klass(Klass.new(parent_ref: nil))
-        klass.eigenclass_id = eigenclass.id
+        definition.eigenclass_id = eigenclass.id
         return eigenclass
       end
     end
@@ -170,7 +177,7 @@ module Orbacle
     def find_class_method(class_name, method_name)
       klass = find_class_by_name(class_name)
       return nil if klass.nil?
-      eigenclass = get_eigenclass_of_klass(klass.id)
+      eigenclass = get_eigenclass_of_definition(klass.id)
       @metods.find {|m| m.place_of_definition_id == eigenclass.id && m.name == method_name }
     end
 
