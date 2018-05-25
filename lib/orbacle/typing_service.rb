@@ -429,28 +429,9 @@ module Orbacle
         regular_args = message_send.send_args[0..-2]
         kwarg_arg = message_send.send_args[-1]
       end
-      found_method.args.args.each_with_index do |formal_arg, i|
-        next if formal_arg.name.nil?
-        found_method_args = @graph.get_metod_nodes(found_method.id).args
-        node_formal_arg = found_method_args[formal_arg.name]
 
-        case formal_arg
-        when GlobalTree::Method::ArgumentsTree::Regular
-          @graph.add_edge(regular_args[i], node_formal_arg)
-          @worklist.enqueue_node(node_formal_arg)
-        when GlobalTree::Method::ArgumentsTree::Optional
-          if regular_args[i]
-            @graph.add_edge(regular_args[i], node_formal_arg)
-            @worklist.enqueue_node(node_formal_arg)
-          end
-        when GlobalTree::Method::ArgumentsTree::Splat
-          regular_args[i..-1].each do |send_arg|
-            @graph.add_edge(send_arg, node_formal_arg)
-            @worklist.enqueue_node(node_formal_arg)
-          end
-        else raise
-        end
-      end
+      found_method_nodes = @graph.get_metod_nodes(found_method.id).args
+      connect_regular_args(found_method.args.args, found_method_nodes, message_send.send_args)
 
       if kwarg_arg
         unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values, {}, nil)
@@ -481,6 +462,30 @@ module Orbacle
         @graph.get_metod_nodes(found_method.id).yields.each do |node_yield|
           @graph.add_edge(node_yield, message_send.block.args[0])
           @worklist.enqueue_node(message_send.block.args[0])
+        end
+      end
+    end
+
+    def connect_regular_args(found_method_args, found_method_nodes, send_args)
+      found_method_args.each_with_index do |formal_arg, i|
+        next if formal_arg.name.nil?
+        node_formal_arg = found_method_nodes[formal_arg.name]
+
+        case formal_arg
+        when GlobalTree::Method::ArgumentsTree::Regular
+          @graph.add_edge(send_args[i], node_formal_arg)
+          @worklist.enqueue_node(node_formal_arg)
+        when GlobalTree::Method::ArgumentsTree::Optional
+          if send_args[i]
+            @graph.add_edge(send_args[i], node_formal_arg)
+            @worklist.enqueue_node(node_formal_arg)
+          end
+        when GlobalTree::Method::ArgumentsTree::Splat
+          send_args[i..-1].each do |send_arg|
+            @graph.add_edge(send_arg, node_formal_arg)
+            @worklist.enqueue_node(node_formal_arg)
+          end
+        else raise
         end
       end
     end

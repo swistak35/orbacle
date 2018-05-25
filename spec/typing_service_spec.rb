@@ -877,6 +877,37 @@ module Orbacle
         expect(result).to eq(union([nominal("String"), nominal("Integer")]))
       end
 
+      specify "named optional argument not used" do
+        snippet = <<-END
+        class Foo
+          def bar(z: "foo")
+            z
+          end
+        end
+        Foo.new.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+      xspecify "named optional argument not used 2" do
+        snippet = <<-END
+        class Foo
+          def bar(y = 42, z: "foo")
+            z
+          end
+        end
+        Foo.new.bar(78)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+
       specify "method call to self" do
         snippet = <<-END
         class Foo
