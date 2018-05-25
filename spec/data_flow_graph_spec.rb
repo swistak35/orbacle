@@ -2391,10 +2391,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        class_by_id_nodes = find_nodes_by_type(result.graph, :class_by_id)
-        expect(class_by_id_nodes.size).to eq(1)
-        expect(class_by_id_nodes).not_to be_nil
-        expect(class_by_id_nodes[0].params.fetch(:id)).not_to be_nil
+        definition_by_id_nodes = find_nodes_by_type(result.graph, :definition_by_id)
+        expect(definition_by_id_nodes.size).to eq(1)
+        expect(definition_by_id_nodes).not_to be_nil
+        expect(definition_by_id_nodes[0].params.fetch(:id)).not_to be_nil
       end
 
       specify "private send outside class definition" do

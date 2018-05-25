@@ -184,6 +184,7 @@ module Orbacle
       when :rescue then handle_nil(node, sources)
 
       when :lambda then handle_nil(node, sources)
+      when :definition_by_id then handle_definition_by_id(node, sources)
 
       else raise ArgumentError.new(node.type)
       end
@@ -656,6 +657,12 @@ module Orbacle
 
     def handle_constructor(node, sources)
       NominalType.new(node.params.fetch(:name))
+    end
+
+    def handle_definition_by_id(node, sources)
+      definition_id = node.params.fetch(:id)
+      const = @tree.find_constant_for_definition(definition_id)
+      ClassType.new(const.full_name)
     end
   end
 end

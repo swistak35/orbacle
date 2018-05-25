@@ -562,7 +562,7 @@ module Orbacle
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
         if context.analyzed_klass_id && arg_exprs.empty?
-          final_node = add_vertex(Node.new(:class_by_id, { id: context.analyzed_klass_id }))
+          final_node = add_vertex(Node.new(:definition_by_id, { id: context.analyzed_klass_id }))
           return Result.new(final_node, context.with_visibility(new_visibility))
         elsif context.analyzed_klass_id
           methods_to_change_visibility = arg_exprs.map do |arg_expr|
@@ -572,7 +572,7 @@ module Orbacle
             @tree.change_metod_visibility(context.analyzed_klass_id, name, new_visibility)
           end
 
-          final_node = add_vertex(Node.new(:class_by_id, { id: context.analyzed_klass_id }))
+          final_node = add_vertex(Node.new(:definition_by_id, { id: context.analyzed_klass_id }))
           return Result.new(final_node, context)
         else
           final_node = add_vertex(Node.new(:const, { const_ref: ConstRef.from_full_name("Object", Nesting.empty) }))

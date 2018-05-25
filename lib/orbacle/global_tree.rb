@@ -159,9 +159,15 @@ module Orbacle
       return "Object" if const.nil?
 
       klass = get_class(const.definition_id)
+      return "Object" if klass.nil?
+
       return "Object" if klass.parent_ref.nil?
       parent_const = solve_reference(klass.parent_ref)
-      parent_const.full_name
+      if parent_const
+        parent_const.full_name
+      else
+        klass.parent_ref.relative_name
+      end
     end
 
     def find_instance_method(class_name, method_name)
@@ -212,6 +218,10 @@ module Orbacle
       @constants.find do |constant|
         constant.full_name == full_name
       end
+    end
+
+    def find_constant_for_definition(definition_id)
+      @constants.find {|c| c.definition_id == definition_id }
     end
 
     def change_metod_visibility(klass_id, name, new_visibility)

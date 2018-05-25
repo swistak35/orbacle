@@ -24,7 +24,7 @@ module Orbacle
 
     def index(options)
       project_root = options.fetch(:dir, Dir.pwd)
-      indexer = Orbacle::Indexer.new
+      indexer = Orbacle::Indexer.new(logger)
       indexer.(project_root: project_root)
     end
 
