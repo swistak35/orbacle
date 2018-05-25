@@ -431,31 +431,9 @@ module Orbacle
       end
 
       found_method_nodes = @graph.get_metod_nodes(found_method.id).args
-      connect_regular_args(found_method.args.args, found_method_nodes, message_send.send_args)
-
+      connect_regular_args(found_method.args.args, found_method_nodes, regular_args)
       if kwarg_arg
-        unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values, {}, nil)
-        @graph.add_vertex(unwrapping_node)
-        @graph.add_edge(kwarg_arg, unwrapping_node)
-        @worklist.enqueue_node(unwrapping_node)
-
-        found_method.args.kwargs.each do |formal_kwarg|
-          next if formal_kwarg.name.nil?
-          node_formal_kwarg = @graph.get_metod_nodes(found_method.id).args[formal_kwarg.name]
-
-          case formal_kwarg
-          when GlobalTree::Method::ArgumentsTree::Regular
-            @graph.add_edge(unwrapping_node, node_formal_kwarg)
-            @worklist.enqueue_node(node_formal_kwarg)
-          when GlobalTree::Method::ArgumentsTree::Optional
-            @graph.add_edge(unwrapping_node, node_formal_kwarg)
-            @worklist.enqueue_node(node_formal_kwarg)
-          when GlobalTree::Method::ArgumentsTree::Splat
-            @graph.add_edge(kwarg_arg, node_formal_kwarg)
-            @worklist.enqueue_node(node_formal_kwarg)
-          else raise
-          end
-        end
+        connect_keyword_args(found_method.args.kwargs, found_method_nodes, kwarg_arg)
       end
 
       if !@graph.get_metod_nodes(found_method.id).yields.empty?
@@ -485,6 +463,31 @@ module Orbacle
             @graph.add_edge(send_arg, node_formal_arg)
             @worklist.enqueue_node(node_formal_arg)
           end
+        else raise
+        end
+      end
+    end
+
+    def connect_keyword_args(found_method_kwargs, found_method_nodes, kwarg_arg)
+      unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values, {}, nil)
+      @graph.add_vertex(unwrapping_node)
+      @graph.add_edge(kwarg_arg, unwrapping_node)
+      @worklist.enqueue_node(unwrapping_node)
+
+      found_method_kwargs.each do |formal_kwarg|
+        next if formal_kwarg.name.nil?
+        node_formal_kwarg = found_method_nodes[formal_kwarg.name]
+
+        case formal_kwarg
+        when GlobalTree::Method::ArgumentsTree::Regular
+          @graph.add_edge(unwrapping_node, node_formal_kwarg)
+          @worklist.enqueue_node(node_formal_kwarg)
+        when GlobalTree::Method::ArgumentsTree::Optional
+          @graph.add_edge(unwrapping_node, node_formal_kwarg)
+          @worklist.enqueue_node(node_formal_kwarg)
+        when GlobalTree::Method::ArgumentsTree::Splat
+          @graph.add_edge(kwarg_arg, node_formal_kwarg)
+          @worklist.enqueue_node(node_formal_kwarg)
         else raise
         end
       end
