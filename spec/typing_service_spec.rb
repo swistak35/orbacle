@@ -892,7 +892,7 @@ module Orbacle
         expect(result).to eq(nominal("String"))
       end
 
-      xspecify "named optional argument not used 2" do
+      specify "named optional argument not used 2" do
         snippet = <<-END
         class Foo
           def bar(y = 42, z: "foo")

@@ -422,18 +422,27 @@ module Orbacle
     end
 
     def handle_custom_message_send(found_method, message_send)
-      if found_method.args.kwargs.empty?
-        regular_args = message_send.send_args[0..-1]
-        kwarg_arg = nil
-      else
-        regular_args = message_send.send_args[0..-2]
-        kwarg_arg = message_send.send_args[-1]
-      end
 
-      found_method_nodes = @graph.get_metod_nodes(found_method.id).args
-      connect_regular_args(found_method.args.args, found_method_nodes, regular_args)
-      if kwarg_arg
-        connect_keyword_args(found_method.args.kwargs, found_method_nodes, kwarg_arg)
+      if message_send.send_args.last
+        found_method_nodes = @graph.get_metod_nodes(found_method.id).args
+
+        if found_method.args.kwargs.empty?
+          regular_args = message_send.send_args
+          connect_regular_args(found_method.args.args, found_method_nodes, regular_args)
+        else
+          @result[message_send.send_args.last].each_possible_type do |type|
+            if type.name == "Hash"
+              regular_args = message_send.send_args[0..-2]
+              kwarg_arg = message_send.send_args.last
+
+              connect_regular_args(found_method.args.args, found_method_nodes, regular_args)
+              connect_keyword_args(found_method.args.kwargs, found_method_nodes, kwarg_arg)
+            else
+              regular_args = message_send.send_args
+              connect_regular_args(found_method.args.args, found_method_nodes, regular_args)
+            end
+          end
+        end
       end
 
       if !@graph.get_metod_nodes(found_method.id).yields.empty?
