@@ -623,7 +623,7 @@ module Orbacle
       expect(find_method2(result, nil, "bar")).not_to be_nil
     end
 
-    specify do
+    specify "def self.func in class definition" do
       file = <<-END
       class Foo
         def self.bar
@@ -639,7 +639,7 @@ module Orbacle
       expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
-    specify do
+    specify "using sclass in class definition" do
       file = <<-END
       class Foo
         class << self
@@ -657,10 +657,28 @@ module Orbacle
       expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
-    specify do
+    specify "def self.func in module definition" do
       file = <<-END
       module Foo
         def self.bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      foo_module = find_module(result, "Foo")
+      foo_eigenclass = find_eigenclass(result, foo_module)
+      expect(find_method2(result, foo_module.id, "bar")).to be_nil
+      expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
+    end
+
+    specify "using sclass in module definition" do
+      file = <<-END
+      module Foo
+        class << self
+          def bar
+          end
         end
       end
       END
