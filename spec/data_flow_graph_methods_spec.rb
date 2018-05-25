@@ -612,6 +612,17 @@ module Orbacle
       expect(find_module(result, "Foo")).not_to be_nil
     end
 
+    specify "self method without embracing definition" do
+      file = <<-END
+      def self.bar
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(find_method2(result, nil, "bar")).not_to be_nil
+    end
+
     specify do
       file = <<-END
       class Foo

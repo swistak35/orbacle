@@ -850,10 +850,15 @@ module Orbacle
 
         arguments_tree, arguments_context, arguments_nodes = build_def_arguments(formal_arguments.children, context)
 
-        eigenclass_of_analyzed_definition = @tree.get_eigenclass_of_definition(context.analyzed_klass_id)
+        if context.analyzed_klass_id
+          eigenclass_of_analyzed_definition = @tree.get_eigenclass_of_definition(context.analyzed_klass_id)
+          place_of_definition_id = eigenclass_of_analyzed_definition.id
+        else
+          place_of_definition_id = nil
+        end
         metod = @tree.add_method(
           GlobalTree::Method.new(
-            place_of_definition_id: eigenclass_of_analyzed_definition.id,
+            place_of_definition_id: place_of_definition_id,
             name: method_name.to_s,
             location: build_location_from_ast(context, ast),
             args: arguments_tree,
