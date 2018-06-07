@@ -680,6 +680,12 @@ module Orbacle
           when :arg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
+          when :kwarg
+            arg_name = arg_ast.children[0].to_s
+            current_context.merge_lenv(arg_name => [arg_node])
+          when :kwrestarg
+            arg_name = arg_ast.children[0].to_s
+            current_context.merge_lenv(arg_name => [arg_node])
           when :mlhs
             handle_mlhs_for_block(arg_ast, current_context, arg_node)
           else raise RuntimeError.new(ast)
