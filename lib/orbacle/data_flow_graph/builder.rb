@@ -117,6 +117,8 @@ module Orbacle
           handle_str(ast, context)
         when :dstr
           handle_dstr(ast, context)
+        when :xstr
+          handle_xstr(ast, context)
         when :sym
           handle_sym(ast, context)
         when :dsym
@@ -294,6 +296,15 @@ module Orbacle
         add_edges(nodes, node_dstr)
 
         return Result.new(node_dstr, final_context)
+      end
+
+      def handle_xstr(ast, context)
+        node_xstr = add_vertex(Node.new(:xstr, {}, build_location_from_ast(context, ast)))
+
+        final_context, nodes = fold_context(ast.children, context)
+        add_edges(nodes, node_xstr)
+
+        return Result.new(node_xstr, final_context)
       end
 
       def handle_sym(ast, context)

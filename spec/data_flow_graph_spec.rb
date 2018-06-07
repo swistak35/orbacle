@@ -246,6 +246,23 @@ module Orbacle
           node(:str, { value: "baz" }),
           node(:dstr))
       end
+
+      specify "execution string" do
+        snippet = '
+        bar = 42
+        `foo#{bar}`
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:xstr))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:xstr))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:xstr))
+      end
     end
 
     describe "symbols" do

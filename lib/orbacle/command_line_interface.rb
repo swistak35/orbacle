@@ -23,6 +23,7 @@ module Orbacle
     end
 
     def index(options)
+      logger = Logger.new(STDOUT)
       project_root = options.fetch(:dir, Dir.pwd)
       indexer = Orbacle::Indexer.new(logger)
       indexer.(project_root: project_root)
