@@ -680,10 +680,16 @@ module Orbacle
           when :arg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
+          when :optarg
+            arg_name = arg_ast.children[0].to_s
+            current_context.merge_lenv(arg_name => [arg_node])
           when :restarg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
           when :kwarg
+            arg_name = arg_ast.children[0].to_s
+            current_context.merge_lenv(arg_name => [arg_node])
+          when :kwoptarg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
           when :kwrestarg

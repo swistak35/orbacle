@@ -2549,6 +2549,18 @@ module Orbacle
           node(:block_result))
       end
 
+      specify "block optional argument" do
+        snippet = <<-END
+        ->(y = 5) { y }
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "y" }),
+          node(:block_result))
+      end
+
       specify "keyword splat" do
         snippet = <<-END
         x.map {|**kwargs| kwargs }
@@ -2559,6 +2571,18 @@ module Orbacle
         expect(result.graph).to include_node(node(:lvar, { var_name: "kwargs" }))
         expect(result.graph).to include_edge(
           node(:lvar, { var_name: "kwargs" }),
+          node(:block_result))
+      end
+
+      specify "block keyword optional argument" do
+        snippet = <<-END
+        ->(y: 5) { y }
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "y" }),
           node(:block_result))
       end
     end
