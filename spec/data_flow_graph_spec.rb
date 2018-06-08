@@ -2596,6 +2596,17 @@ module Orbacle
           node(:lvar, { var_name: "y" }),
           node(:block_result))
       end
+
+      specify do
+        snippet = <<-END
+        class Foo
+          class Bar < self
+          end
+        end
+        END
+
+        result = generate_cfg(snippet)
+      end
     end
 
     def generate_cfg(snippet)

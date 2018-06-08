@@ -667,9 +667,13 @@ module Orbacle
           send_context = context
         else
           send_expr_result = process(send_expr, context)
-          message_send = send_expr_result.data.fetch(:message_send)
-          send_node = send_expr_result.node
-          send_context = send_expr_result.context
+          message_send = send_expr_result.data[:message_send]
+          if message_send
+            send_node = send_expr_result.node
+            send_context = send_expr_result.context
+          else
+            return Result.new(Node.new(:nil, {}), context)
+          end
         end
 
         args_ast_nodes = []
@@ -813,7 +817,11 @@ module Orbacle
       def handle_class(ast, context)
         klass_name_ast, parent_klass_name_ast, klass_body = ast.children
         klass_name_ref = ConstRef.from_ast(klass_name_ast, context.nesting)
-        parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, context.nesting)
+        parent_name_ref = if parent_klass_name_ast.nil? || !simple_constant?(parent_klass_name_ast)
+          nil
+        elsif simple_constant?(parent_klass_name_ast)
+          ConstRef.from_ast(parent_klass_name_ast, context.nesting)
+        end
 
         klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: parent_name_ref))
         klass_constant = @tree.add_constant(
@@ -947,12 +955,7 @@ module Orbacle
       end
 
       def handle_const(ast, context)
-        is_simple_constant = ->(c) do
-          c.children[0].nil? ||
-            c.children[0].type == :cbase ||
-            c.children[0].type == :const
-        end
-        if is_simple_constant.(ast)
+        if simple_constant?(ast)
           const_ref = ConstRef.from_ast(ast, context.nesting)
 
           node = add_vertex(Node.new(:const, { const_ref: const_ref }))
@@ -1534,6 +1537,13 @@ module Orbacle
 
       def add_edges(xs, ys)
         @graph.add_edges(xs, ys)
+      end
+
+      def simple_constant?(c)
+        c.type == :const &&
+          (c.children[0].nil? ||
+          c.children[0].type == :cbase ||
+          c.children[0].type == :const)
       end
     end
   end
