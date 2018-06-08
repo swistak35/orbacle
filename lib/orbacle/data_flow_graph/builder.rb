@@ -57,7 +57,7 @@ module Orbacle
         end
 
         def lenv_fetch(key)
-          lenv.fetch(key)
+          lenv.fetch(key, [])
         end
 
         def with_lenv(new_lenv)

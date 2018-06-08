@@ -426,6 +426,17 @@ module Orbacle
         expect(result.final_lenv["y"]).to match_array(node(:lvasgn, { var_name: "y" }))
       end
 
+      specify "local variable assignment using that lvar" do
+        snippet = <<-END
+        y = y + 1
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: "y" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
+      end
+
       specify "local variable usage" do
         snippet = <<-END
         x = 42
