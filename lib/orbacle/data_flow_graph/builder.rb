@@ -680,6 +680,9 @@ module Orbacle
           when :arg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
+          when :restarg
+            arg_name = arg_ast.children[0].to_s
+            current_context.merge_lenv(arg_name => [arg_node])
           when :kwarg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
@@ -1024,7 +1027,10 @@ module Orbacle
           final_context, nodes = fold_context(ast.children, context)
           add_edges(nodes, node_expr)
         end
-        @graph.add_edge(node_expr, @graph.get_metod_nodes(context.analyzed_method).result)
+
+        if context.analyzed_method
+          @graph.add_edge(node_expr, @graph.get_metod_nodes(context.analyzed_method).result)
+        end
 
         return Result.new(node_expr, final_context)
       end

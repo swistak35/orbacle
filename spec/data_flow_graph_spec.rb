@@ -964,6 +964,16 @@ module Orbacle
           node(:array),
           node(:method_result))
       end
+
+      specify "without method definition" do
+        snippet = <<-END
+        return 3
+        END
+
+        expect do
+          generate_cfg(snippet)
+        end.not_to raise_error
+      end
     end
 
     describe "instance variables" do
