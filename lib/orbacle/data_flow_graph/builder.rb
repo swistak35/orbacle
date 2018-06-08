@@ -938,11 +938,22 @@ module Orbacle
       end
 
       def handle_const(ast, context)
-        const_ref = ConstRef.from_ast(ast, context.nesting)
+        is_simple_constant = ->(c) do
+          c.children[0].nil? ||
+            c.children[0].type == :cbase ||
+            c.children[0].type == :const
+        end
+        if is_simple_constant.(ast)
+          const_ref = ConstRef.from_ast(ast, context.nesting)
 
-        node = add_vertex(Node.new(:const, { const_ref: const_ref }))
+          node = add_vertex(Node.new(:const, { const_ref: const_ref }))
 
-        return Result.new(node, context)
+          return Result.new(node, context)
+        else
+          node = add_vertex(Node.new(:dynamic_const, {}))
+
+          return Result.new(node, context)
+        end
       end
 
       def handle_and(ast, context)
