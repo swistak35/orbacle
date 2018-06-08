@@ -1292,6 +1292,11 @@ module Orbacle
           expr_full_rhs = Parser::AST::Node.new(:send,
                                                 [Parser::AST::Node.new(:send, [send_obj, asgn_method_name, *args]), method_name, expr_argument])
           expr_full_asgn = expr_partial_asgn.updated(nil, [send_obj, "#{asgn_method_name}=", expr_full_rhs])
+        when :gvasgn
+          var_name = expr_partial_asgn.children[0]
+          expr_full_rhs = Parser::AST::Node.new(:send,
+                                                [Parser::AST::Node.new(:gvar, [var_name]), method_name, expr_argument])
+          expr_full_asgn = expr_partial_asgn.append(expr_full_rhs)
         else raise ArgumentError
         end
         expr_full_asgn_result = process(expr_full_asgn, context)
@@ -1332,6 +1337,11 @@ module Orbacle
           expr_full_rhs = Parser::AST::Node.new(:or,
                                                 [Parser::AST::Node.new(:send, [send_obj, asgn_method_name, *args]), expr_argument])
           expr_full_asgn = expr_partial_asgn.updated(nil, [send_obj, "#{asgn_method_name}=", expr_full_rhs])
+        when :gvasgn
+          var_name = expr_partial_asgn.children[0]
+          expr_full_rhs = Parser::AST::Node.new(:or,
+                                                [Parser::AST::Node.new(:gvar, [var_name]), expr_argument])
+          expr_full_asgn = expr_partial_asgn.append(expr_full_rhs)
         else raise ArgumentError
         end
         expr_full_asgn_result = process(expr_full_asgn, context)
@@ -1372,6 +1382,11 @@ module Orbacle
           expr_full_rhs = Parser::AST::Node.new(:and,
                                                 [Parser::AST::Node.new(:send, [send_obj, asgn_method_name, *args]), expr_argument])
           expr_full_asgn = expr_partial_asgn.updated(nil, [send_obj, "#{asgn_method_name}=", expr_full_rhs])
+        when :gvasgn
+          var_name = expr_partial_asgn.children[0]
+          expr_full_rhs = Parser::AST::Node.new(:and,
+                                                [Parser::AST::Node.new(:gvar, [var_name]), expr_argument])
+          expr_full_asgn = expr_partial_asgn.append(expr_full_rhs)
         else raise ArgumentError
         end
         expr_full_asgn_result = process(expr_full_asgn, context)

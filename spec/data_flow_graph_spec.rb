@@ -2184,6 +2184,21 @@ module Orbacle
         expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:casgn, { const_ref: const_ref })])
       end
 
+      specify "for gvar, usage of +=" do
+        snippet = <<-END
+        $a += 1
+        END
+
+        result = generate_cfg(snippet)
+
+        msend0 = result.message_sends.first
+        expect(msend0.message_send).to eq("+")
+        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:gvar, { var_name: "$a" })])
+        expect(msend0.send_args.size).to eq(1)
+        expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:gvasgn, { var_name: "$a" })])
+      end
+
       specify "for lvar, usage of ||=" do
         snippet = <<-END
         a = 42
@@ -2290,6 +2305,24 @@ module Orbacle
           node(:casgn, { const_ref: const_ref }))
       end
 
+      specify "for gvar, usage of ||=" do
+        snippet = <<-END
+        $a ||= 1
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:gvar, { var_name: "$a" }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:or))
+        expect(result.graph).to include_edge(
+          node(:or),
+          node(:gvasgn, { var_name: "$a" }))
+      end
+
       specify "for lvar, usage of &&=" do
         snippet = <<-END
         a = 42
@@ -2394,6 +2427,24 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:and),
           node(:casgn, { const_ref: const_ref }))
+      end
+
+      specify "for gvar, usage of &&=" do
+        snippet = <<-END
+        $a &&= 1
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:gvar, { var_name: "$a" }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 1 }),
+          node(:and))
+        expect(result.graph).to include_edge(
+          node(:and),
+          node(:gvasgn, { var_name: "$a" }))
       end
     end
 
