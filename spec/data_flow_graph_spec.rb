@@ -891,6 +891,20 @@ module Orbacle
 
         expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
       end
+
+      specify "method definition with block argument" do
+        snippet = <<-END
+        def foo(x, &block)
+          block
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:formal_blockarg, { var_name: "block" }),
+          node(:lvar, { var_name: "block" }))
+      end
     end
 
     describe "returning" do

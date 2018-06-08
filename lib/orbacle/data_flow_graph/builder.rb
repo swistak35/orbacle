@@ -1420,6 +1420,10 @@ module Orbacle
             nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context, mlhs_node)
             args << nested_arg
             next_context
+          when :blockarg
+            blockarg = arg_name
+            nodes[arg_name] = add_vertex(Node.new(:formal_blockarg, { var_name: arg_name }, location))
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           else raise
           end
         end
