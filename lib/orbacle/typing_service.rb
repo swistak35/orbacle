@@ -186,6 +186,8 @@ module Orbacle
       when :lambda then handle_nil(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
 
+      when :ensure then handle_bottom(node, sources)
+
       else raise ArgumentError.new(node.type)
       end
     end
