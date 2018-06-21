@@ -86,8 +86,7 @@ module Orbacle
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
         initial_context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil, {})
-        process_result = process(ast, initial_context)
-        return process_result
+        return process(ast, initial_context)
       end
 
       private
@@ -96,8 +95,8 @@ module Orbacle
         return Result.new(nil, context) if ast.nil?
 
         process_result = case ast.type
-        when :lvasgn
-          handle_lvasgn(ast, context)
+
+        # primitives
         when :int
           handle_int(ast, context)
         when :float
@@ -108,12 +107,6 @@ module Orbacle
           handle_false(ast, context)
         when :nil
           handle_nil(ast, context)
-        when :self
-          handle_self(ast, context)
-        when :array
-          handle_array(ast, context)
-        when :splat
-          handle_splat(ast, context)
         when :str
           handle_str(ast, context)
         when :dstr
@@ -126,12 +119,43 @@ module Orbacle
           handle_dsym(ast, context)
         when :regexp
           handle_regexp(ast, context)
-        when :hash
-          handle_hash(ast, context)
+
+        # arrays
+        when :array
+          handle_array(ast, context)
+        when :splat
+          handle_splat(ast, context)
+
+        # ranges
         when :irange
           handle_irange(ast, context)
         when :erange
           handle_erange(ast, context)
+
+        # hashes
+        when :hash
+          handle_hash(ast, context)
+
+        # local variables
+        when :lvar
+          handle_lvar(ast, context)
+        when :lvasgn
+          handle_lvasgn(ast, context)
+
+        # global variables
+        when :gvar
+          handle_gvar(ast, context)
+        when :gvasgn
+          handle_gvasgn(ast, context)
+
+        # instance variables
+        when :ivar
+          handle_ivar(ast, context)
+        when :ivasgn
+          handle_ivasgn(ast, context)
+
+        when :self
+          handle_self(ast, context)
         when :back_ref
           handle_ref(ast, context, :backref)
         when :nth_ref
@@ -142,20 +166,10 @@ module Orbacle
           handle_begin(ast, context)
         when :kwbegin
           handle_begin(ast, context)
-        when :lvar
-          handle_lvar(ast, context)
-        when :ivar
-          handle_ivar(ast, context)
-        when :ivasgn
-          handle_ivasgn(ast, context)
         when :cvar
           handle_cvar(ast, context)
         when :cvasgn
           handle_cvasgn(ast, context)
-        when :gvar
-          handle_gvar(ast, context)
-        when :gvasgn
-          handle_gvasgn(ast, context)
         when :send
           handle_send(ast, context, false)
         when :csend

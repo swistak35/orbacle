@@ -81,6 +81,144 @@ module Orbacle
 
         expect(result.final_node).to eq(node(:nil))
       end
+
+      specify "string literal" do
+        snippet = <<-END
+        "foobar"
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:str, { value: "foobar" }))
+      end
+
+      specify "string heredoc" do
+        snippet = <<-END
+        <<-HERE
+        foo
+        HERE
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:str, { value: "        foo\n" }))
+      end
+
+      specify "string with interpolation" do
+        snippet = '
+        bar = 42
+        "foo#{bar}baz"
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:dstr))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "bar" }),
+          node(:lvar, { var_name: "bar" }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:dstr))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:dstr))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "baz" }),
+          node(:dstr))
+      end
+
+      specify "execution string" do
+        snippet = '
+        bar = 42
+        `foo#{bar}`
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:xstr))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:xstr))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:xstr))
+      end
+
+      specify "symbol literal" do
+        snippet = <<-END
+        :foobar
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:sym, { value: :foobar }))
+      end
+
+      specify "symbol with interpolation" do
+        snippet = '
+        bar = 42
+        :"foo#{bar}baz"
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:dsym))
+        expect(result.graph).to include_edge(
+          node(:lvasgn, { var_name: "bar" }),
+          node(:lvar, { var_name: "bar" }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:dsym))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:dsym))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "baz" }),
+          node(:dsym))
+      end
+
+      specify "regexp" do
+        snippet = <<-END
+        /foobar/
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foobar" }),
+          node(:regexp, { regopt: [] }))
+      end
+
+      specify "regexp with options" do
+        snippet = <<-END
+        /foobar/im
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foobar" }),
+          node(:regexp, { regopt: [:i, :m] }))
+      end
+
+      specify "regexp with interpolation" do
+        snippet = '
+        bar = 42
+        /foo#{bar}/
+        '
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:regexp, { regopt: [] }))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "bar" }),
+          node(:regexp, { regopt: [] }))
+      end
     end
 
     describe "arrays" do
@@ -198,150 +336,6 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:unwrap_hash_values),
           node(:hash_values))
-      end
-    end
-
-    describe "strings" do
-      specify "string literal" do
-        snippet = <<-END
-        "foobar"
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:str, { value: "foobar" }))
-      end
-
-      specify "string heredoc" do
-        snippet = <<-END
-        <<-HERE
-        foo
-        HERE
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:str, { value: "        foo\n" }))
-      end
-
-      specify "string with interpolation" do
-        snippet = '
-        bar = 42
-        "foo#{bar}baz"
-        '
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:dstr))
-        expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "bar" }),
-          node(:lvar, { var_name: "bar" }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:dstr))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:dstr))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "baz" }),
-          node(:dstr))
-      end
-
-      specify "execution string" do
-        snippet = '
-        bar = 42
-        `foo#{bar}`
-        '
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:xstr))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:xstr))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:xstr))
-      end
-    end
-
-    describe "symbols" do
-      specify "symbol literal" do
-        snippet = <<-END
-        :foobar
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:sym, { value: :foobar }))
-      end
-
-      specify "symbol with interpolation" do
-        snippet = '
-        bar = 42
-        :"foo#{bar}baz"
-        '
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:dsym))
-        expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "bar" }),
-          node(:lvar, { var_name: "bar" }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:dsym))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:dsym))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "baz" }),
-          node(:dsym))
-      end
-    end
-
-    describe "regexps" do
-      specify "regexp" do
-        snippet = <<-END
-        /foobar/
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foobar" }),
-          node(:regexp, { regopt: [] }))
-      end
-
-      specify "regexp with options" do
-        snippet = <<-END
-        /foobar/im
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foobar" }),
-          node(:regexp, { regopt: [:i, :m] }))
-      end
-
-      specify "regexp with interpolation" do
-        snippet = '
-        bar = 42
-        /foo#{bar}/
-        '
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:regexp, { regopt: [] }))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:regexp, { regopt: [] }))
       end
     end
 
