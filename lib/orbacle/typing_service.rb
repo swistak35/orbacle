@@ -145,7 +145,6 @@ module Orbacle
       when :formal_kwarg then handle_group(node, sources)
       when :formal_kwoptarg then handle_group(node, sources)
       when :formal_kwrestarg then handle_pass_lte1(node, sources)
-      when :block_arg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
       when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
@@ -448,8 +447,9 @@ module Orbacle
 
       if !@graph.get_metod_nodes(found_method.id).yields.empty?
         @graph.get_metod_nodes(found_method.id).yields.each do |node_yield|
-          @graph.add_edge(node_yield, message_send.block.args[0])
-          @worklist.enqueue_node(message_send.block.args[0])
+          arg_node = message_send.block.args.values[0]
+          @graph.add_edge(node_yield, arg_node)
+          @worklist.enqueue_node(arg_node)
         end
       end
     end
@@ -623,8 +623,9 @@ module Orbacle
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
-      @graph.add_edge(unwrapping_node, message_send.block.args.first)
-      @worklist.enqueue_node(message_send.block.args.first)
+      arg_node = message_send.block.args.values.first
+      @graph.add_edge(unwrapping_node, arg_node)
+      @worklist.enqueue_node(arg_node)
 
       wrapping_node = DataFlowGraph::Node.new(:wrap_array, {}, nil)
       @graph.add_vertex(wrapping_node)
@@ -641,8 +642,9 @@ module Orbacle
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
-      @graph.add_edge(unwrapping_node, message_send.block.args.first)
-      @worklist.enqueue_node(message_send.block.args.first)
+      arg_node = message_send.block.args.values.first
+      @graph.add_edge(unwrapping_node, arg_node)
+      @worklist.enqueue_node(arg_node)
 
       @graph.add_edge(message_send.send_obj, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)

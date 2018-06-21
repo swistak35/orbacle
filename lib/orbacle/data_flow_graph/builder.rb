@@ -679,37 +679,7 @@ module Orbacle
           end
         end
 
-        args_ast_nodes = []
-        context_with_args = args_ast.children.reduce(send_context) do |current_context, arg_ast|
-          arg_node = add_vertex(Node.new(:block_arg, {}, build_location_from_ast(context, arg_ast)))
-          args_ast_nodes << arg_node
-          case arg_ast.type
-          when :arg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :optarg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :restarg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :kwarg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :kwoptarg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :kwrestarg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :blockarg
-            arg_name = arg_ast.children[0].to_s
-            current_context.merge_lenv(arg_name => [arg_node])
-          when :mlhs
-            handle_mlhs_for_block(arg_ast, current_context, arg_node)
-          else raise RuntimeError.new(ast)
-          end
-        end
+        arguments_tree, context_with_args, args_ast_nodes = build_def_arguments(args_ast.children, send_context)
 
         # It's not exactly good - local vars defined in blocks are not available outside (?),
         #     but assignments done in blocks are valid.
@@ -719,34 +689,18 @@ module Orbacle
         block_result_node = add_vertex(Node.new(:block_result, {}))
         @graph.add_edge(block_final_node, block_result_node)
 
+
+        lamba = @tree.add_lambda(arguments_tree)
+        @graph.store_lambda_nodes(lamba.id, args_ast_nodes, block_result_node)
+
         if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
-          lambda_id = @tree.add_lambda
-          @graph.store_lambda_nodes(lambda_id, args_ast_nodes, block_result_node)
-          lambda_node = add_vertex(Node.new(:lambda, { id: lambda_id }))
+          lambda_node = add_vertex(Node.new(:lambda, { id: lamba.id }))
           return Result.new(lambda_node, block_result_context)
         else
           block = Block.new(args_ast_nodes, block_result_node)
           message_send.block = block
           return Result.new(send_node, block_result_context)
         end
-      end
-
-      def handle_mlhs_for_block(ast, context, node)
-        unwrap_array_node = Node.new(:unwrap_array, {})
-        @graph.add_edge(node, unwrap_array_node)
-
-        final_context = ast.children.reduce(context) do |current_context, ast_child|
-          case ast_child.type
-          when :arg
-            arg_name = ast_child.children[0].to_s
-            current_context.merge_lenv(arg_name => [unwrap_array_node])
-          when :mlhs
-            handle_mlhs_for_block(ast_child, current_context, unwrap_array_node)
-          else raise
-          end
-        end
-
-        return final_context
       end
 
       def handle_def(ast, context)
@@ -1463,8 +1417,7 @@ module Orbacle
             nodes[arg_name] = add_vertex(Node.new(:formal_kwrestarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :mlhs
-            mlhs_node = add_vertex(Node.new(:formal_mlhs, {}, location))
-            nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context, mlhs_node)
+            nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context)
             args << nested_arg
             next_context
           when :blockarg
@@ -1478,7 +1431,7 @@ module Orbacle
         return GlobalTree::Method::ArgumentsTree.new(args, kwargs, blockarg), final_context, nodes
       end
 
-      def build_def_arguments_nested(arg_asts, nodes, context, mlhs_node)
+      def build_def_arguments_nested(arg_asts, nodes, context)
         args = []
 
         final_context = arg_asts.reduce(context) do |current_context, arg_ast|
@@ -1488,21 +1441,20 @@ module Orbacle
           when :arg
             args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
-            current_context.merge(arg_name => [nodes[arg_name]])
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :restarg
             args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
-            current_context.merge(arg_name => [nodes[arg_name]])
+            current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :mlhs
-            mlhs_node = add_vertex(Node.new(:formal_mlhs, {}))
-            nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context, mlhs_node)
+            nested_arg, next_context = build_def_arguments_nested(arg_ast.children, nodes, current_context)
             args << nested_arg
             next_context
           else raise
           end
         end
 
-        return ArgumentsTree::Nested.new(args), final_context
+        return GlobalTree::Method::ArgumentsTree::Nested.new(args), final_context
       end
 
       def handle_match_with_lvasgn(ast, context)

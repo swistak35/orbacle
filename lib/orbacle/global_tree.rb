@@ -25,6 +25,15 @@ module Orbacle
       attr_accessor :visibility
     end
 
+    class Lambda
+      def initialize(id, args)
+        @id = id
+        @args = args
+      end
+
+      attr_reader :id, :args
+    end
+
     class Klass
       def initialize(id: SecureRandom.uuid, parent_ref:, eigenclass_id: nil)
         @id = id
@@ -109,10 +118,10 @@ module Orbacle
       return constant
     end
 
-    def add_lambda
-      lambda_id = SecureRandom.uuid
-      @lambdas << lambda_id
-      return lambda_id
+    def add_lambda(args)
+      lamba = Lambda.new(SecureRandom.uuid, args)
+      @lambdas << lamba
+      return lamba
     end
 
     def get_class(class_id)

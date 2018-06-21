@@ -546,7 +546,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:block_arg),
+          node(:formal_arg, { var_name: "y"}),
           node(:lvar, { var_name: "y" }))
         expect(result.graph).to include_edge(
           node(:lvar, { var_name: "y" }),
@@ -557,7 +557,7 @@ module Orbacle
                 node(:call_obj),
                 [],
                 node(:call_result, { csend: false }),
-                block([node(:block_arg)], node(:block_result))))
+                block({"y" => node(:formal_arg, { var_name: "y" })}, node(:block_result))))
       end
 
       specify "method call, on self" do
@@ -639,7 +639,7 @@ module Orbacle
                 node(:call_obj),
                 [],
                 node(:call_result, { csend: false }),
-                block([], node(:block_result))))
+                block({}, node(:block_result))))
       end
 
       specify "1 argument" do
@@ -658,7 +658,7 @@ module Orbacle
                 node(:call_obj),
                 [],
                 node(:call_result, { csend: false }),
-                block([node(:block_arg)], node(:block_result))))
+                block({ "x" => node(:formal_arg, { var_name: "x" })}, node(:block_result))))
       end
 
       specify "2 arguments" do
@@ -679,7 +679,7 @@ module Orbacle
                 node(:call_obj),
                 [],
                 node(:call_result, { csend: false }),
-                block([node(:block_arg), node(:block_arg)], node(:block_result))))
+                block({"x" => node(:formal_arg, { var_name: "x"}), "y" => node(:formal_arg, { var_name: "y"})}, node(:block_result))))
       end
 
       specify "deconstructed array argument into 1 lvar" do
@@ -691,14 +691,8 @@ module Orbacle
 
         expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
         expect(result.graph).to include_edge(
-          node(:block_arg),
-          node(:unwrap_array))
-        expect(result.graph).to include_edge(
-          node(:unwrap_array),
+          node(:formal_arg, { var_name: "y" }),
           node(:lvar, { var_name: "y" }))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
-          node(:block_result))
       end
 
       specify "deconstructed array argument into 2 lvars" do
@@ -710,23 +704,13 @@ module Orbacle
 
         expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
         expect(result.graph).to include_edge(
-          node(:block_arg),
-          node(:unwrap_array))
-        expect(result.graph).to include_edge(
-          node(:unwrap_array),
+          node(:formal_arg, { var_name: "y" }),
           node(:lvar, { var_name: "y" }))
 
         expect(result.graph).to include_node(node(:lvar, { var_name: "x" }))
         expect(result.graph).to include_edge(
-          node(:block_arg),
-          node(:unwrap_array))
-        expect(result.graph).to include_edge(
-          node(:unwrap_array),
+          node(:formal_arg, { var_name: "x" }),
           node(:lvar, { var_name: "x" }))
-
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
-          node(:block_result))
       end
 
       specify "deconstructed array argument into deconstructed array argument" do
@@ -737,18 +721,6 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
-        expect(result.graph).to include_edge(
-          node(:block_arg),
-          node(:unwrap_array))
-        expect(result.graph).to include_edge(
-          node(:unwrap_array),
-          node(:unwrap_array))
-        expect(result.graph).to include_edge(
-          node(:unwrap_array),
-          node(:lvar, { var_name: "y" }))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
-          node(:block_result))
       end
     end
 
