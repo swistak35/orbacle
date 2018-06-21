@@ -86,7 +86,8 @@ module Orbacle
       def process_file(file, filepath)
         ast = Parser::CurrentRuby.parse(file)
         initial_context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil, {})
-        return process(ast, initial_context)
+        process_result = process(ast, initial_context)
+        return process_result
       end
 
       private
@@ -216,6 +217,8 @@ module Orbacle
         when :op_asgn then handle_op_asgn(ast, context)
         when :or_asgn then handle_or_asgn(ast, context)
         when :and_asgn then handle_and_asgn(ast, context)
+
+        when :match_with_lvasgn then handle_match_with_lvasgn(ast, context)
 
         else raise ArgumentError.new(ast.type)
         end
@@ -697,6 +700,9 @@ module Orbacle
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
           when :kwrestarg
+            arg_name = arg_ast.children[0].to_s
+            current_context.merge_lenv(arg_name => [arg_node])
+          when :blockarg
             arg_name = arg_ast.children[0].to_s
             current_context.merge_lenv(arg_name => [arg_node])
           when :mlhs
@@ -1499,13 +1505,17 @@ module Orbacle
         return ArgumentsTree::Nested.new(args), final_context
       end
 
+      def handle_match_with_lvasgn(ast, context)
+        return Result.new(add_vertex(Node.new(:str, {})), context)
+      end
+
       def merge_contexts(context1, context2)
         raise if !context1.almost_equal?(context2)
         final_lenv = {}
 
         var_names = (context1.lenv.keys + context2.lenv.keys).uniq
         var_names.each do |var_name|
-          final_lenv[var_name] = context1.lenv.fetch(var_name, []) + context2.lenv.fetch(var_name, [])
+          final_lenv[var_name] = (context1.lenv.fetch(var_name, []) + context2.lenv.fetch(var_name, [])).uniq
         end
 
         context1.with_lenv(final_lenv)
