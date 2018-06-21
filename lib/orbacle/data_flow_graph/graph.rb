@@ -23,6 +23,7 @@ module Orbacle
       attr_reader :constants
 
       def add_vertex(node)
+        raise if node.nil?
         @original.add_vertex(node)
         @reversed.add_vertex(node)
         node
@@ -37,6 +38,7 @@ module Orbacle
       end
 
       def add_edge(x, y)
+        raise if x.nil? || y.nil?
         @original.add_edge(x, y)
         @reversed.add_edge(y, x)
       end
