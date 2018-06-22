@@ -500,7 +500,7 @@ module Orbacle
           obj_context = expr_result.context
         end
 
-        final_context, call_arg_nodes = prepare_argument_nodes(obj_context, arg_exprs)
+        final_context, call_arg_nodes, block_node = prepare_argument_nodes(obj_context, arg_exprs)
 
         return handle_changing_visibility(context, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
         return handle_custom_attr_reader_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_reader"
@@ -512,7 +512,7 @@ module Orbacle
 
         call_result_node = add_vertex(Node.new(:call_result, { csend: csend }))
 
-        message_send = Worklist::MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, nil)
+        message_send = Worklist::MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, block_node)
         @worklist.add_message_send(message_send)
 
         return Result.new(call_result_node, final_context, { message_send: message_send })
@@ -520,14 +520,21 @@ module Orbacle
 
       def prepare_argument_nodes(context, arg_exprs)
         call_arg_nodes = []
+        block_node = nil
         final_context = arg_exprs.reduce(context) do |current_context, ast_child|
-          ast_child_result = process(ast_child, current_context)
-          call_arg_node = add_vertex(Node.new(:call_arg, {}))
-          call_arg_nodes << call_arg_node
-          @graph.add_edge(ast_child_result.node, call_arg_node)
-          ast_child_result.context
+          if ast_child.type == :block_pass
+            block_pass_result = process(ast_child.children[0], current_context)
+            block_node = Worklist::BlockNode.new(block_pass_result.node)
+            block_pass_result.context
+          else
+            ast_child_result = process(ast_child, current_context)
+            call_arg_node = add_vertex(Node.new(:call_arg, {}))
+            call_arg_nodes << call_arg_node
+            @graph.add_edge(ast_child_result.node, call_arg_node)
+            ast_child_result.context
+          end
         end
-        return final_context, call_arg_nodes
+        return final_context, call_arg_nodes, block_node
       end
 
       def handle_changing_visibility(context, new_visibility, arg_exprs)
@@ -1005,11 +1012,11 @@ module Orbacle
       def handle_super(ast, context)
         arg_exprs = ast.children
 
-        final_context, call_arg_nodes = prepare_argument_nodes(context, arg_exprs)
+        final_context, call_arg_nodes, block_node = prepare_argument_nodes(context, arg_exprs)
 
         call_result_node = add_vertex(Node.new(:call_result, {}))
 
-        super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, nil, final_context.analyzed_method)
+        super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, block_node, final_context.analyzed_method)
         @worklist.add_message_send(super_send)
 
         return Result.new(call_result_node, final_context, { message_send: super_send })
@@ -1088,14 +1095,6 @@ module Orbacle
 
       def handle_break(ast, context)
         return Result.new(Node.new(:break, {}), context)
-      end
-
-      def handle_block_pass(ast, context)
-        expr = ast.children[0]
-
-        expr_result = process(expr, context)
-
-        return expr_result
       end
 
       def handle_resbody(ast, context)

@@ -356,6 +356,9 @@ module Orbacle
         END
 
         result = generate_cfg(snippet)
+
+        message_send = result.message_sends.last
+        expect(message_send.block).to eq(Worklist::BlockNode.new(node(:lvar, { var_name: "x" })))
       end
 
       specify "passing block" do
@@ -364,6 +367,9 @@ module Orbacle
         END
 
         result = generate_cfg(snippet)
+
+        message_send = result.message_sends.last
+        expect(message_send.block).to eq(Worklist::BlockNode.new(node(:sym, { value: :x })))
       end
 
       specify "on self" do
