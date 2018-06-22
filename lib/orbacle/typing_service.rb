@@ -451,7 +451,7 @@ module Orbacle
 
       if !@graph.get_metod_nodes(found_method.id).yields.empty?
         @graph.get_metod_nodes(found_method.id).yields.each do |node_yield|
-          block_lambda_nodes = @graph.get_lambda_nodes(message_send.block)
+          block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
           arg_node = block_lambda_nodes.args.values[0]
           @graph.add_edge(node_yield, arg_node)
           @worklist.enqueue_node(arg_node)
@@ -628,7 +628,7 @@ module Orbacle
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
-      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block)
+      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
       arg_node = block_lambda_nodes.args.values.first
       @graph.add_edge(unwrapping_node, arg_node)
       @worklist.enqueue_node(arg_node)
@@ -648,7 +648,7 @@ module Orbacle
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
-      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block)
+      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
       arg_node = block_lambda_nodes.args.values.first
       @graph.add_edge(unwrapping_node, arg_node)
       @worklist.enqueue_node(arg_node)

@@ -1,7 +1,5 @@
 module Orbacle
   module DataFlowGraph
-    BlockPass = Struct.new(:node)
-
     Position = Struct.new(:line, :character)
     PositionRange = Struct.new(:start, :end)
     class Location < Struct.new(:uri, :position_range)

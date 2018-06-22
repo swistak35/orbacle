@@ -653,7 +653,7 @@ module Orbacle
           lambda_node = add_vertex(Node.new(:lambda, { id: lamba.id }))
           return Result.new(lambda_node, block_result_context)
         else
-          message_send.block = lamba.id
+          message_send.block = Worklist::BlockLambda.new(lamba.id)
           return Result.new(send_node, block_result_context)
         end
       end

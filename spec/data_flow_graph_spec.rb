@@ -311,6 +311,24 @@ module Orbacle
         expect(message_send.send_args).to eq([node(:call_arg), node(:call_arg)])
       end
 
+      specify "passing keyword arg" do
+        snippet = <<-END
+        x.floor(2, foo: 42, bar: 13)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:call_arg))
+        expect(result.graph).to include_edge(
+          node(:hash),
+          node(:call_arg))
+
+        message_send = result.message_sends.last
+        expect(message_send.send_args).to eq([node(:call_arg), node(:call_arg)])
+      end
+
       specify "block" do
         snippet = <<-END
         x.map { 42 }
@@ -324,11 +342,28 @@ module Orbacle
 
         message_send = result.message_sends.last
         expect(message_send.send_args).to eq([])
-        expect(message_send.block).not_to be_nil
+        expect(message_send.block).to be_a(Worklist::BlockLambda)
 
-        block_lambda = result.graph.get_lambda_nodes(message_send.block)
+        block_lambda = result.graph.get_lambda_nodes(message_send.block.lambda_id)
         expect(block_lambda.args).to eq({})
         expect(block_lambda.result).to eq(node(:block_result))
+      end
+
+      specify "passing block" do
+        snippet = <<-END
+        x = Proc.new {|x| x }
+        foo(&x)
+        END
+
+        result = generate_cfg(snippet)
+      end
+
+      specify "passing block" do
+        snippet = <<-END
+        foo(&:x)
+        END
+
+        result = generate_cfg(snippet)
       end
 
       specify "on self" do
@@ -388,7 +423,7 @@ module Orbacle
           node(:lvar, { var_name: "x" }))
 
         message_send = result.message_sends.last
-        block_lambda = result.graph.get_lambda_nodes(message_send.block)
+        block_lambda = result.graph.get_lambda_nodes(message_send.block.lambda_id)
         expect(block_lambda.args).to eq({
           "x" => node(:formal_arg, { var_name: "x" })
         })
@@ -409,7 +444,7 @@ module Orbacle
           node(:lvar, { var_name: "y" }))
 
         message_send = result.message_sends.last
-        block_lambda = result.graph.get_lambda_nodes(message_send.block)
+        block_lambda = result.graph.get_lambda_nodes(message_send.block.lambda_id)
         expect(block_lambda.args).to eq({
           "x" => node(:formal_arg, { var_name: "x" }),
           "y" => node(:formal_arg, { var_name: "y" }),
@@ -1725,15 +1760,6 @@ module Orbacle
           node(:int, { value: 42 }),
           node(:yield))
       end
-    end
-
-    specify "passing block" do
-      snippet = <<-END
-        x = Proc.new {|x| x }
-        foo(&x)
-      END
-
-      result = generate_cfg(snippet)
     end
 
     describe "rescue" do
