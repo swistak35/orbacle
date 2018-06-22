@@ -522,10 +522,17 @@ module Orbacle
         call_arg_nodes = []
         block_node = nil
         final_context = arg_exprs.reduce(context) do |current_context, ast_child|
-          if ast_child.type == :block_pass
+          case ast_child.type
+          when :block_pass
             block_pass_result = process(ast_child.children[0], current_context)
             block_node = Worklist::BlockNode.new(block_pass_result.node)
             block_pass_result.context
+          when :splat
+            ast_child_result = process(ast_child.children[0], current_context)
+            call_arg_node = add_vertex(Node.new(:call_splatarg, {}))
+            call_arg_nodes << call_arg_node
+            @graph.add_edge(ast_child_result.node, call_arg_node)
+            ast_child_result.context
           else
             ast_child_result = process(ast_child, current_context)
             call_arg_node = add_vertex(Node.new(:call_arg, {}))

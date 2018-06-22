@@ -329,6 +329,44 @@ module Orbacle
         expect(message_send.send_args).to eq([node(:call_arg), node(:call_arg)])
       end
 
+      specify "passing splat arguments" do
+        snippet = <<-END
+        arr = []
+        x.floor(2, *arr)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:call_arg))
+        expect(result.graph).to include_edge(
+          node(:lvar, { var_name: "arr" }),
+          node(:call_splatarg))
+
+        message_send = result.message_sends.last
+        expect(message_send.send_args).to eq([node(:call_arg), node(:call_splatarg)])
+      end
+
+      specify "passing kwsplat arguments" do
+        snippet = <<-END
+        kwargs = {}
+        x.floor(2, **kwargs, foo: 42)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:int, { value: 2 }),
+          node(:call_arg))
+        expect(result.graph).to include_edge(
+          node(:hash),
+          node(:call_arg))
+
+        message_send = result.message_sends.last
+        expect(message_send.send_args).to eq([node(:call_arg), node(:call_arg)])
+      end
+
       specify "block" do
         snippet = <<-END
         x.map { 42 }
