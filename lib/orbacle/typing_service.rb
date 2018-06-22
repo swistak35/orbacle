@@ -188,6 +188,8 @@ module Orbacle
 
       when :ensure then handle_bottom(node, sources)
 
+      when :yield_result then handle_group(node, sources)
+
       else raise ArgumentError.new(node.type)
       end
     end

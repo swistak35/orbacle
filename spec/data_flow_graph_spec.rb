@@ -1705,7 +1705,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:nil),
+          node(:yield_result),
           node(:method_result))
         expect(result.graph).to include_edge(
           node(:nil),
@@ -1721,9 +1721,6 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_edge(
-          node(:nil),
-          node(:method_result))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
           node(:yield))

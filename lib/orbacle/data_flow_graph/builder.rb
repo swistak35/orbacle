@@ -1066,10 +1066,12 @@ module Orbacle
             current_expr_result.context
           end
         end
+        result_node = add_vertex(Node.new(:yield_result, {}))
         if context.analyzed_method
-          @graph.get_metod_nodes(context.analyzed_method).yields << node_yield
+          method_nodes = @graph.get_metod_nodes(context.analyzed_method)
+          method_nodes.yields << node_yield
+          method_nodes.yield_results << result_node
         end
-        result_node = add_vertex(Node.new(:nil, {}))
 
         return Result.new(result_node, final_context)
       end
