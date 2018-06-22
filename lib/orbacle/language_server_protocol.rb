@@ -33,7 +33,6 @@ module Orbacle
       rescue EOFError
       end
 
-      private
       attr_reader :implementation, :input, :output
     end
   end

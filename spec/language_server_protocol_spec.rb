@@ -8,7 +8,9 @@ module Orbacle
       let(:output) { StringIO.new }
 
       specify do
-        FileLanguageServer.new(implementation)
+        server = FileLanguageServer.new(implementation)
+        expect(server.input).to eq($stdin)
+        expect(server.output).to eq($stdout)
       end
 
       specify do
