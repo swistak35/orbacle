@@ -28,3 +28,5 @@ require 'orbacle/data_flow_graph'
 require 'orbacle/export_class_hierarchy'
 require 'orbacle/ast_utils'
 require 'orbacle/typing_service.rb'
+
+require 'orbacle/language_server_protocol'
