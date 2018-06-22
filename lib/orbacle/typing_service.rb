@@ -62,6 +62,8 @@ module Orbacle
 
       @result = {}
 
+      processed_nodes = 0
+
       @worklist.nodes = @graph.vertices.to_a
       while !@worklist.nodes.empty?
         while !@worklist.nodes.empty?
@@ -70,6 +72,8 @@ module Orbacle
           if !@worklist.limit_exceeded?(node)
             current_result = @result[node]
             @result[node] = compute_result(node, @graph.parent_vertices(node))
+            processed_nodes += 1
+            puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}" if processed_nodes % 1000 == 0
             if current_result != @result[node]
               @graph.adjacent_vertices(node).each do |adjacent_node|
                 @worklist.enqueue_node(adjacent_node)
@@ -119,6 +123,8 @@ module Orbacle
       when :dsym then handle_just_symbol(node, sources)
       when :regexp then handle_regexp(node, sources)
       when :break then handle_bottom(node, sources)
+      when :retry then handle_bottom(node, sources)
+      when :dynamic_const then handle_bottom(node, sources)
 
       when :hash_keys then handle_group(node, sources)
       when :hash_values then handle_group(node, sources)
@@ -146,6 +152,7 @@ module Orbacle
       when :formal_kwarg then handle_group(node, sources)
       when :formal_kwoptarg then handle_group(node, sources)
       when :formal_kwrestarg then handle_pass_lte1(node, sources)
+      when :formal_blockarg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
       when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
@@ -167,8 +174,12 @@ module Orbacle
       when :ivar_definition then handle_group(node, sources)
       when :clivar_definition then handle_group(node, sources)
       when :ivar then handle_pass1(node, sources)
+
       when :extract_class then handle_extract_class(node, sources)
 
+      when :cvasgn then handle_group(node, sources)
+      when :cvar_definition then handle_group(node, sources)
+      when :cvar then handle_pass1(node, sources)
 
       # below not really tested
       when :if_result then handle_group(node, sources)
