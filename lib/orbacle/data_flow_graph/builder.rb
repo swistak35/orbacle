@@ -146,8 +146,6 @@ module Orbacle
           handle_super(ast, context)
         when :zsuper
           handle_zsuper(ast, context)
-        when :when
-          handle_when(ast, context)
         when :case
           handle_case(ast, context)
         when :yield
@@ -1063,9 +1061,17 @@ module Orbacle
 
         node_case_result = add_vertex(Node.new(:case_result, {}))
         final_context = expr_branches.reduce(new_context) do |current_context, expr_when|
-          expr_when_result = process(expr_when, current_context)
-          @graph.add_edge(expr_when_result.node, node_case_result)
-          expr_when_result.context
+          expr_cond, expr_body = expr_when.children
+          context_after_cond = process(expr_cond, current_context).context
+
+          if expr_body.nil?
+            @graph.add_edge(Node.new(:nil, {}), node_case_result)
+            context_after_cond
+          else
+            expr_body_result = process(expr_body, context_after_cond)
+            @graph.add_edge(expr_body_result.node, node_case_result)
+            expr_body_result.context
+          end
         end
 
         return Result.new(node_case_result, final_context)
@@ -1093,16 +1099,6 @@ module Orbacle
         end
 
         return Result.new(result_node, final_context)
-      end
-
-      def handle_when(ast, context)
-        expr_cond = ast.children[0]
-        expr_body = ast.children[1]
-
-        context_after_cond = process(expr_cond, context).context
-        expr_body_result = process(expr_body, context_after_cond)
-
-        return Result.new(expr_body_result.node, expr_body_result.context)
       end
 
       def handle_break(ast, context)

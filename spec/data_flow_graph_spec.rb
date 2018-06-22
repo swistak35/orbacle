@@ -1753,24 +1753,42 @@ module Orbacle
       end
     end
 
-    specify "case-when branching (without else)" do
-      snippet = <<-END
-      case true
-      when :foo then "foo"
-      when :bar then 42
+    describe "case-when branching" do
+      specify "basic without else" do
+        snippet = <<-END
+        case true
+        when :foo then "foo"
+        when :bar then 42
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:sym, { value: :foo }))
+        expect(result.graph).to include_edge(
+          node(:str, { value: "foo" }),
+          node(:case_result))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:case_result))
       end
-      END
 
-      result = generate_cfg(snippet)
+      specify "with empty body" do
+        snippet = <<-END
+        case true
+        when :foo then "foo"
+        when :bar
+        when :baz then 42
+        end
+        END
 
-      expect(result.graph).to include_node(node(:bool, { value: true }))
-      expect(result.graph).to include_node(node(:sym, { value: :foo }))
-      expect(result.graph).to include_edge(
-        node(:str, { value: "foo" }),
-        node(:case_result))
-      expect(result.graph).to include_edge(
-        node(:int, { value: 42 }),
-        node(:case_result))
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:case_result))
+      end
     end
 
     describe "yielding" do
