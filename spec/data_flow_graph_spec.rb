@@ -613,8 +613,8 @@ module Orbacle
 
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
-          GlobalTree::Method::ArgumentsTree::Nested.new([
-            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
+          GlobalTree::ArgumentsTree::Nested.new([
+            GlobalTree::ArgumentsTree::Regular.new("x"),
           ]),
         ])
       end
@@ -631,9 +631,9 @@ module Orbacle
 
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
-          GlobalTree::Method::ArgumentsTree::Nested.new([
-            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
-            GlobalTree::Method::ArgumentsTree::Regular.new("y"),
+          GlobalTree::ArgumentsTree::Nested.new([
+            GlobalTree::ArgumentsTree::Regular.new("x"),
+            GlobalTree::ArgumentsTree::Regular.new("y"),
           ]),
         ])
       end
@@ -648,9 +648,9 @@ module Orbacle
 
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
-          GlobalTree::Method::ArgumentsTree::Nested.new([
-            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
-            GlobalTree::Method::ArgumentsTree::Splat.new("y"),
+          GlobalTree::ArgumentsTree::Nested.new([
+            GlobalTree::ArgumentsTree::Regular.new("x"),
+            GlobalTree::ArgumentsTree::Splat.new("y"),
           ]),
         ])
       end
@@ -665,10 +665,10 @@ module Orbacle
 
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
-          GlobalTree::Method::ArgumentsTree::Nested.new([
-            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
-            GlobalTree::Method::ArgumentsTree::Nested.new([
-              GlobalTree::Method::ArgumentsTree::Regular.new("y"),
+          GlobalTree::ArgumentsTree::Nested.new([
+            GlobalTree::ArgumentsTree::Regular.new("x"),
+            GlobalTree::ArgumentsTree::Nested.new([
+              GlobalTree::ArgumentsTree::Regular.new("y"),
             ]),
           ]),
         ])
@@ -684,13 +684,13 @@ module Orbacle
 
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
-          GlobalTree::Method::ArgumentsTree::Nested.new([
-            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
-            GlobalTree::Method::ArgumentsTree::Regular.new("y"),
+          GlobalTree::ArgumentsTree::Nested.new([
+            GlobalTree::ArgumentsTree::Regular.new("x"),
+            GlobalTree::ArgumentsTree::Regular.new("y"),
           ]),
-          GlobalTree::Method::ArgumentsTree::Nested.new([
-            GlobalTree::Method::ArgumentsTree::Regular.new("z"),
-            GlobalTree::Method::ArgumentsTree::Regular.new("w"),
+          GlobalTree::ArgumentsTree::Nested.new([
+            GlobalTree::ArgumentsTree::Regular.new("z"),
+            GlobalTree::ArgumentsTree::Regular.new("w"),
           ]),
         ])
       end

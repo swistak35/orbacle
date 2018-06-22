@@ -2,14 +2,14 @@ require 'securerandom'
 
 module Orbacle
   class GlobalTree
-    class Method
-      class ArgumentsTree < Struct.new(:args, :kwargs, :blockarg)
-        Regular = Struct.new(:name)
-        Optional = Struct.new(:name)
-        Splat = Struct.new(:name)
-        Nested = Struct.new(:args)
-      end
+    class ArgumentsTree < Struct.new(:args, :kwargs, :blockarg)
+      Regular = Struct.new(:name)
+      Optional = Struct.new(:name)
+      Splat = Struct.new(:name)
+      Nested = Struct.new(:args)
+    end
 
+    class Method
       def initialize(id: SecureRandom.uuid, place_of_definition_id:, name:, location:, visibility:, args:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 

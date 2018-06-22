@@ -462,15 +462,15 @@ module Orbacle
         node_formal_arg = found_method_nodes[formal_arg.name]
 
         case formal_arg
-        when GlobalTree::Method::ArgumentsTree::Regular
+        when GlobalTree::ArgumentsTree::Regular
           @graph.add_edge(send_args[i], node_formal_arg)
           @worklist.enqueue_node(node_formal_arg)
-        when GlobalTree::Method::ArgumentsTree::Optional
+        when GlobalTree::ArgumentsTree::Optional
           if send_args[i]
             @graph.add_edge(send_args[i], node_formal_arg)
             @worklist.enqueue_node(node_formal_arg)
           end
-        when GlobalTree::Method::ArgumentsTree::Splat
+        when GlobalTree::ArgumentsTree::Splat
           send_args[i..-1].each do |send_arg|
             @graph.add_edge(send_arg, node_formal_arg)
             @worklist.enqueue_node(node_formal_arg)
@@ -491,13 +491,13 @@ module Orbacle
         node_formal_kwarg = found_method_nodes[formal_kwarg.name]
 
         case formal_kwarg
-        when GlobalTree::Method::ArgumentsTree::Regular
+        when GlobalTree::ArgumentsTree::Regular
           @graph.add_edge(unwrapping_node, node_formal_kwarg)
           @worklist.enqueue_node(node_formal_kwarg)
-        when GlobalTree::Method::ArgumentsTree::Optional
+        when GlobalTree::ArgumentsTree::Optional
           @graph.add_edge(unwrapping_node, node_formal_kwarg)
           @worklist.enqueue_node(node_formal_kwarg)
-        when GlobalTree::Method::ArgumentsTree::Splat
+        when GlobalTree::ArgumentsTree::Splat
           @graph.add_edge(kwarg_arg, node_formal_kwarg)
           @worklist.enqueue_node(node_formal_kwarg)
         else raise

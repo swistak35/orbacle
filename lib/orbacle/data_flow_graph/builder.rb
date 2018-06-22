@@ -651,7 +651,7 @@ module Orbacle
             place_of_definition_id: context.analyzed_klass_id,
             name: ivar_name,
             location: location,
-            args: GlobalTree::Method::ArgumentsTree.new([], [], nil),
+            args: GlobalTree::ArgumentsTree.new([], [], nil),
             visibility: context.analyzed_klass.method_visibility))
         @graph.store_metod_nodes(metod.id, [])
         @graph.add_edge(ivar_definition_node, @graph.get_metod_nodes(metod.id).result)
@@ -667,7 +667,7 @@ module Orbacle
             place_of_definition_id: context.analyzed_klass_id,
             name: "#{ivar_name}=",
             location: location,
-            args: GlobalTree::Method::ArgumentsTree.new([GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)], [], nil),
+            args: GlobalTree::ArgumentsTree.new([GlobalTree::ArgumentsTree::Regular.new(arg_name)], [], nil),
             visibility: context.analyzed_klass.method_visibility))
         @graph.store_metod_nodes(metod.id, { arg_name => arg_node })
         @graph.add_edge(arg_node, ivar_definition_node)
@@ -1271,31 +1271,31 @@ module Orbacle
 
           case arg_ast.type
           when :arg
-            args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+            args << GlobalTree::ArgumentsTree::Regular.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :optarg
-            args << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
+            args << GlobalTree::ArgumentsTree::Optional.new(arg_name)
             maybe_arg_default_expr_result = process(maybe_arg_default_expr, current_context)
             nodes[arg_name] = add_vertex(Node.new(:formal_optarg, { var_name: arg_name }, location))
             @graph.add_edge(maybe_arg_default_expr_result.node, nodes[arg_name])
             maybe_arg_default_expr_result.context.merge_lenv(arg_name => [nodes[arg_name]])
           when :restarg
-            args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
+            args << GlobalTree::ArgumentsTree::Splat.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwarg
-            kwargs << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+            kwargs << GlobalTree::ArgumentsTree::Regular.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_kwarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwoptarg
-            kwargs << GlobalTree::Method::ArgumentsTree::Optional.new(arg_name)
+            kwargs << GlobalTree::ArgumentsTree::Optional.new(arg_name)
             maybe_arg_default_expr_result = process(maybe_arg_default_expr, current_context)
             nodes[arg_name] = add_vertex(Node.new(:formal_kwoptarg, { var_name: arg_name }, location))
             @graph.add_edge(maybe_arg_default_expr_result.node, nodes[arg_name])
             maybe_arg_default_expr_result.context.merge_lenv(arg_name => [nodes[arg_name]])
           when :kwrestarg
-            kwargs << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
+            kwargs << GlobalTree::ArgumentsTree::Splat.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_kwrestarg, { var_name: arg_name }, location))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :mlhs
@@ -1310,7 +1310,7 @@ module Orbacle
           end
         end
 
-        return GlobalTree::Method::ArgumentsTree.new(args, kwargs, blockarg), final_context, nodes
+        return GlobalTree::ArgumentsTree.new(args, kwargs, blockarg), final_context, nodes
       end
 
       def build_def_arguments_nested(arg_asts, nodes, context)
@@ -1321,11 +1321,11 @@ module Orbacle
 
           case arg_ast.type
           when :arg
-            args << GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+            args << GlobalTree::ArgumentsTree::Regular.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :restarg
-            args << GlobalTree::Method::ArgumentsTree::Splat.new(arg_name)
+            args << GlobalTree::ArgumentsTree::Splat.new(arg_name)
             nodes[arg_name] = add_vertex(Node.new(:formal_restarg, { var_name: arg_name }))
             current_context.merge_lenv(arg_name => [nodes[arg_name]])
           when :mlhs
@@ -1336,7 +1336,7 @@ module Orbacle
           end
         end
 
-        return GlobalTree::Method::ArgumentsTree::Nested.new(args), final_context
+        return GlobalTree::ArgumentsTree::Nested.new(args), final_context
       end
 
       def handle_match_with_lvasgn(ast, context)

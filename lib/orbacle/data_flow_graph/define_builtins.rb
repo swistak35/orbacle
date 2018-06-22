@@ -99,9 +99,9 @@ module Orbacle
 
       def build_arg_tree(arg_names)
         regular_args = arg_names.map do |arg_name|
-          GlobalTree::Method::ArgumentsTree::Regular.new(arg_name)
+          GlobalTree::ArgumentsTree::Regular.new(arg_name)
         end
-        GlobalTree::Method::ArgumentsTree.new(regular_args, [], nil)
+        GlobalTree::ArgumentsTree.new(regular_args, [], nil)
       end
 
       def template_just_int(klass, name, args)
