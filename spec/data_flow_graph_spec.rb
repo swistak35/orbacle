@@ -254,7 +254,7 @@ module Orbacle
     end
 
     describe "method calls" do
-      specify "method call, without args" do
+      specify "args empty" do
         snippet = <<-END
         x = 42
         x.succ
@@ -266,15 +266,15 @@ module Orbacle
           node(:lvar, { var_name: "x" }),
           node(:call_obj))
 
-        expect(result.message_sends).to include(
-          msend(
-            "succ",
-            node(:call_obj),
-            [],
-            node(:call_result, { csend: false })))
+        message_send = result.message_sends.last
+        expect(message_send.message_send).to eq("succ")
+        expect(message_send.send_obj).to eq(node(:call_obj))
+        expect(message_send.send_args).to eq([])
+        expect(message_send.send_result).to eq(node(:call_result, { csend: false }))
+        expect(message_send.block).to eq(nil)
       end
 
-      specify "method call, with 1 arg" do
+      specify "1 arg" do
         snippet = <<-END
         x = 42
         x.floor(2)
@@ -289,24 +289,17 @@ module Orbacle
           node(:int, { value: 2 }),
           node(:call_arg))
 
-        expect(result.message_sends).to include(
-          msend("floor",
-                node(:call_obj),
-                [node(:call_arg)],
-                node(:call_result, { csend: false })))
+        message_send = result.message_sends.last
+        expect(message_send.send_args).to eq([node(:call_arg)])
       end
 
-      specify "method call, with more than one arg" do
+      specify "2 regular args" do
         snippet = <<-END
-        x = 42
         x.floor(2, 3)
         END
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "x" }),
-          node(:call_obj))
         expect(result.graph).to include_edge(
           node(:int, { value: 2 }),
           node(:call_arg))
@@ -314,37 +307,28 @@ module Orbacle
           node(:int, { value: 3 }),
           node(:call_arg))
 
-        expect(result.message_sends).to include(
-          msend("floor",
-                node(:call_obj),
-                [node(:call_arg), node(:call_arg)],
-                node(:call_result, { csend: false })))
+        message_send = result.message_sends.last
+        expect(message_send.send_args).to eq([node(:call_arg), node(:call_arg)])
       end
 
-      specify "method call, with block" do
+      specify "block" do
         snippet = <<-END
-        x = 42
-        x.map {|y| y }
+        x.map { 42 }
         END
 
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "y"}),
-          node(:lvar, { var_name: "y" }))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
+          node(:int, { value: 42 }),
           node(:block_result))
 
-        expect(result.message_sends).to include(
-          msend("map",
-                node(:call_obj),
-                [],
-                node(:call_result, { csend: false }),
-                block({"y" => node(:formal_arg, { var_name: "y" })}, node(:block_result))))
+        message_send = result.message_sends.last
+        expect(message_send.send_args).to eq([])
+        expect(message_send.block.args).to eq({})
+        expect(message_send.block.result).to eq(node(:block_result))
       end
 
-      specify "method call, on self" do
+      specify "on self" do
         snippet = <<-END
         class Foo
           def bar
@@ -358,16 +342,9 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
           node(:call_obj))
-
-        expect(result.message_sends).to include(
-          msend(
-            "baz",
-            node(:call_obj),
-            [],
-            node(:call_result, { csend: false })))
       end
 
-      specify "method call, on implicit self" do
+      specify "on implicit self" do
         snippet = <<-END
         class Foo
           def bar
@@ -381,51 +358,21 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:self, { selfie: Selfie.instance_from_scope(Scope.new(["Foo"], false)) }),
           node(:call_obj))
-
-        expect(result.message_sends).to include(
-          msend(
-            "baz",
-            node(:call_obj),
-            [],
-            node(:call_result, { csend: false })))
       end
 
-      specify "method call with csend" do
+      specify "with csend" do
         snippet = <<-END
         $x&.bar
         END
 
         result = generate_cfg(snippet)
 
-        expect(result.message_sends).to include(
-          msend(
-            "bar",
-            node(:call_obj),
-            [],
-            node(:call_result, { csend: true })))
+        message_send = result.message_sends.last
+        expect(message_send.send_result).to eq(node(:call_result, { csend: true }))
       end
     end
 
     describe "block arguments formats" do
-      specify "no arguments" do
-        snippet = <<-END
-        x.map { 42 }
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.graph).to include_edge(
-          node(:int, { value: 42 }),
-          node(:block_result))
-
-        expect(result.message_sends).to include(
-          msend("map",
-                node(:call_obj),
-                [],
-                node(:call_result, { csend: false }),
-                block({}, node(:block_result))))
-      end
-
       specify "1 argument" do
         snippet = <<-END
         x.map {|x| x }
@@ -434,15 +381,13 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "x" }),
-          node(:block_result))
+          node(:formal_arg, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
 
-        expect(result.message_sends).to include(
-          msend("map",
-                node(:call_obj),
-                [],
-                node(:call_result, { csend: false }),
-                block({ "x" => node(:formal_arg, { var_name: "x" })}, node(:block_result))))
+        block = result.message_sends.last.block
+        expect(block.args).to eq({
+          "x" => node(:formal_arg, { var_name: "x" })
+        })
       end
 
       specify "2 arguments" do
@@ -452,18 +397,17 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "x" }))
-        expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
-          node(:block_result))
-
-        expect(result.message_sends).to include(
-          msend("map",
-                node(:call_obj),
-                [],
-                node(:call_result, { csend: false }),
-                block({"x" => node(:formal_arg, { var_name: "x"}), "y" => node(:formal_arg, { var_name: "y"})}, node(:block_result))))
+          node(:formal_arg, { var_name: "x" }),
+          node(:lvar, { var_name: "x" }))
+        expect(result.graph).to include_edge(
+          node(:formal_arg, { var_name: "y" }),
+          node(:lvar, { var_name: "y" }))
+        block = result.message_sends.last.block
+        expect(block.args).to eq({
+          "x" => node(:formal_arg, { var_name: "x" }),
+          "y" => node(:formal_arg, { var_name: "y" }),
+        })
       end
 
       specify "deconstructed array argument into 1 lvar" do
@@ -1797,7 +1741,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:bottom),
+          node(:retry),
           node(:rescue))
         expect(result.final_node).to eq(node(:rescue))
       end
@@ -2368,13 +2312,15 @@ module Orbacle
     def generate_cfg(snippet)
       worklist = Worklist.new
       graph = DataFlowGraph::Graph.new
-      service = DataFlowGraph::Builder.new(graph, worklist, GlobalTree.new)
+      tree = GlobalTree.new
+      service = DataFlowGraph::Builder.new(graph, worklist, tree)
       result = service.process_file(snippet, "")
       OpenStruct.new(
         graph: graph,
         final_lenv: result.context.lenv,
         final_node: result.node,
-        message_sends: worklist.message_sends.to_a)
+        message_sends: worklist.message_sends.to_a,
+        tree: tree)
     end
 
     def node(type, params = {})

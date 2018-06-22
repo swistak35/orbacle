@@ -1144,7 +1144,7 @@ module Orbacle
       end
 
       def handle_break(ast, context)
-        return Result.new(Node.new(:bottom, {}), context)
+        return Result.new(Node.new(:break, {}), context)
       end
 
       def handle_block_pass(ast, context)
@@ -1223,7 +1223,7 @@ module Orbacle
       end
 
       def handle_retry(ast, context)
-        return Result.new(add_vertex(Node.new(:bottom, {})), context)
+        return Result.new(add_vertex(Node.new(:retry, {})), context)
       end
 
       def handle_ensure(ast, context)
