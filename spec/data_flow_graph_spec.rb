@@ -603,6 +603,98 @@ module Orbacle
         expect(result.graph).to include_node(node(:formal_restarg, { var_name: nil }))
       end
 
+      specify "method definition with destructed arg into 1" do
+        snippet = <<-END
+        def foo((x))
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        args_tree = find_kernel_method(result, "foo").args
+        expect(args_tree.args).to eq([
+          GlobalTree::Method::ArgumentsTree::Nested.new([
+            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
+          ]),
+        ])
+      end
+
+      specify "method definition with destructed args into 2" do
+        snippet = <<-END
+        def foo((x,y))
+          x
+          y
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        args_tree = find_kernel_method(result, "foo").args
+        expect(args_tree.args).to eq([
+          GlobalTree::Method::ArgumentsTree::Nested.new([
+            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
+            GlobalTree::Method::ArgumentsTree::Regular.new("y"),
+          ]),
+        ])
+      end
+
+      specify "method definition with destructed args and splat" do
+        snippet = <<-END
+        def foo((x,*y))
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        args_tree = find_kernel_method(result, "foo").args
+        expect(args_tree.args).to eq([
+          GlobalTree::Method::ArgumentsTree::Nested.new([
+            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
+            GlobalTree::Method::ArgumentsTree::Splat.new("y"),
+          ]),
+        ])
+      end
+
+      specify "method definition with nested deconstructors" do
+        snippet = <<-END
+        def foo((x, (y)))
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        args_tree = find_kernel_method(result, "foo").args
+        expect(args_tree.args).to eq([
+          GlobalTree::Method::ArgumentsTree::Nested.new([
+            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
+            GlobalTree::Method::ArgumentsTree::Nested.new([
+              GlobalTree::Method::ArgumentsTree::Regular.new("y"),
+            ]),
+          ]),
+        ])
+      end
+
+      specify "method definition with 2 destructed args" do
+        snippet = <<-END
+        def foo((x,y), (z, w))
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        args_tree = find_kernel_method(result, "foo").args
+        expect(args_tree.args).to eq([
+          GlobalTree::Method::ArgumentsTree::Nested.new([
+            GlobalTree::Method::ArgumentsTree::Regular.new("x"),
+            GlobalTree::Method::ArgumentsTree::Regular.new("y"),
+          ]),
+          GlobalTree::Method::ArgumentsTree::Nested.new([
+            GlobalTree::Method::ArgumentsTree::Regular.new("z"),
+            GlobalTree::Method::ArgumentsTree::Regular.new("w"),
+          ]),
+        ])
+      end
+
       specify "method definition with block argument" do
         snippet = <<-END
         def foo(x, &block)
@@ -2337,6 +2429,10 @@ module Orbacle
 
     def find_nodes_by_type(graph, type)
       graph.vertices.select {|n| n.type == type }
+    end
+
+    def find_kernel_method(result, name)
+      result.tree.find_instance_method2(nil, name)
     end
   end
 end
