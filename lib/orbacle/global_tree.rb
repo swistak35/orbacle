@@ -203,8 +203,8 @@ module Orbacle
     def find_super_method(method_id)
       analyzed_method = get_method(method_id)
       klass_of_this_method = get_class(analyzed_method.place_of_definition_id)
-      parent_klass = solve_reference(klass_of_this_method.parent_ref)
-      find_instance_method(parent_klass.full_name, analyzed_method.name)
+      parent_klass = solve_reference(klass_of_this_method.parent_ref) if klass_of_this_method.parent_ref
+      find_instance_method(parent_klass.full_name, analyzed_method.name) if parent_klass
     end
 
     def get_method(method_id)

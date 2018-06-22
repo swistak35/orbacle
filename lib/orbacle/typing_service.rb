@@ -702,7 +702,7 @@ module Orbacle
     def handle_definition_by_id(node, sources)
       definition_id = node.params.fetch(:id)
       const = @tree.find_constant_for_definition(definition_id)
-      ClassType.new(const.full_name)
+      const ? ClassType.new(const.full_name) : nil
     end
   end
 end
