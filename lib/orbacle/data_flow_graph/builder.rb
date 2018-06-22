@@ -1061,14 +1061,20 @@ module Orbacle
 
         node_case_result = add_vertex(Node.new(:case_result, {}))
         final_context = expr_branches.reduce(new_context) do |current_context, expr_when|
-          expr_cond, expr_body = expr_when.children
-          context_after_cond = process(expr_cond, current_context).context
+          if expr_when.type == :when
+            expr_cond, expr_body = expr_when.children
+            context_after_cond = process(expr_cond, current_context).context
 
-          if expr_body.nil?
-            @graph.add_edge(Node.new(:nil, {}), node_case_result)
-            context_after_cond
+            if expr_body.nil?
+              @graph.add_edge(Node.new(:nil, {}), node_case_result)
+              context_after_cond
+            else
+              expr_body_result = process(expr_body, context_after_cond)
+              @graph.add_edge(expr_body_result.node, node_case_result)
+              expr_body_result.context
+            end
           else
-            expr_body_result = process(expr_body, context_after_cond)
+            expr_body_result = process(expr_when, current_context)
             @graph.add_edge(expr_body_result.node, node_case_result)
             expr_body_result.context
           end

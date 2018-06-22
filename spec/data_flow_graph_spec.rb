@@ -1789,6 +1789,24 @@ module Orbacle
           node(:nil),
           node(:case_result))
       end
+
+      specify "with else" do
+        snippet = <<-END
+        case value
+        when :foo then 42
+        else "meh"
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:str, { value: "meh" }),
+          node(:case_result))
+        expect(result.graph).to include_edge(
+          node(:int, { value: 42 }),
+          node(:case_result))
+      end
     end
 
     describe "yielding" do
