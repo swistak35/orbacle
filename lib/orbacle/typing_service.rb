@@ -449,7 +449,8 @@ module Orbacle
 
       if !@graph.get_metod_nodes(found_method.id).yields.empty?
         @graph.get_metod_nodes(found_method.id).yields.each do |node_yield|
-          arg_node = message_send.block.args.values[0]
+          block_lambda_nodes = @graph.get_lambda_nodes(message_send.block)
+          arg_node = block_lambda_nodes.args.values[0]
           @graph.add_edge(node_yield, arg_node)
           @worklist.enqueue_node(arg_node)
         end
@@ -625,13 +626,14 @@ module Orbacle
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
-      arg_node = message_send.block.args.values.first
+      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block)
+      arg_node = block_lambda_nodes.args.values.first
       @graph.add_edge(unwrapping_node, arg_node)
       @worklist.enqueue_node(arg_node)
 
       wrapping_node = DataFlowGraph::Node.new(:wrap_array, {}, nil)
       @graph.add_vertex(wrapping_node)
-      @graph.add_edge(message_send.block.result, wrapping_node)
+      @graph.add_edge(block_lambda_nodes.result, wrapping_node)
       @worklist.enqueue_node(wrapping_node)
       @graph.add_edge(wrapping_node, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
@@ -644,7 +646,8 @@ module Orbacle
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
-      arg_node = message_send.block.args.values.first
+      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block)
+      arg_node = block_lambda_nodes.args.values.first
       @graph.add_edge(unwrapping_node, arg_node)
       @worklist.enqueue_node(arg_node)
 

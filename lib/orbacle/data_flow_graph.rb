@@ -1,6 +1,5 @@
 module Orbacle
   module DataFlowGraph
-    Block = Struct.new(:args, :result)
     BlockPass = Struct.new(:node)
 
     Position = Struct.new(:line, :character)

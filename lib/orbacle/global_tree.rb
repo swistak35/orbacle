@@ -240,5 +240,9 @@ module Orbacle
         end
       end
     end
+
+    def get_lambda(lambda_id)
+      @lambdas.find {|l| l.id == lambda_id }
+    end
   end
 end

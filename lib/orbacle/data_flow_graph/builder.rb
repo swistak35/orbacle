@@ -711,12 +711,11 @@ module Orbacle
         lamba = @tree.add_lambda(arguments_tree)
         @graph.store_lambda_nodes(lamba.id, args_ast_nodes, block_result_node)
 
-        if send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
+        if lambda_ast?(send_expr)
           lambda_node = add_vertex(Node.new(:lambda, { id: lamba.id }))
           return Result.new(lambda_node, block_result_context)
         else
-          block = Block.new(args_ast_nodes, block_result_node)
-          message_send.block = block
+          message_send.block = lamba.id
           return Result.new(send_node, block_result_context)
         end
       end
@@ -1388,6 +1387,10 @@ module Orbacle
           (c.children[0].nil? ||
           c.children[0].type == :cbase ||
           c.children[0].type == :const)
+      end
+
+      def lambda_ast?(send_expr)
+        send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
       end
     end
   end

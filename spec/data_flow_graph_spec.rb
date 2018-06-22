@@ -324,8 +324,11 @@ module Orbacle
 
         message_send = result.message_sends.last
         expect(message_send.send_args).to eq([])
-        expect(message_send.block.args).to eq({})
-        expect(message_send.block.result).to eq(node(:block_result))
+        expect(message_send.block).not_to be_nil
+
+        block_lambda = result.graph.get_lambda_nodes(message_send.block)
+        expect(block_lambda.args).to eq({})
+        expect(block_lambda.result).to eq(node(:block_result))
       end
 
       specify "on self" do
@@ -384,8 +387,9 @@ module Orbacle
           node(:formal_arg, { var_name: "x" }),
           node(:lvar, { var_name: "x" }))
 
-        block = result.message_sends.last.block
-        expect(block.args).to eq({
+        message_send = result.message_sends.last
+        block_lambda = result.graph.get_lambda_nodes(message_send.block)
+        expect(block_lambda.args).to eq({
           "x" => node(:formal_arg, { var_name: "x" })
         })
       end
@@ -403,8 +407,10 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:formal_arg, { var_name: "y" }),
           node(:lvar, { var_name: "y" }))
-        block = result.message_sends.last.block
-        expect(block.args).to eq({
+
+        message_send = result.message_sends.last
+        block_lambda = result.graph.get_lambda_nodes(message_send.block)
+        expect(block_lambda.args).to eq({
           "x" => node(:formal_arg, { var_name: "x" }),
           "y" => node(:formal_arg, { var_name: "y" }),
         })
@@ -2266,7 +2272,6 @@ module Orbacle
 
       specify "with one argument" do
         snippet = <<-END
-        ->() { 42 }
         ->(x) { 42 }
         END
 
