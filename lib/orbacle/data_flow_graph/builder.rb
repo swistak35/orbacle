@@ -1166,7 +1166,7 @@ module Orbacle
 
         context_after_errors = if error_array_expr
           error_array_expr_result = process(error_array_expr, context)
-          unwrap_node = add_vertex(Node.new(:unwrap_array, {}))
+          unwrap_node = add_vertex(Node.new(:unwrap_error_array, {}))
           @graph.add_edge(error_array_expr_result.node, unwrap_node)
           error_array_expr_result.context
         else

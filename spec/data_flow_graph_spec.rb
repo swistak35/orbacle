@@ -1775,6 +1775,7 @@ module Orbacle
       specify "rescue with else" do
         snippet = <<-END
         begin
+          "foo"
         rescue => e
           e
         else
@@ -1790,7 +1791,12 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:lvar, { var_name: "e" }),
           node(:rescue))
-        expect(result.final_node).to eq(node(:rescue))
+
+        begin_result = node(:str, { value: "foo" })
+        expect(result.graph).to include_node(begin_result)
+        expect(result.graph).not_to include_edge(
+          begin_result,
+          node(:rescue))
       end
 
       specify "rescue specific error" do
@@ -1814,10 +1820,7 @@ module Orbacle
           node(:const, { const_ref: other_error_ref }),
           node(:array))
         expect(result.graph).to include_edge(
-          node(:array),
-          node(:unwrap_array))
-        expect(result.graph).to include_edge(
-          node(:unwrap_array),
+          node(:unwrap_error_array),
           node(:lvasgn, { var_name: "e" }))
       end
 
@@ -1835,7 +1838,6 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:retry),
           node(:rescue))
-        expect(result.final_node).to eq(node(:rescue))
       end
 
       specify "empty ensure" do
