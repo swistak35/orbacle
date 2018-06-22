@@ -653,9 +653,14 @@ module Orbacle
 
         # It's not exactly good - local vars defined in blocks are not available outside (?),
         #     but assignments done in blocks are valid.
-        block_expr_result = process(block_expr, context_with_args)
-        block_final_node = block_expr_result.node
-        block_result_context = block_expr_result.context
+        if block_expr
+          block_expr_result = process(block_expr, context_with_args)
+          block_final_node = block_expr_result.node
+          block_result_context = block_expr_result.context
+        else
+          block_final_node = Node.new(:nil, {})
+          block_result_context = context_with_args
+        end
         block_result_node = add_vertex(Node.new(:block_result, {}))
         @graph.add_edge(block_final_node, block_result_node)
 

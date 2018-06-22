@@ -118,7 +118,7 @@ module Orbacle
       when :sym then handle_just_symbol(node, sources)
       when :dsym then handle_just_symbol(node, sources)
       when :regexp then handle_regexp(node, sources)
-      when :bottom then handle_bottom(node, sources)
+      when :break then handle_bottom(node, sources)
 
       when :hash_keys then handle_group(node, sources)
       when :hash_values then handle_group(node, sources)
@@ -139,6 +139,7 @@ module Orbacle
       when :call_obj then handle_pass1(node, sources)
       when :call_result then handle_group(node, sources)
       when :call_arg then handle_group(node, sources)
+      when :call_splatarg then handle_group(node, sources)
       when :formal_arg then handle_group(node, sources)
       when :formal_optarg then handle_group(node, sources)
       when :formal_restarg then handle_wrap_array(node, sources)
@@ -180,6 +181,7 @@ module Orbacle
       when :class then handle_nil(node, sources)
 
       when :unwrap_array then handle_unwrap_array(node, sources)
+      when :unwrap_error_array then handle_unwrap_array(node, sources)
       when :wrap_array then handle_wrap_array(node, sources)
       when :rescue then handle_nil(node, sources)
 

@@ -2327,6 +2327,18 @@ module Orbacle
     end
 
     describe "lambdas" do
+      specify "empty" do
+        snippet = <<-END
+        -> { }
+        END
+
+        result = generate_cfg(snippet)
+        expect(result.final_node.type).to eq(:lambda)
+        expect(result.graph).to include_edge(
+          node(:nil),
+          node(:block_result))
+      end
+
       specify "simple" do
         snippet = <<-END
         -> { 42 }
