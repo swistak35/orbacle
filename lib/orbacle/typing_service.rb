@@ -122,26 +122,43 @@ module Orbacle
       when :sym then handle_just_symbol(node, sources)
       when :dsym then handle_just_symbol(node, sources)
       when :regexp then handle_regexp(node, sources)
-      when :break then handle_bottom(node, sources)
-      when :retry then handle_bottom(node, sources)
-      when :dynamic_const then handle_bottom(node, sources)
+
+      when :array then handle_wrap_array(node, sources)
+      when :splat_array then handle_unwrap_array(node, sources)
 
       when :hash_keys then handle_group(node, sources)
       when :hash_values then handle_group(node, sources)
       when :hash then handle_hash(node, sources)
 
-      when :defined then handle_maybe_string(node, sources)
-
-      when :casgn then handle_group(node, sources)
-
       when :range_from then handle_group(node, sources)
       when :range_to then handle_group(node, sources)
       when :range then handle_range(node, sources)
-      when :self then handle_self(node, sources)
+
       when :lvar then handle_group(node, sources)
-      when :array then handle_wrap_array(node, sources)
-      when :splat_array then handle_unwrap_array(node, sources)
-      when :lvasgn then handle_pass_lte1(node, sources)
+      when :lvasgn then handle_pass1(node, sources)
+
+      when :ivasgn then handle_group(node, sources)
+      when :ivar_definition then handle_group(node, sources)
+      when :clivar_definition then handle_group(node, sources)
+      when :ivar then handle_pass1(node, sources)
+
+      when :break then handle_bottom(node, sources)
+      when :retry then handle_bottom(node, sources)
+      when :dynamic_const then handle_bottom(node, sources)
+
+      when :gvasgn then handle_group(node, sources)
+      when :gvar_definition then handle_group(node, sources)
+      when :gvar then handle_pass1(node, sources)
+      when :backref then handle_just_string(node, sources)
+      when :nthref then handle_just_string(node, sources)
+
+      when :defined then handle_maybe_string(node, sources)
+
+      when :casgn then handle_group(node, sources)
+      when :const then handle_const(node, sources)
+
+      when :self then handle_self(node, sources)
+
       when :call_obj then handle_pass1(node, sources)
       when :call_result then handle_group(node, sources)
       when :call_arg then handle_group(node, sources)
@@ -154,53 +171,31 @@ module Orbacle
       when :formal_kwrestarg then handle_pass_lte1(node, sources)
       when :formal_blockarg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
+
+      # not really tested
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
       when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
-      when :const then handle_const(node, sources)
       when :const_definition then handle_group(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
       when :method_caller then handle_group(node, sources)
-
       when :yield then handle_group(node, sources)
-
-      when :gvasgn then handle_group(node, sources)
-      when :gvar_definition then handle_group(node, sources)
-      when :gvar then handle_pass1(node, sources)
-      when :backref then handle_just_string(node, sources)
-      when :nthref then handle_just_string(node, sources)
-
-      when :ivasgn then handle_group(node, sources)
-      when :ivar_definition then handle_group(node, sources)
-      when :clivar_definition then handle_group(node, sources)
-      when :ivar then handle_pass1(node, sources)
-
       when :extract_class then handle_extract_class(node, sources)
-
       when :cvasgn then handle_group(node, sources)
       when :cvar_definition then handle_group(node, sources)
       when :cvar then handle_pass1(node, sources)
-
-      # below not really tested
       when :if_result then handle_group(node, sources)
-
       when :case_result then handle_group(node, sources)
-
       when :and then handle_bool(node, sources)
       when :or then handle_bool(node, sources)
-
       when :class then handle_nil(node, sources)
-
       when :unwrap_array then handle_unwrap_array(node, sources)
       when :unwrap_error_array then handle_unwrap_array(node, sources)
       when :wrap_array then handle_wrap_array(node, sources)
       when :rescue then handle_nil(node, sources)
-
       when :lambda then handle_nil(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
-
       when :ensure then handle_bottom(node, sources)
-
       when :yield_result then handle_group(node, sources)
 
       else raise ArgumentError.new(node.type)
@@ -331,19 +326,15 @@ module Orbacle
     def handle_const(node, sources)
       const_ref = node.params.fetch(:const_ref)
       ref_result = @tree.solve_reference(const_ref)
-      if !sources.empty?
-        handle_group(node, sources)
+      if ref_result && @graph.constants[ref_result.full_name]
+        const_definition_node = @graph.constants[ref_result.full_name]
+        @graph.add_edge(const_definition_node, node)
+        @worklist.enqueue_node(const_definition_node)
+        @result[const_definition_node]
+      elsif ref_result
+        ClassType.new(ref_result.full_name)
       else
-        if ref_result && @graph.constants[ref_result.full_name]
-          const_definition_node = @graph.constants[ref_result.full_name]
-          @graph.add_edge(const_definition_node, node)
-          @worklist.enqueue_node(const_definition_node)
-          @result[const_definition_node]
-        elsif ref_result
-          ClassType.new(ref_result.full_name)
-        else
-          ClassType.new(const_ref.full_name)
-        end
+        ClassType.new(const_ref.full_name)
       end
     end
 
