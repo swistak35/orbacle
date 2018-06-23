@@ -142,10 +142,6 @@ module Orbacle
       when :clivar_definition then handle_group(node, sources)
       when :ivar then handle_pass1(node, sources)
 
-      when :break then handle_bottom(node, sources)
-      when :retry then handle_bottom(node, sources)
-      when :dynamic_const then handle_bottom(node, sources)
-
       when :gvasgn then handle_group(node, sources)
       when :gvar_definition then handle_group(node, sources)
       when :gvar then handle_pass1(node, sources)
@@ -173,6 +169,9 @@ module Orbacle
       when :block_result then handle_pass_lte1(node, sources)
 
       # not really tested
+      when :break then handle_bottom(node, sources)
+      when :retry then handle_bottom(node, sources)
+      when :dynamic_const then handle_bottom(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
       when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
       when :const_definition then handle_group(node, sources)
