@@ -8,6 +8,8 @@ module Orbacle
       end
 
       def start
+        prepare
+
         loop do
           headers = {}
           loop do
@@ -31,6 +33,23 @@ module Orbacle
             body_json.fetch("params"))
         end
       rescue EOFError
+      end
+
+      def prepare
+        implementation.language_server = self
+      end
+
+      def response(id, result, error)
+        output.write(build_message({
+          id: id,
+          result: result,
+          error: error,
+        }))
+      end
+
+      def build_message(hash)
+        json = hash.to_json
+        "Content-Length: #{json.size}\r\n\r\n#{json}"
       end
 
       attr_reader :implementation, :input, :output
