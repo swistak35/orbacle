@@ -168,9 +168,13 @@ module Orbacle
       when :formal_blockarg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
 
-      # not really tested
-      when :break then handle_bottom(node, sources)
+      when :loop_operator then handle_bottom(node, sources)
+
+      when :rescue then handle_group(node, sources)
+      when :ensure then handle_group(node, sources)
       when :retry then handle_bottom(node, sources)
+
+      # not really tested
       when :dynamic_const then handle_bottom(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
       when :unwrap_hash_keys then handle_unwrap_hash_keys(node, sources)
@@ -191,10 +195,8 @@ module Orbacle
       when :unwrap_array then handle_unwrap_array(node, sources)
       when :unwrap_error_array then handle_unwrap_array(node, sources)
       when :wrap_array then handle_wrap_array(node, sources)
-      when :rescue then handle_nil(node, sources)
       when :lambda then handle_nil(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
-      when :ensure then handle_bottom(node, sources)
       when :yield_result then handle_group(node, sources)
 
       else raise ArgumentError.new(node.type)

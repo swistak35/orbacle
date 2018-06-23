@@ -1726,31 +1726,43 @@ module Orbacle
       specify "break" do
         snippet = <<-END
         while true
-          break
+          $x = break
         end
         END
 
-        generate_cfg(snippet)
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:loop_operator),
+          node(:gvasgn, { var_name: "$x" }))
       end
 
       specify "next" do
         snippet = <<-END
         while true
-          next
+          $x = next
         end
         END
 
-        generate_cfg(snippet)
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:loop_operator),
+          node(:gvasgn, { var_name: "$x" }))
       end
 
       specify "redo" do
         snippet = <<-END
         while true
-          redo
+          $x = redo
         end
         END
 
-        generate_cfg(snippet)
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:loop_operator),
+          node(:gvasgn, { var_name: "$x" }))
       end
     end
 
@@ -1980,7 +1992,8 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:rescue),
           node(:ensure))
-        expect(result.graph).to include_edge(
+        expect(result.graph).to include_node(node(:int, { value: 17 }))
+        expect(result.graph).not_to include_edge(
           node(:int, { value: 17 }),
           node(:ensure))
         expect(result.final_node).to eq(node(:ensure))

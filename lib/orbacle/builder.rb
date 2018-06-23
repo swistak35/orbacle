@@ -150,9 +150,9 @@ module Orbacle
       when :until then handle_while(ast, context)
       when :while_post then handle_while(ast, context)
       when :until_post then handle_while(ast, context)
-      when :break then handle_break(ast, context)
-      when :next then handle_break(ast, context)
-      when :redo then handle_break(ast, context)
+      when :break then handle_loop_operator(ast, context)
+      when :next then handle_loop_operator(ast, context)
+      when :redo then handle_loop_operator(ast, context)
 
       when :rescue then handle_rescue(ast, context)
       when :resbody then handle_resbody(ast, context)
@@ -1100,8 +1100,8 @@ module Orbacle
       return Result.new(result_node, final_context)
     end
 
-    def handle_break(ast, context)
-      return Result.new(Node.new(:break, {}), context)
+    def handle_loop_operator(ast, context)
+      return Result.new(Node.new(:loop_operator, {}), context)
     end
 
     def handle_resbody(ast, context)
@@ -1185,7 +1185,6 @@ module Orbacle
       @graph.add_edge(expr_pre_result.node, node_ensure) if expr_pre_result.node
 
       expr_ensure_body_result = process(expr_ensure_body, expr_pre_result.context)
-      @graph.add_edge(expr_ensure_body_result.node, node_ensure) if expr_ensure_body_result.node
 
       return Result.new(node_ensure, expr_ensure_body_result.context)
     end

@@ -1104,6 +1104,105 @@ module Orbacle
       end
     end
 
+    describe "loop operators" do
+      specify "break" do
+        snippet = <<-END
+        while foo
+          $x = break
+        end
+        $x
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nil)
+      end
+
+      specify "redo" do
+        snippet = <<-END
+        while foo
+          $x = redo
+        end
+        $x
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nil)
+      end
+
+      specify "next" do
+        snippet = <<-END
+        while foo
+          $x = next
+        end
+        $x
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nil)
+      end
+    end
+
+    describe "exceptions" do
+      specify "rescue" do
+        snippet = <<-END
+        begin
+          42
+        rescue
+          "foo"
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Integer")]))
+      end
+
+      specify "else" do
+        snippet = <<-END
+        begin
+          42
+        rescue
+          "foo"
+        else
+          :bar
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+      end
+
+      specify "ensure" do
+        snippet = <<-END
+        begin
+          42
+        rescue
+          "foo"
+        else
+          :bar
+        ensure
+          42.0
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+      end
+
+      specify "retry" do
+        snippet = <<-END
+        begin
+          42
+        rescue
+          $x = retry
+        end
+        $x
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nil)
+      end
+    end
+
     describe "zsuper calls" do
       xspecify "basic example" do
         snippet = <<-END
