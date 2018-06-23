@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     orbacle (0.0.1)
+      lsp-protocol (>= 0.0.1)
       parser (~> 2.4.0.2)
       rgl (~> 0.5.3)
       rubytree (~> 0.9.7)
@@ -15,6 +16,7 @@ GEM
     hash_diff (0.6.3)
     json (1.8.6)
     lazy_priority_queue (0.1.1)
+    lsp-protocol (0.0.1)
     parser (2.4.0.2)
       ast (~> 2.3)
     rgl (0.5.3)
