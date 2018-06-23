@@ -1,8 +1,6 @@
 module Orbacle
 end
 
-require 'orbacle/command_line_interface'
-
 require 'orbacle/const_name'
 require 'orbacle/const_ref'
 require 'orbacle/scope'
@@ -23,3 +21,5 @@ require 'orbacle/data_flow_graph'
 
 require 'orbacle/ast_utils'
 require 'orbacle/typing_service.rb'
+
+require 'orbacle/engine'

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'ostruct'
 require 'support/graph_matchers'
 
 module Orbacle

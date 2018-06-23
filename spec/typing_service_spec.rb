@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'logger'
 
 module Orbacle
   RSpec.describe TypingService do
