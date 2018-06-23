@@ -8,8 +8,7 @@ module Orbacle
 
     def initialize
       @message_sends = Set.new
-      @nodes = Set.new
-      @nodes.compare_by_identity
+      @nodes = []
       @handled_message_sends = Set.new
       @nodes_counter = {}
     end
