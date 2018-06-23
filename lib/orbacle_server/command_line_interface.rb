@@ -2,6 +2,7 @@ require 'pathname'
 require 'logger'
 require 'fileutils'
 require 'orbacle'
+require 'lsp'
 
 module OrbacleServer
   class CommandLineInterface
@@ -35,8 +36,9 @@ module OrbacleServer
       logger = Logger.new('/tmp/orbacle.log', 'monthly')
       logger.level = Logger::INFO
 
-      lang_server = LangServer.new(lang_server)
-      lang_server.start
+      lang_server = LangServer.new(logger)
+      server = Lsp::FileLanguageServer.new(lang_server, logger: logger)
+      server.start
     end
 
     def generate_datajs(options)
