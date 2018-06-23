@@ -17,7 +17,7 @@ module Orbacle
         allow(implementation).to receive(:language_server=)
         server = FileLanguageServer.new(implementation, input, output)
 
-        expect(implementation).to receive(:request).with(42, "someMethod", { "foo" => 13 })
+        expect(implementation).to receive(:request).with(42, "someMethod", { foo: 13 })
         input.print <<-LSP
 Content-Length: 423\r
 
@@ -38,7 +38,7 @@ Content-Length: 423\r
         allow(implementation).to receive(:language_server=)
         server = FileLanguageServer.new(implementation, input, output)
 
-        expect(implementation).to receive(:request).with(42, "someMethod", { "foo" => 13 })
+        expect(implementation).to receive(:request).with(42, "someMethod", { foo: 13 })
         input.print <<-LSP
 Content-Length: 423\r
 Content-Type: application/vscode-jsonrpc; charset=utf-8\r
@@ -60,8 +60,8 @@ Content-Type: application/vscode-jsonrpc; charset=utf-8\r
         allow(implementation).to receive(:language_server=)
         server = FileLanguageServer.new(implementation, input, output)
 
-        expect(implementation).to receive(:request).with(42, "someMethod", { "foo" => 13 })
-        expect(implementation).to receive(:request).with(43, "otherMethod", { "bar" => "baz" })
+        expect(implementation).to receive(:request).with(42, "someMethod", { foo: 13 })
+        expect(implementation).to receive(:request).with(43, "otherMethod", { bar: "baz" })
 
         msg1 = <<-END.strip
 {
