@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'orbacle'
+require 'orbacle_server'
 
 options = {}
 
@@ -18,5 +18,5 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-cli = Orbacle::CommandLineInterface.new
+cli = OrbacleServer::CommandLineInterface.new
 cli.(ARGV[0], options)
