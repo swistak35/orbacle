@@ -174,6 +174,8 @@ module Orbacle
       when :ensure then handle_group(node, sources)
       when :retry then handle_bottom(node, sources)
 
+      when :if_result then handle_group(node, sources)
+
       # not really tested
       when :dynamic_const then handle_bottom(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
@@ -187,7 +189,6 @@ module Orbacle
       when :cvasgn then handle_group(node, sources)
       when :cvar_definition then handle_group(node, sources)
       when :cvar then handle_pass1(node, sources)
-      when :if_result then handle_group(node, sources)
       when :case_result then handle_group(node, sources)
       when :and then handle_bool(node, sources)
       when :or then handle_bool(node, sources)

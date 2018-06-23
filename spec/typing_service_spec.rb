@@ -1203,6 +1203,43 @@ module Orbacle
       end
     end
 
+    describe "if" do
+      specify "if-else" do
+        snippet = <<-END
+        if foo
+          42
+        else
+          42.0
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Integer"), nominal("Float")]))
+      end
+
+      specify "only iftrue" do
+        snippet = <<-END
+        if foo
+          42
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Integer"), nominal("nil")]))
+      end
+
+      specify "only iffalse" do
+        snippet = <<-END
+        unless foo
+          42
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("nil"), nominal("Integer")]))
+      end
+    end
+
     describe "zsuper calls" do
       xspecify "basic example" do
         snippet = <<-END
