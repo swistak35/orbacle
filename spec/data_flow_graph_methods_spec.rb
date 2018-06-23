@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module Orbacle
-  RSpec.describe DataFlowGraph do
+  RSpec.describe "Builder" do
     describe "visibility" do
       specify "public by default" do
         file = <<-END
@@ -800,9 +800,9 @@ module Orbacle
 
     def compute_graph(file)
       worklist = Worklist.new
-      graph = DataFlowGraph::Graph.new
+      graph = Graph.new
       tree = GlobalTree.new
-      service = DataFlowGraph::Builder.new(graph, worklist, tree)
+      service = Builder.new(graph, worklist, tree)
       result = service.process_file(file, nil)
       OpenStruct.new(
         graph: graph,

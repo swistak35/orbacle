@@ -2526,9 +2526,9 @@ module Orbacle
 
     def generate_cfg(snippet)
       worklist = Worklist.new
-      graph = DataFlowGraph::Graph.new
+      graph = Graph.new
       tree = GlobalTree.new
-      service = DataFlowGraph::Builder.new(graph, worklist, tree)
+      service = Builder.new(graph, worklist, tree)
       result = service.process_file(snippet, "")
       OpenStruct.new(
         graph: graph,
@@ -2539,7 +2539,7 @@ module Orbacle
     end
 
     def node(type, params = {})
-      Orbacle::DataFlowGraph::Node.new(type, params)
+      Orbacle::Node.new(type, params)
     end
 
     def msend(message_send, call_obj, call_args, call_result, block = nil)
@@ -2547,7 +2547,7 @@ module Orbacle
     end
 
     def block(args_node, result_node)
-      DataFlowGraph::Block.new(args_node, result_node)
+      Block.new(args_node, result_node)
     end
 
     def find_nodes_by_type(graph, type)

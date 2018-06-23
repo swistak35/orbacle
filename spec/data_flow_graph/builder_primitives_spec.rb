@@ -3,217 +3,215 @@ require 'support/graph_matchers'
 require 'support/builder_helper'
 
 module Orbacle
-  module DataFlowGraph
-    RSpec.describe "Builder - primitives" do
-      include BuilderHelper
+  RSpec.describe "Builder - primitives" do
+    include BuilderHelper
 
-      specify "int" do
-        snippet = <<-END
-        42
-        END
+    specify "int" do
+      snippet = <<-END
+      42
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:int, { value: 42 }))
-      end
+      expect(result.final_node).to eq(node(:int, { value: 42 }))
+    end
 
-      specify "negative int" do
-        snippet = <<-END
-        -42
-        END
+    specify "negative int" do
+      snippet = <<-END
+      -42
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:int, { value: -42 }))
-      end
+      expect(result.final_node).to eq(node(:int, { value: -42 }))
+    end
 
-      specify "float" do
-        snippet = <<-END
-        42.0
-        END
+    specify "float" do
+      snippet = <<-END
+      42.0
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:float, { value: 42.0 }))
-      end
+      expect(result.final_node).to eq(node(:float, { value: 42.0 }))
+    end
 
-      specify "negative float" do
-        snippet = <<-END
-        -42.0
-        END
+    specify "negative float" do
+      snippet = <<-END
+      -42.0
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:float, { value: -42.0 }))
-      end
+      expect(result.final_node).to eq(node(:float, { value: -42.0 }))
+    end
 
-      specify "bool" do
-        snippet = <<-END
-        true
-        END
+    specify "bool" do
+      snippet = <<-END
+      true
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:bool, { value: true }))
-      end
+      expect(result.final_node).to eq(node(:bool, { value: true }))
+    end
 
-      specify "bool" do
-        snippet = <<-END
-        false
-        END
+    specify "bool" do
+      snippet = <<-END
+      false
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:bool, { value: false }))
-      end
+      expect(result.final_node).to eq(node(:bool, { value: false }))
+    end
 
-      specify "nil" do
-        snippet = <<-END
-        nil
-        END
+    specify "nil" do
+      snippet = <<-END
+      nil
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:nil))
-      end
+      expect(result.final_node).to eq(node(:nil))
+    end
 
-      specify "string literal" do
-        snippet = <<-END
-        "foobar"
-        END
+    specify "string literal" do
+      snippet = <<-END
+      "foobar"
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:str, { value: "foobar" }))
-      end
+      expect(result.final_node).to eq(node(:str, { value: "foobar" }))
+    end
 
-      specify "string heredoc" do
-        snippet = <<-END
-        <<-HERE
-        foo
-        HERE
-        END
+    specify "string heredoc" do
+      snippet = <<-END
+      <<-HERE
+      foo
+      HERE
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:str, { value: "        foo\n" }))
-      end
+      expect(result.final_node).to eq(node(:str, { value: "      foo\n" }))
+    end
 
-      specify "string with interpolation" do
-        snippet = '
-        bar = 42
-        "foo#{bar}baz"
-        '
+    specify "string with interpolation" do
+      snippet = '
+      bar = 42
+      "foo#{bar}baz"
+      '
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:dstr))
-        expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "bar" }),
-          node(:lvar, { var_name: "bar" }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:dstr))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:dstr))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "baz" }),
-          node(:dstr))
-      end
+      expect(result.final_node).to eq(node(:dstr))
+      expect(result.graph).to include_edge(
+        node(:lvasgn, { var_name: "bar" }),
+        node(:lvar, { var_name: "bar" }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:dstr))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "bar" }),
+        node(:dstr))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "baz" }),
+        node(:dstr))
+    end
 
-      specify "execution string" do
-        snippet = '
-        bar = 42
-        `foo#{bar}`
-        '
+    specify "execution string" do
+      snippet = '
+      bar = 42
+      `foo#{bar}`
+      '
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:xstr))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:xstr))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:xstr))
-      end
+      expect(result.final_node).to eq(node(:xstr))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:xstr))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "bar" }),
+        node(:xstr))
+    end
 
-      specify "symbol literal" do
-        snippet = <<-END
-        :foobar
-        END
+    specify "symbol literal" do
+      snippet = <<-END
+      :foobar
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:sym, { value: :foobar }))
-      end
+      expect(result.final_node).to eq(node(:sym, { value: :foobar }))
+    end
 
-      specify "symbol with interpolation" do
-        snippet = '
-        bar = 42
-        :"foo#{bar}baz"
-        '
+    specify "symbol with interpolation" do
+      snippet = '
+      bar = 42
+      :"foo#{bar}baz"
+      '
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:dsym))
-        expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "bar" }),
-          node(:lvar, { var_name: "bar" }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:dsym))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:dsym))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "baz" }),
-          node(:dsym))
-      end
+      expect(result.final_node).to eq(node(:dsym))
+      expect(result.graph).to include_edge(
+        node(:lvasgn, { var_name: "bar" }),
+        node(:lvar, { var_name: "bar" }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:dsym))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "bar" }),
+        node(:dsym))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "baz" }),
+        node(:dsym))
+    end
 
-      specify "regexp" do
-        snippet = <<-END
-        /foobar/
-        END
+    specify "regexp" do
+      snippet = <<-END
+      /foobar/
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foobar" }),
-          node(:regexp, { regopt: [] }))
-      end
+      expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foobar" }),
+        node(:regexp, { regopt: [] }))
+    end
 
-      specify "regexp with options" do
-        snippet = <<-END
-        /foobar/im
-        END
+    specify "regexp with options" do
+      snippet = <<-END
+      /foobar/im
+      END
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foobar" }),
-          node(:regexp, { regopt: [:i, :m] }))
-      end
+      expect(result.final_node).to eq(node(:regexp, { regopt: [:i, :m] }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foobar" }),
+        node(:regexp, { regopt: [:i, :m] }))
+    end
 
-      specify "regexp with interpolation" do
-        snippet = '
-        bar = 42
-        /foo#{bar}/
-        '
+    specify "regexp with interpolation" do
+      snippet = '
+      bar = 42
+      /foo#{bar}/
+      '
 
-        result = build_graph(snippet)
+      result = build_graph(snippet)
 
-        expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
-        expect(result.graph).to include_edge(
-          node(:str, { value: "foo" }),
-          node(:regexp, { regopt: [] }))
-        expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "bar" }),
-          node(:regexp, { regopt: [] }))
-      end
+      expect(result.final_node).to eq(node(:regexp, { regopt: [] }))
+      expect(result.graph).to include_edge(
+        node(:str, { value: "foo" }),
+        node(:regexp, { regopt: [] }))
+      expect(result.graph).to include_edge(
+        node(:lvar, { var_name: "bar" }),
+        node(:regexp, { regopt: [] }))
     end
   end
 end

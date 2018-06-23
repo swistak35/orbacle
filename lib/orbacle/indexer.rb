@@ -10,9 +10,9 @@ module Orbacle
       files = Dir.glob("#{project_root_path}/**/*.rb")
       worklist = Worklist.new
       tree = GlobalTree.new
-      graph = DataFlowGraph::Graph.new
-      DataFlowGraph::DefineBuiltins.new(graph, tree).()
-      @parser = DataFlowGraph::Builder.new(graph, worklist, tree)
+      graph = Graph.new
+      DefineBuiltins.new(graph, tree).()
+      @parser = Builder.new(graph, worklist, tree)
 
       files.each do |file_path|
         begin

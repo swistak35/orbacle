@@ -401,7 +401,7 @@ module Orbacle
     end
 
     def connect_constructor_to_node(class_name, node)
-      constructor_node = DataFlowGraph::Node.new(:constructor, { name: class_name }, nil)
+      constructor_node = Node.new(:constructor, { name: class_name }, nil)
       @graph.add_vertex(constructor_node)
       @graph.add_edge(constructor_node, node)
       @worklist.enqueue_node(constructor_node)
@@ -497,7 +497,7 @@ module Orbacle
     end
 
     def connect_keyword_args(found_method_kwargs, found_method_nodes, kwarg_arg)
-      unwrapping_node = DataFlowGraph::Node.new(:unwrap_hash_values, {}, nil)
+      unwrapping_node = Node.new(:unwrap_hash_values, {}, nil)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(kwarg_arg, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
@@ -626,7 +626,7 @@ module Orbacle
       end
       return if already_handled
 
-      node = DataFlowGraph::Node.new(:constructor, { name: type.name }, nil)
+      node = Node.new(:constructor, { name: type.name }, nil)
       @graph.add_vertex(node)
       @graph.add_edge(message_send.send_obj, node)
       @worklist.enqueue_node(node)
@@ -637,7 +637,7 @@ module Orbacle
     def send_primitive_array_map(_class_name, message_send)
       raise if message_send.block.nil?
 
-      unwrapping_node = DataFlowGraph::Node.new(:unwrap_array, {}, nil)
+      unwrapping_node = Node.new(:unwrap_array, {}, nil)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
@@ -646,7 +646,7 @@ module Orbacle
       @graph.add_edge(unwrapping_node, arg_node)
       @worklist.enqueue_node(arg_node)
 
-      wrapping_node = DataFlowGraph::Node.new(:wrap_array, {}, nil)
+      wrapping_node = Node.new(:wrap_array, {}, nil)
       @graph.add_vertex(wrapping_node)
       @graph.add_edge(block_lambda_nodes.result, wrapping_node)
       @worklist.enqueue_node(wrapping_node)
@@ -657,7 +657,7 @@ module Orbacle
     def send_primitive_array_each(_class_name, message_send)
       raise if message_send.block.nil?
 
-      unwrapping_node = DataFlowGraph::Node.new(:unwrap_array, {}, nil)
+      unwrapping_node = Node.new(:unwrap_array, {}, nil)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
@@ -676,7 +676,7 @@ module Orbacle
     end
 
     def send_primitive_object_class(_class_name, message_send)
-      extract_class_node = DataFlowGraph::Node.new(:extract_class, {}, nil)
+      extract_class_node = Node.new(:extract_class, {}, nil)
       @graph.add_vertex(extract_class_node)
       @graph.add_edge(message_send.send_obj, extract_class_node)
       @worklist.enqueue_node(extract_class_node)
@@ -686,7 +686,7 @@ module Orbacle
     end
 
     def send_class_primitive_object_class(_class_name, message_send)
-      extract_class_node = DataFlowGraph::Node.new(:extract_class, {}, nil)
+      extract_class_node = Node.new(:extract_class, {}, nil)
       @graph.add_vertex(extract_class_node)
       @graph.add_edge(message_send.send_obj, extract_class_node)
       @worklist.enqueue_node(extract_class_node)
