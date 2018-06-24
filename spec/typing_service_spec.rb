@@ -327,6 +327,56 @@ module Orbacle
       end
     end
 
+    describe "class variables" do
+      specify "usage of uninitialized class variable" do
+        snippet = <<-END
+        class Foo
+          def bar
+            $x = @@baz
+          end
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+        expect(result).to eq(nil)
+      end
+
+      specify "assignment of class variable" do
+        snippet = <<-END
+        class Foo
+          def bar
+            $x = (@@baz = 42)
+          end
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "usage of class variable" do
+        snippet = <<-END
+        class Foo
+          def foo
+            @@baz = 42
+          end
+
+          def bar
+            $x = @@baz
+          end
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+    end
+
     describe "global variables" do
       specify "usage of global variable" do
         snippet = <<-END

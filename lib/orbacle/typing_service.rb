@@ -142,6 +142,10 @@ module Orbacle
       when :clivar_definition then handle_group(node, sources)
       when :ivar then handle_pass1(node, sources)
 
+      when :cvasgn then handle_group(node, sources)
+      when :cvar_definition then handle_group(node, sources)
+      when :cvar then handle_pass1(node, sources)
+
       when :gvasgn then handle_group(node, sources)
       when :gvar_definition then handle_group(node, sources)
       when :gvar then handle_pass1(node, sources)
@@ -186,9 +190,6 @@ module Orbacle
       when :method_caller then handle_group(node, sources)
       when :yield then handle_group(node, sources)
       when :extract_class then handle_extract_class(node, sources)
-      when :cvasgn then handle_group(node, sources)
-      when :cvar_definition then handle_group(node, sources)
-      when :cvar then handle_pass1(node, sources)
       when :case_result then handle_group(node, sources)
       when :and then handle_bool(node, sources)
       when :or then handle_bool(node, sources)
