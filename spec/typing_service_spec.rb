@@ -1341,6 +1341,21 @@ module Orbacle
       end
     end
 
+    describe "case..when" do
+      specify "basic" do
+        snippet = <<-END
+        case foo
+        when bar then 42
+        when baz then 42.0
+        else "foo"
+        end
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("String")]))
+      end
+    end
+
     describe "zsuper calls" do
       xspecify "basic example" do
         snippet = <<-END

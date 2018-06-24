@@ -197,6 +197,11 @@ module Orbacle
       when :and then handle_and(node, sources)
       when :or then handle_or(node, sources)
 
+      when :unwrap_array then handle_unwrap_array(node, sources)
+      when :wrap_array then handle_wrap_array(node, sources)
+
+      when :case_result then handle_group(node, sources)
+
       # not really tested
       when :dynamic_const then handle_bottom(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
@@ -206,9 +211,6 @@ module Orbacle
       when :method_result then handle_group(node, sources)
       when :yield then handle_group(node, sources)
       when :extract_class then handle_extract_class(node, sources)
-      when :case_result then handle_group(node, sources)
-      when :unwrap_array then handle_unwrap_array(node, sources)
-      when :wrap_array then handle_wrap_array(node, sources)
       when :lambda then handle_nil(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
       when :yield_result then handle_group(node, sources)
