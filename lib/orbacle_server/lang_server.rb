@@ -4,9 +4,9 @@ module OrbacleServer
   class LangServer
     include Lsp::LanguageServer
 
-    def initialize(logger)
+    def initialize(logger, engine = Orbacle::Engine.new(logger))
       @logger = logger
-      @engine = Orbacle::Engine.new(logger)
+      @engine = engine
     end
 
     attr_reader :logger
@@ -17,8 +17,11 @@ module OrbacleServer
     end
 
     def handle_text_document_hover(request)
+      filepath = URI(request.text_document.uri).path
+      pretty_type = @engine.get_type_information(filepath, request.position.line, request.position.character)
       Lsp::ResponseMessage.successful(
-        Lsp::TextDocumentHoverResult.new("Type: Meh"))
+        Lsp::TextDocumentHoverResult.new(
+          "Type of that expression: #{pretty_type}"))
     end
 
     def handle_text_document_definition(request)
