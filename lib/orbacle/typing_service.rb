@@ -177,6 +177,7 @@ module Orbacle
       when :rescue then handle_group(node, sources)
       when :ensure then handle_group(node, sources)
       when :retry then handle_bottom(node, sources)
+      when :unwrap_error_array then handle_unwrap_error_array(node, sources)
 
       when :if_result then handle_group(node, sources)
 
@@ -194,7 +195,6 @@ module Orbacle
       when :extract_class then handle_extract_class(node, sources)
       when :case_result then handle_group(node, sources)
       when :unwrap_array then handle_unwrap_array(node, sources)
-      when :unwrap_error_array then handle_unwrap_array(node, sources)
       when :wrap_array then handle_wrap_array(node, sources)
       when :lambda then handle_nil(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
@@ -313,6 +313,18 @@ module Orbacle
           end
         end
       build_union(types_inside_arrays.uniq)
+    end
+
+    def handle_unwrap_error_array(node, sources)
+      if handle_unwrap_array(node, sources)
+        result = []
+        handle_unwrap_array(node, sources).each_possible_type do |t|
+          if t.is_a?(ClassType)
+            result << NominalType.new(t.name)
+          end
+        end
+        build_union(result.uniq)
+      end
     end
 
     def handle_wrap_array(_node, sources)
