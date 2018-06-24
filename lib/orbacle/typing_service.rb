@@ -1,5 +1,13 @@
 module Orbacle
   class TypingService
+    class BottomType
+      def ==(other)
+        other.class == self.class
+      end
+
+      def each_possible_type
+      end
+    end
     class NominalType < Struct.new(:name)
       def each_possible_type
         yield self
@@ -60,7 +68,11 @@ module Orbacle
       @graph = graph
       @tree = tree
 
-      @result = {}
+      @result = Hash.new {|h,k| h[k] = BottomType.new }
+      def @result.[]=(key, newvalue)
+        raise ArgumentError if newvalue.nil?
+        super
+      end
 
       processed_nodes = 0
 
@@ -74,6 +86,7 @@ module Orbacle
             @result[node] = compute_result(node, @graph.parent_vertices(node))
             processed_nodes += 1
             puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}" if processed_nodes % 1000 == 0
+
             if current_result != @result[node]
               @graph.adjacent_vertices(node).each do |adjacent_node|
                 @worklist.enqueue_node(adjacent_node)
@@ -253,17 +266,27 @@ module Orbacle
     end
 
     def handle_bottom(node, sources)
-      nil
+      BottomType.new
     end
 
     def handle_unwrap_hash_keys(node, sources)
-      raise if sources.size > 1
-      @result[sources.first]&.parameters&.at(0)
+      raise if sources.size != 1
+      source = sources.first
+      if @result[source].is_a?(GenericType)
+        @result[source].parameters.at(0)
+      else
+        BottomType.new
+      end
     end
 
     def handle_unwrap_hash_values(node, sources)
-      raise if sources.size > 1
-      @result[sources.first]&.parameters&.at(1)
+      raise if sources.size != 1
+      source = sources.first
+      if @result[source].is_a?(GenericType)
+        @result[source].parameters.at(1)
+      else
+        BottomType.new
+      end
     end
 
     def handle_group(node, sources)
@@ -304,7 +327,6 @@ module Orbacle
     def handle_unwrap_array(node, sources)
       types_inside_arrays = []
       sources
-        .select {|s| @result[s] }
         .each do |s|
           @result[s].each_possible_type do |t|
             if t.name == "Array"
@@ -316,15 +338,13 @@ module Orbacle
     end
 
     def handle_unwrap_error_array(node, sources)
-      if handle_unwrap_array(node, sources)
-        result = []
-        handle_unwrap_array(node, sources).each_possible_type do |t|
-          if t.is_a?(ClassType)
-            result << NominalType.new(t.name)
-          end
+      result = []
+      handle_unwrap_array(node, sources).each_possible_type do |t|
+        if t.is_a?(ClassType)
+          result << NominalType.new(t.name)
         end
-        build_union(result.uniq)
       end
+      build_union(result.uniq)
     end
 
     def handle_wrap_array(_node, sources)
@@ -338,7 +358,7 @@ module Orbacle
 
     def build_union(sources_types)
       if sources_types.size == 0
-        nil
+        BottomType.new
       elsif sources_types.size == 1
         sources_types.first
       else
@@ -385,13 +405,17 @@ module Orbacle
       end
     end
 
+    def defined_type?(t)
+      t.class != BottomType
+    end
+
     def satisfied_message_send?(message_send)
-      @result[message_send.send_obj] &&
-        message_send.send_args.all? {|a| @result[a] }
+      defined_type?(@result[message_send.send_obj]) &&
+        message_send.send_args.all? {|a| defined_type?(@result[a]) }
     end
 
     def satisfied_super_send?(super_send)
-      super_send.send_args.all? {|a| @result[a] }
+      super_send.send_args.all? {|a| defined_type?(@result[a]) }
     end
 
     def handle_message_send(message_send)

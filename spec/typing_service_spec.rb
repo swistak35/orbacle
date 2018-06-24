@@ -133,7 +133,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Array", [nil]))
+        expect(result).to eq(generic("Array", [bottom]))
       end
 
       specify "simple (primitive) literal array" do
@@ -176,7 +176,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Hash", [nil, nil]))
+        expect(result).to eq(generic("Hash", [bottom, bottom]))
       end
 
       specify "hash" do
@@ -254,7 +254,7 @@ module Orbacle
 
         result = full_type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar_definition)).to eq(nil)
+        expect(find_by_node(result, :ivar_definition)).to eq(bottom)
       end
 
       specify "assignment of instance variable" do
@@ -339,7 +339,7 @@ module Orbacle
         END
 
         result = type_snippet(snippet)
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "assignment of class variable" do
@@ -385,7 +385,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "assignment and usage of global variable" do
@@ -679,7 +679,7 @@ module Orbacle
         result = type_snippet(snippet)
 
         # expect(result).to eq(klass("Object"))
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "freeze is id" do
@@ -1064,7 +1064,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "call to class method" do
@@ -1187,7 +1187,7 @@ module Orbacle
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "redo" do
@@ -1199,7 +1199,7 @@ module Orbacle
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "next" do
@@ -1211,7 +1211,7 @@ module Orbacle
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
     end
 
@@ -1272,7 +1272,7 @@ module Orbacle
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(nil)
+        expect(result).to eq(bottom)
       end
 
       specify "assigned error" do
@@ -1398,6 +1398,10 @@ module Orbacle
 
     def main
       TypingService::MainType.new
+    end
+
+    def bottom
+      TypingService::BottomType.new
     end
 
     def find_by_node(result, node_type, node_params = {})
