@@ -180,6 +180,9 @@ module Orbacle
 
       when :if_result then handle_group(node, sources)
 
+      when :and then handle_and(node, sources)
+      when :or then handle_or(node, sources)
+
       # not really tested
       when :dynamic_const then handle_bottom(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
@@ -190,8 +193,6 @@ module Orbacle
       when :yield then handle_group(node, sources)
       when :extract_class then handle_extract_class(node, sources)
       when :case_result then handle_group(node, sources)
-      when :and then handle_bool(node, sources)
-      when :or then handle_bool(node, sources)
       when :unwrap_array then handle_unwrap_array(node, sources)
       when :unwrap_error_array then handle_unwrap_array(node, sources)
       when :wrap_array then handle_wrap_array(node, sources)
@@ -225,6 +226,22 @@ module Orbacle
 
     def handle_just_string(node, sources)
       NominalType.new("String")
+    end
+
+    def handle_and(node, sources)
+      build_union([
+        handle_group(node, sources),
+        NominalType.new("Boolean"),
+        NominalType.new("nil"),
+      ])
+    end
+
+    def handle_or(node, sources)
+      build_union([
+        handle_group(node, sources),
+        NominalType.new("Boolean"),
+        NominalType.new("nil"),
+      ])
     end
 
     def handle_maybe_string(node, sources)

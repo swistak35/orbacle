@@ -497,6 +497,29 @@ module Orbacle
       end
     end
 
+    describe "and/or" do
+      specify "MISBEHAVIOUR - simple and" do
+        snippet = <<-END
+        (42 and 42.0)
+        END
+
+        result = type_snippet(snippet)
+
+        # expect(result).to eq(union([nominal("Float"), nominal("Boolean"), nominal("nil")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("nil")]))
+      end
+
+      specify "simple or" do
+        snippet = <<-END
+        (42 or 42.0)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("nil")]))
+      end
+    end
+
     describe "built-ins" do
       specify "Integer#succ" do
         snippet = <<-END
