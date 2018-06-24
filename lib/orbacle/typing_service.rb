@@ -187,13 +187,11 @@ module Orbacle
       when :const_definition then handle_group(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
-      when :method_caller then handle_group(node, sources)
       when :yield then handle_group(node, sources)
       when :extract_class then handle_extract_class(node, sources)
       when :case_result then handle_group(node, sources)
       when :and then handle_bool(node, sources)
       when :or then handle_bool(node, sources)
-      when :class then handle_nil(node, sources)
       when :unwrap_array then handle_unwrap_array(node, sources)
       when :unwrap_error_array then handle_unwrap_array(node, sources)
       when :wrap_array then handle_wrap_array(node, sources)
@@ -413,7 +411,6 @@ module Orbacle
       else
         handle_custom_message_send(found_method, message_send)
         connect_method_result_to_node(found_method.id, message_send.send_result)
-        connect_node_to_method_caller(found_method.id, message_send.send_obj)
       end
     end
 
@@ -552,14 +549,6 @@ module Orbacle
       if !@graph.has_edge?(method_result_node, node)
         @graph.add_edge(method_result_node, node)
         @worklist.enqueue_node(node)
-      end
-    end
-
-    def connect_node_to_method_caller(method_id, node)
-      method_nodes = @graph.get_metod_nodes(method_id)
-      if !@graph.has_edge?(node, method_nodes.caller)
-        @graph.add_edge(node, method_nodes.caller)
-        @worklist.enqueue_node(method_nodes.caller)
       end
     end
 
