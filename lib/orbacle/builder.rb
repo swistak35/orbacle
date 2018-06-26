@@ -1315,7 +1315,8 @@ module Orbacle
           context.filepath,
           PositionRange.new(
             Position.new(ast.loc.expression.begin.line, ast.loc.expression.begin.column + 1),
-            Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)))
+            Position.new(ast.loc.expression.end.line, ast.loc.expression.end.column + 1)),
+          ast.loc.expression.length)
       end
     end
 

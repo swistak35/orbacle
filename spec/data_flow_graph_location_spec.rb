@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'ostruct'
 require 'support/graph_matchers'
 
 module Orbacle
@@ -11,7 +12,9 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node.location).to eq(loc([1, 9], [1, 12]))
+        expect(result.final_node.location.start).to eq(pos(1, 9))
+        expect(result.final_node.location.end).to eq(pos(1, 12))
+        expect(result.final_node.location.span).to eq(3)
       end
 
       specify "primitive float" do
@@ -21,38 +24,9 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node.location).to eq(loc([1, 9], [1, 14]))
+        expect(result.final_node.location.start).to eq(pos(1, 9))
+        expect(result.final_node.location.end).to eq(pos(1, 14))
       end
-
-      specify "primitive bool" do
-        snippet = <<-END
-        true
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node.location).to eq(loc([1, 9], [1, 13]))
-      end
-
-      specify "primitive nil" do
-        snippet = <<-END
-        nil
-        END
-
-        result = generate_cfg(snippet)
-
-        expect(result.final_node.location).to eq(loc([1, 9], [1, 12]))
-      end
-    end
-
-    specify "simple array" do
-      snippet = <<-END
-      [1,2]
-      END
-
-      result = generate_cfg(snippet)
-
-      expect(result.final_node.location).to eq(loc([1, 7], [1, 12]))
     end
 
     specify "multiline array" do
@@ -63,7 +37,9 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      expect(result.final_node.location).to eq(loc([1, 7], [2, 10]))
+      expect(result.final_node.location.start).to eq(pos(1, 7))
+      expect(result.final_node.location.end).to eq(pos(2, 10))
+      expect(result.final_node.location.span).to eq(13)
     end
 
     specify "message send" do
@@ -73,7 +49,8 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      expect(result.final_node.location).to eq(loc([1, 7], [1, 36]))
+      expect(result.final_node.location.start).to eq(pos(1, 7))
+      expect(result.final_node.location.end).to eq(pos(1, 36))
     end
 
     specify "attr_reader" do
@@ -86,7 +63,8 @@ module Orbacle
       result = generate_cfg(snippet)
 
       meth = result.tree.find_instance_method("Foo", "bar")
-      expect(meth.location).to eq(loc([2, 9], [2, 25]))
+      expect(meth.location.start).to eq(pos(2, 9))
+      expect(meth.location.end).to eq(pos(2, 25))
     end
 
     specify "attr_writer" do
@@ -99,7 +77,8 @@ module Orbacle
       result = generate_cfg(snippet)
 
       meth = result.tree.find_instance_method("Foo", "bar=")
-      expect(meth.location).to eq(loc([2, 9], [2, 25]))
+      expect(meth.location.start).to eq(pos(2, 9))
+      expect(meth.location.end).to eq(pos(2, 25))
     end
 
     specify "attr_accessor" do
@@ -112,10 +91,12 @@ module Orbacle
       result = generate_cfg(snippet)
 
       meth = result.tree.find_instance_method("Foo", "bar")
-      expect(meth.location).to eq(loc([2, 9], [2, 27]))
+      expect(meth.location.start).to eq(pos(2, 9))
+      expect(meth.location.end).to eq(pos(2, 27))
 
       meth = result.tree.find_instance_method("Foo", "bar=")
-      expect(meth.location).to eq(loc([2, 9], [2, 27]))
+      expect(meth.location.start).to eq(pos(2, 9))
+      expect(meth.location.end).to eq(pos(2, 27))
     end
 
     def generate_cfg(snippet)
@@ -129,8 +110,12 @@ module Orbacle
         tree: tree)
     end
 
-    def loc(start_arr, end_arr, uri = "")
-      Location.new(uri, PositionRange.new(Position.new(*start_arr), Position.new(*end_arr)))
+    def loc(start_arr, end_arr, uri = "", span)
+      Location.new(uri, PositionRange.new(pos(*start_arr), pos(*end_arr)), span)
+    end
+
+    def pos(line, character)
+      Position.new(line, character)
     end
   end
 end

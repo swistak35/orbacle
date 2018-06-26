@@ -1,7 +1,33 @@
 module Orbacle
   Position = Struct.new(:line, :character)
-  PositionRange = Struct.new(:start, :end)
-  class Location < Struct.new(:uri, :position_range)
+  PositionRange = Struct.new(:start, :end) do
+    def include_position?(line, character)
+      if (start_line+1..end_line-1).include?(line)
+        true
+      elsif start_line == line
+        start_character <= character
+      elsif end_line == line
+        end_character >= character
+      end
+    end
+
+    def end_line
+      self.end.line
+    end
+
+    def start_line
+      self.start.line
+    end
+
+    def start_character
+      self.start.character
+    end
+
+    def end_character
+      self.end.character
+    end
+  end
+  class Location < Struct.new(:uri, :position_range, :span)
     def start
       position_range&.start
     end
@@ -15,17 +41,17 @@ module Orbacle
     end
 
     def end
-    position_range&.end
-  end
+      position_range&.end
+    end
 
-  def end_line
-    self.end&.line
-  end
+    def end_line
+      self.end&.line
+    end
 
-  def end_character
-    self.end&.character
+    def end_character
+      self.end&.character
+    end
   end
-end
 end
 
 require 'parser/current'
