@@ -109,18 +109,41 @@ module Orbacle
       @worklist.nodes = @graph.vertices.to_a
       while !@worklist.nodes.empty?
         while !@worklist.nodes.empty?
-          node = @worklist.nodes.shift
-          @worklist.count_node(node)
-          if !@worklist.limit_exceeded?(node)
-            current_result = @result[node]
-            @result[node] = compute_result(node, @graph.parent_vertices(node))
-            processed_nodes += 1
-            puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}" if processed_nodes % 1000 == 0
+          while !@worklist.nodes.empty?
+            node = @worklist.nodes.shift
+            @worklist.count_node(node)
+            if !@worklist.limit_exceeded?(node)
+              current_result = @result[node]
+              @result[node] = compute_result(node, @graph.parent_vertices(node))
+              processed_nodes += 1
+              puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}" if processed_nodes % 1000 == 0
 
-            if current_result != @result[node]
-              @graph.adjacent_vertices(node).each do |adjacent_node|
-                @worklist.enqueue_node(adjacent_node)
+              if current_result != @result[node]
+                @graph.adjacent_vertices(node).each do |adjacent_node|
+                  @worklist.enqueue_node(adjacent_node)
+                end
               end
+            end
+          end
+
+          @worklist.message_sends.each do |message_send|
+            case message_send
+            when Worklist::MessageSend
+              if satisfied_message_send?(message_send) && !@worklist.message_send_handled?(message_send)
+                handle_message_send(message_send)
+                @worklist.mark_message_send_as_handled(message_send)
+              end
+            when Worklist::SuperSend
+              if satisfied_super_send?(message_send) && !@worklist.message_send_handled?(message_send)
+                handle_super_send(message_send)
+                @worklist.mark_message_send_as_handled(message_send)
+              end
+            when Worklist::Super0Send
+              if !@worklist.message_send_handled?(message_send)
+                handle_super0_send(message_send)
+                @worklist.mark_message_send_as_handled(message_send)
+              end
+            else raise "Not handled message send"
             end
           end
         end
@@ -128,12 +151,12 @@ module Orbacle
         @worklist.message_sends.each do |message_send|
           case message_send
           when Worklist::MessageSend
-            if satisfied_message_send?(message_send) && !@worklist.message_send_handled?(message_send)
+            if !@worklist.message_send_handled?(message_send)
               handle_message_send(message_send)
               @worklist.mark_message_send_as_handled(message_send)
             end
           when Worklist::SuperSend
-            if satisfied_super_send?(message_send) && !@worklist.message_send_handled?(message_send)
+            if !@worklist.message_send_handled?(message_send)
               handle_super_send(message_send)
               @worklist.mark_message_send_as_handled(message_send)
             end
@@ -322,8 +345,8 @@ module Orbacle
     end
 
     def handle_group(node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      build_union(sources_types, node: node)
+      sources_types = sources.map {|source_node| @result[source_node] }
+      build_union(sources_types)
     end
 
     def handle_pass1(node, sources)
@@ -339,7 +362,7 @@ module Orbacle
     end
 
     def handle_range(node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
+      sources_types = sources.map {|source_node| @result[source_node] }
       GenericType.new("Range", [build_union(sources_types)])
     end
 
@@ -366,7 +389,7 @@ module Orbacle
             end
           end
         end
-      build_union(types_inside_arrays.uniq)
+      build_union(types_inside_arrays)
     end
 
     def handle_unwrap_error_array(node, sources)
@@ -376,11 +399,11 @@ module Orbacle
           result << NominalType.new(t.name)
         end
       end
-      build_union(result.uniq)
+      build_union(result)
     end
 
     def handle_wrap_array(_node, sources)
-      GenericType.new("Array", [build_union(sources.map {|s| @result[s] }.uniq)])
+      GenericType.new("Array", [build_union(sources.map {|s| @result[s] })])
     end
 
     def handle_pass_lte1(_node, sources)
@@ -388,8 +411,8 @@ module Orbacle
       @result[sources.first]
     end
 
-    def build_union(sources_types, node: nil)
-      sources_types_without_unknowns = sources_types.reject(&:bottom?)
+    def build_union(sources_types)
+      sources_types_without_unknowns = sources_types.compact.reject(&:bottom?).uniq
       if sources_types_without_unknowns.size == 0
         BottomType.new
       elsif sources_types_without_unknowns.size == 1
