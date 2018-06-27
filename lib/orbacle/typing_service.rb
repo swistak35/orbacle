@@ -11,6 +11,10 @@ module Orbacle
       def pretty
         "unknown"
       end
+
+      def bottom?
+        true
+      end
     end
     class NominalType < Struct.new(:name)
       def each_possible_type
@@ -20,6 +24,10 @@ module Orbacle
       def pretty
         name
       end
+
+      def bottom?
+        false
+      end
     end
     class ClassType < Struct.new(:name)
       def each_possible_type
@@ -28,6 +36,10 @@ module Orbacle
 
       def pretty
         "class(#{name})"
+      end
+
+      def bottom?
+        false
       end
     end
     class MainType
@@ -40,6 +52,10 @@ module Orbacle
 
       def ==(other)
         self.class == other.class
+      end
+
+      def bottom?
+        false
       end
     end
     class UnionType < Struct.new(:types)
@@ -54,6 +70,10 @@ module Orbacle
       def pretty
         "Union(#{types.map {|t| t.nil? ? "nil" : t.pretty }.join(" or ")})"
       end
+
+      def bottom?
+        false
+      end
     end
     class GenericType < Struct.new(:name, :parameters)
       def each_possible_type
@@ -62,6 +82,10 @@ module Orbacle
 
       def pretty
         "generic(#{name}, [#{parameters.map {|t| t.nil? ? "nil" : t.pretty }.join(", ")}])"
+      end
+
+      def bottom?
+        false
       end
     end
 
@@ -299,7 +323,7 @@ module Orbacle
 
     def handle_group(node, sources)
       sources_types = sources.map {|source_node| @result[source_node] }.compact.uniq
-      build_union(sources_types)
+      build_union(sources_types, node: node)
     end
 
     def handle_pass1(node, sources)
@@ -364,13 +388,14 @@ module Orbacle
       @result[sources.first]
     end
 
-    def build_union(sources_types)
-      if sources_types.size == 0
+    def build_union(sources_types, node: nil)
+      sources_types_without_unknowns = sources_types.reject(&:bottom?)
+      if sources_types_without_unknowns.size == 0
         BottomType.new
-      elsif sources_types.size == 1
-        sources_types.first
+      elsif sources_types_without_unknowns.size == 1
+        sources_types_without_unknowns.first
       else
-        UnionType.new(sources_types.flat_map {|t| get_possible_types(t) }.uniq)
+        UnionType.new(sources_types_without_unknowns.flat_map {|t| get_possible_types(t) }.uniq)
       end
     end
 

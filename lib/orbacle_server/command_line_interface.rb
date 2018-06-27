@@ -42,32 +42,30 @@ module OrbacleServer
     end
 
     def generate_datajs(options)
-      # logger = Logger.new(STDOUT)
+      logger = Logger.new(STDOUT)
 
-      # require 'base64'
-      # project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
+      require 'base64'
+      project_root = options.fetch(:dir, Dir.pwd)
+      engine = Orbacle::Engine.new(logger)
+      tree, typing_result, graph = engine.index(project_root)
 
-      # project_root = options.fetch(:dir, Dir.pwd)
-      # indexer = Orbacle::Indexer.new(logger)
-      # tree, typing_result, graph = indexer.(project_root: project_root)
+      nodes = graph.vertices
+      filepaths = nodes.map {|n| n.location&.uri }.compact.uniq
 
-      # nodes = graph.vertices
-      # filepaths = nodes.map {|n| n.location&.uri }.compact.uniq
-
-      # File.open("data.js", "w") do |f|
-      #   f.puts "window.orbacleFiles = ["
-      #   filepaths.each do |filepath|
-      #     f.puts "  ['#{filepath[project_root.to_s.size..-1]}', `#{Base64.encode64(File.read(filepath))}`],"
-      #   end
-      #   f.puts "];"
-      #   f.puts "window.orbacleNodes = ["
-      #   sorted_nodes = nodes.reject {|n| n.location&.uri.nil? }
-      #   sorted_nodes.each do |node|
-      #     filepath = node.location.uri[project_root.to_s.size..-1]
-      #     f.puts "['#{node.type.to_s}', '#{typing_result[node]&.pretty}', '#{filepath}', #{node.location&.start&.line&.to_i}, #{node.location&.start&.character&.to_i}, #{node.location&.end&.line&.to_i}, #{node.location&.end&.character&.to_i}],"
-      #   end
-      #   f.puts "];"
-      # end
+      File.open("data.js", "w") do |f|
+        f.puts "window.orbacleFiles = ["
+        filepaths.each do |filepath|
+          f.puts "  ['#{filepath[project_root.to_s.size..-1]}', `#{Base64.encode64(File.read(filepath))}`],"
+        end
+        f.puts "];"
+        f.puts "window.orbacleNodes = ["
+        sorted_nodes = nodes.reject {|n| n.location&.uri.nil? }
+        sorted_nodes.each do |node|
+          filepath = node.location.uri[project_root.to_s.size..-1]
+          f.puts "['#{node.type}', '#{typing_result[node]&.pretty}', '#{filepath}', #{node.location&.start&.line&.to_i}, #{node.location&.start&.character&.to_i}, #{node.location&.end&.line&.to_i}, #{node.location&.end&.character&.to_i}],"
+        end
+        f.puts "];"
+      end
     end
 
     def no_command

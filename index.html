@@ -18,17 +18,17 @@
       oldLines = window.currentRawText.split("\n")
 	  code = document.getElementById('code')
 if (startLine == endLine) {
-  startLineContent = oldLines[startLine - 1];
-  newStartLineContent = startLineContent.substr(0, startCharacter - 1) + '<b>' + startLineContent.substr(startCharacter - 1, endCharacter - startCharacter) + '</b>' + startLineContent.substr(endCharacter - 1);
-  oldLines[startLine - 1] = newStartLineContent;
+  startLineContent = oldLines[startLine];
+  newStartLineContent = startLineContent.substr(0, startCharacter) + '<b>' + startLineContent.substr(startCharacter, endCharacter - startCharacter + 1) + '</b>' + startLineContent.substr(endCharacter + 1);
+  oldLines[startLine] = newStartLineContent;
 } else {
-  startLineContent = oldLines[startLine - 1];
-  newStartLineContent = startLineContent.substr(0, startCharacter - 1) + '<b>' + startLineContent.substr(startCharacter - 1);
-  oldLines[startLine - 1] = newStartLineContent;
+  startLineContent = oldLines[startLine];
+  newStartLineContent = startLineContent.substr(0, startCharacter) + '<b>' + startLineContent.substr(startCharacter);
+  oldLines[startLine] = newStartLineContent;
 
-  endLineContent = oldLines[endLine - 1];
-  newEndLineContent = endLineContent.substr(0, endCharacter - 1) + '</b>' + endLineContent.substr(endCharacter - 1);
-  oldLines[endLine - 1] = newEndLineContent;
+  endLineContent = oldLines[endLine];
+  newEndLineContent = endLineContent.substr(0, endCharacter + 1) + '</b>' + endLineContent.substr(endCharacter + 1);
+  oldLines[endLine] = newEndLineContent;
 }
 code.innerHTML = oldLines.join("\n");
 
