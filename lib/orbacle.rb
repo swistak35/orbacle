@@ -54,6 +54,8 @@ module Orbacle
       self.end&.character
     end
   end
+
+  BIG_VALUE = 0b111111100100000010110010110011101010000101010100001100100110001
 end
 
 require 'parser/current'

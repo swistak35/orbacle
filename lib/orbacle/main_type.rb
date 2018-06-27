@@ -11,6 +11,13 @@ module Orbacle
       self.class == other.class
     end
 
+    def hash
+      [
+        self.class,
+      ].hash ^ BIG_VALUE
+    end
+    alias eql? ==
+
     def bottom?
       false
     end
