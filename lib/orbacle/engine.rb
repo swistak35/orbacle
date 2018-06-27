@@ -10,6 +10,7 @@ module Orbacle
     end
 
     def get_type_information(filepath, line, character)
+      logger.info("Asked about #{filepath.inspect} #{line.inspect} #{character.inspect}")
       relevant_nodes = @graph
         .vertices
         .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(line, character) }
@@ -22,10 +23,7 @@ module Orbacle
     attr_reader :logger
 
     def pretty_print_type(type)
-      case type
-      when Orbacle::TypingService::NominalType
-        type.name
-      end
+      type.pretty
     end
   end
 end

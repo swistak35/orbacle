@@ -7,6 +7,10 @@ module Orbacle
 
       def each_possible_type
       end
+
+      def pretty
+        "unknown"
+      end
     end
     class NominalType < Struct.new(:name)
       def each_possible_type
@@ -41,7 +45,9 @@ module Orbacle
     class UnionType < Struct.new(:types)
       def each_possible_type
         types.each do |type|
-          yield type
+          type.each_possible_type do |t|
+            yield t
+          end
         end
       end
 
@@ -148,7 +154,7 @@ module Orbacle
       when :range then handle_range(node, sources)
 
       when :lvar then handle_group(node, sources)
-      when :lvasgn then handle_pass1(node, sources)
+      when :lvasgn then handle_pass_lte1(node, sources)
 
       when :ivasgn then handle_group(node, sources)
       when :ivar_definition then handle_group(node, sources)

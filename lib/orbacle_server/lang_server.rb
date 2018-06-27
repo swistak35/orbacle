@@ -1,4 +1,5 @@
 require 'lsp'
+require 'uri'
 
 module OrbacleServer
   class LangServer
@@ -12,7 +13,9 @@ module OrbacleServer
     attr_reader :logger
 
     def handle_initialize(request)
-      @engine.index(request.root_uri)
+      root_path = URI(request.root_uri).path
+      logger.info("Initializing at #{root_path.inspect}")
+      @engine.index(root_path)
       Lsp::ResponseMessage.new(nil, nil)
     end
 
@@ -22,6 +25,9 @@ module OrbacleServer
       Lsp::ResponseMessage.successful(
         Lsp::TextDocumentHoverResult.new(
           "Type of that expression: #{pretty_type}"))
+    rescue => e
+      logger.error(e)
+      raise
     end
 
     def handle_text_document_definition(request)

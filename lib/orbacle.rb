@@ -4,6 +4,8 @@ module Orbacle
     def include_position?(line, character)
       if (start_line+1..end_line-1).include?(line)
         true
+      elsif start_line == line && end_line == line
+        (start_character <= character) && (character <= end_character)
       elsif start_line == line
         start_character <= character
       elsif end_line == line

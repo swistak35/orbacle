@@ -12,8 +12,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node.location.start).to eq(pos(1, 9))
-        expect(result.final_node.location.end).to eq(pos(1, 12))
+        expect(result.final_node.location.start).to eq(pos(0, 8))
+        expect(result.final_node.location.end).to eq(pos(0, 10))
         expect(result.final_node.location.span).to eq(3)
       end
 
@@ -24,8 +24,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node.location.start).to eq(pos(1, 9))
-        expect(result.final_node.location.end).to eq(pos(1, 14))
+        expect(result.final_node.location.start).to eq(pos(0, 8))
+        expect(result.final_node.location.end).to eq(pos(0, 12))
       end
     end
 
@@ -37,8 +37,8 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      expect(result.final_node.location.start).to eq(pos(1, 7))
-      expect(result.final_node.location.end).to eq(pos(2, 10))
+      expect(result.final_node.location.start).to eq(pos(0, 6))
+      expect(result.final_node.location.end).to eq(pos(1, 8))
       expect(result.final_node.location.span).to eq(13)
     end
 
@@ -49,8 +49,8 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      expect(result.final_node.location.start).to eq(pos(1, 7))
-      expect(result.final_node.location.end).to eq(pos(1, 36))
+      expect(result.final_node.location.start).to eq(pos(0, 6))
+      expect(result.final_node.location.end).to eq(pos(0, 34))
     end
 
     specify "attr_reader" do
@@ -63,8 +63,8 @@ module Orbacle
       result = generate_cfg(snippet)
 
       meth = result.tree.find_instance_method("Foo", "bar")
-      expect(meth.location.start).to eq(pos(2, 9))
-      expect(meth.location.end).to eq(pos(2, 25))
+      expect(meth.location.start).to eq(pos(1, 8))
+      expect(meth.location.end).to eq(pos(1, 23))
     end
 
     specify "attr_writer" do
@@ -77,8 +77,8 @@ module Orbacle
       result = generate_cfg(snippet)
 
       meth = result.tree.find_instance_method("Foo", "bar=")
-      expect(meth.location.start).to eq(pos(2, 9))
-      expect(meth.location.end).to eq(pos(2, 25))
+      expect(meth.location.start).to eq(pos(1, 8))
+      expect(meth.location.end).to eq(pos(1, 23))
     end
 
     specify "attr_accessor" do
@@ -91,12 +91,12 @@ module Orbacle
       result = generate_cfg(snippet)
 
       meth = result.tree.find_instance_method("Foo", "bar")
-      expect(meth.location.start).to eq(pos(2, 9))
-      expect(meth.location.end).to eq(pos(2, 27))
+      expect(meth.location.start).to eq(pos(1, 8))
+      expect(meth.location.end).to eq(pos(1, 25))
 
       meth = result.tree.find_instance_method("Foo", "bar=")
-      expect(meth.location.start).to eq(pos(2, 9))
-      expect(meth.location.end).to eq(pos(2, 27))
+      expect(meth.location.start).to eq(pos(1, 8))
+      expect(meth.location.end).to eq(pos(1, 25))
     end
 
     def generate_cfg(snippet)

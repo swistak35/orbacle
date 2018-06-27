@@ -1,3 +1,5 @@
+require 'pathname'
+
 module Orbacle
   class Indexer
     def initialize(logger)

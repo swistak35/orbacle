@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'ostruct'
 
 module Orbacle
   RSpec.describe "Builder" do
@@ -146,7 +147,7 @@ module Orbacle
       expect(foo_class.parent_ref).to eq(nil)
 
       foo_const = find_constant(result, "Foo")
-      expect(foo_const.location.start_line).to eq(1)
+      expect(foo_const.location.start_line).to eq(0)
     end
 
     specify "simple method in class declaration" do
@@ -163,7 +164,7 @@ module Orbacle
 
       meth = find_method2(result, foo_class.id, "bar")
       expect(meth.visibility).to eq(:public)
-      expect(meth.location.start_line).to eq(2)
+      expect(meth.location.start_line).to eq(1)
     end
 
     specify do
