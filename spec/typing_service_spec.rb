@@ -41,7 +41,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(nominal("nil"))
+        expect(result).to eq(nominal("Nil"))
       end
     end
 
@@ -428,7 +428,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("String"), nominal("nil")]))
+        expect(result).to eq(union([nominal("String"), nominal("Nil")]))
       end
     end
 
@@ -505,8 +505,8 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        # expect(result).to eq(union([nominal("Float"), nominal("Boolean"), nominal("nil")]))
-        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("nil")]))
+        # expect(result).to eq(union([nominal("Float"), nominal("Boolean"), nominal("Nil")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("Nil")]))
       end
 
       specify "simple or" do
@@ -516,7 +516,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("nil")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("Nil")]))
       end
     end
 
@@ -1326,7 +1326,7 @@ module Orbacle
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("Integer"), nominal("nil")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("Nil")]))
       end
 
       specify "only iffalse" do
@@ -1337,7 +1337,7 @@ module Orbacle
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("nil"), nominal("Integer")]))
+        expect(result).to eq(union([nominal("Nil"), nominal("Integer")]))
       end
     end
 
@@ -1396,27 +1396,27 @@ module Orbacle
     end
 
     def nominal(*args)
-      TypingService::NominalType.new(*args)
+      NominalType.new(*args)
     end
 
     def union(*args)
-      TypingService::UnionType.new(*args)
+      UnionType.new(*args)
     end
 
     def generic(*args)
-      TypingService::GenericType.new(*args)
+      GenericType.new(*args)
     end
 
     def klass(*args)
-      TypingService::ClassType.new(*args)
+      ClassType.new(*args)
     end
 
     def main
-      TypingService::MainType.new
+      MainType.new
     end
 
     def bottom
-      TypingService::BottomType.new
+      BottomType.new
     end
 
     def find_by_node(result, node_type, node_params = {})

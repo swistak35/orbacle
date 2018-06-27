@@ -1,94 +1,5 @@
 module Orbacle
   class TypingService
-    class BottomType
-      def ==(other)
-        other.class == self.class
-      end
-
-      def each_possible_type
-      end
-
-      def pretty
-        "unknown"
-      end
-
-      def bottom?
-        true
-      end
-    end
-    class NominalType < Struct.new(:name)
-      def each_possible_type
-        yield self
-      end
-
-      def pretty
-        name
-      end
-
-      def bottom?
-        false
-      end
-    end
-    class ClassType < Struct.new(:name)
-      def each_possible_type
-        yield self
-      end
-
-      def pretty
-        "class(#{name})"
-      end
-
-      def bottom?
-        false
-      end
-    end
-    class MainType
-      def each_possible_type
-      end
-
-      def pretty
-        "main"
-      end
-
-      def ==(other)
-        self.class == other.class
-      end
-
-      def bottom?
-        false
-      end
-    end
-    class UnionType < Struct.new(:types)
-      def each_possible_type
-        types.each do |type|
-          type.each_possible_type do |t|
-            yield t
-          end
-        end
-      end
-
-      def pretty
-        "Union(#{types.map {|t| t.nil? ? "nil" : t.pretty }.join(" or ")})"
-      end
-
-      def bottom?
-        false
-      end
-    end
-    class GenericType < Struct.new(:name, :parameters)
-      def each_possible_type
-        yield self
-      end
-
-      def pretty
-        "generic(#{name}, [#{parameters.map {|t| t.nil? ? "nil" : t.pretty }.join(", ")}])"
-      end
-
-      def bottom?
-        false
-      end
-    end
-
     def initialize(logger)
       @logger = logger
     end
@@ -281,7 +192,7 @@ module Orbacle
     end
 
     def handle_nil(_node, _sources)
-      NominalType.new("nil")
+      NominalType.new("Nil")
     end
 
     def handle_bool(*args)
@@ -300,7 +211,7 @@ module Orbacle
       build_union([
         handle_group(node, sources),
         NominalType.new("Boolean"),
-        NominalType.new("nil"),
+        NominalType.new("Nil"),
       ])
     end
 
@@ -308,12 +219,12 @@ module Orbacle
       build_union([
         handle_group(node, sources),
         NominalType.new("Boolean"),
-        NominalType.new("nil"),
+        NominalType.new("Nil"),
       ])
     end
 
     def handle_maybe_string(node, sources)
-      build_union([NominalType.new("String"), NominalType.new("nil")])
+      build_union([NominalType.new("String"), NominalType.new("Nil")])
     end
 
     def handle_just_symbol(node, sources)
