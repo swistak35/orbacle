@@ -1312,6 +1312,20 @@ module Orbacle
 
         expect(result).to eq(union([nominal("RuntimeError"), nominal("ArgumentError")]))
       end
+
+      specify "assigned any error" do
+        snippet = <<-END
+        begin
+          42
+        rescue => e
+          $x = e
+        end
+        $x
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("StandardError"))
+      end
     end
 
     describe "if" do

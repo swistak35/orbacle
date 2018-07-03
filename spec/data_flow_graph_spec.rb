@@ -1921,6 +1921,27 @@ module Orbacle
           node(:rescue))
       end
 
+      specify "rescue one error" do
+        snippet = <<-END
+        begin
+        rescue SomeError => e
+          e
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        nesting = Nesting.empty
+        some_error_ref = ConstRef.from_full_name("SomeError", nesting)
+
+        expect(result.graph).to include_edge(
+          node(:const, { const_ref: some_error_ref }),
+          node(:array))
+        expect(result.graph).to include_edge(
+          node(:unwrap_error_array),
+          node(:lvasgn, { var_name: "e" }))
+      end
+
       specify "rescue specific error" do
         snippet = <<-END
         begin

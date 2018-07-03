@@ -1109,14 +1109,11 @@ module Orbacle
       assignment_expr = ast.children[1]
       rescue_body_expr = ast.children[2]
 
-      context_after_errors = if error_array_expr
-        error_array_expr_result = process(error_array_expr, context)
-        unwrap_node = add_vertex(Node.new(:unwrap_error_array, {}))
-        @graph.add_edge(error_array_expr_result.node, unwrap_node)
-        error_array_expr_result.context
-      else
-        context
-      end
+      error_array_expr ||= Parser::AST::Node.new(:array, [Parser::AST::Node.new(:const, [nil, :StandardError])])
+      error_array_expr_result = process(error_array_expr, context)
+      unwrap_node = add_vertex(Node.new(:unwrap_error_array, {}))
+      @graph.add_edge(error_array_expr_result.node, unwrap_node)
+      context_after_errors = error_array_expr_result.context
 
       context_after_assignment = if assignment_expr
         assignment_expr_result = process(assignment_expr, context_after_errors)

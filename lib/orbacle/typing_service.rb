@@ -113,7 +113,7 @@ module Orbacle
       when :range then handle_range(node, sources)
 
       when :lvar then handle_group(node, sources)
-      when :lvasgn then handle_pass_lte1(node, sources)
+      when :lvasgn then handle_pass1(node, sources)
 
       when :ivasgn then handle_group(node, sources)
       when :ivar_definition then handle_group(node, sources)
