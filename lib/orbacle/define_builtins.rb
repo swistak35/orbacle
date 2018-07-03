@@ -19,6 +19,7 @@ module Orbacle
 
       define_object_opeq(klass)
       template_just_str(klass, "to_s", 0)
+      template_just_nil(klass, "display", 0)
     end
 
     def add_integer_klass
@@ -112,6 +113,12 @@ module Orbacle
     def template_just_str(klass, name, args)
       metod = template_args(klass, name, args)
       str_node = Node.new(:str, {})
+      @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
+    end
+
+    def template_just_nil(klass, name, args)
+      metod = template_args(klass, name, args)
+      str_node = Node.new(:nil, {})
       @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
     end
 

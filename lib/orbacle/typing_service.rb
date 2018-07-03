@@ -581,6 +581,7 @@ module Orbacle
         },
         "Object" => {
           "freeze" => method(:send_primitive_object_freeze),
+          "clone" => method(:send_primitive_object_freeze),
           "class" => method(:send_primitive_object_class),
         },
       }

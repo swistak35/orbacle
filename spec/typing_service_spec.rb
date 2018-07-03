@@ -691,6 +691,16 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
+
+      specify "clone is id" do
+        snippet = <<-END
+        [1,2,3].clone
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
     end
 
     describe "constructors" do
@@ -1374,6 +1384,18 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("String"))
+      end
+    end
+
+    describe "simple built-ins" do
+      specify "Object#display" do
+        snippet = <<-END
+        1.display
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Nil"))
       end
     end
 
