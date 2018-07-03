@@ -16,18 +16,19 @@ module Orbacle
       end
 
       processed_nodes = 0
+      timestamp_started_processing = Time.now.to_i
 
-      @worklist.nodes = @graph.vertices.to_a
+      @graph.vertices.to_a.each {|v| @worklist.enqueue_node(v) }
       while !@worklist.nodes.empty?
         while !@worklist.nodes.empty?
           while !@worklist.nodes.empty?
-            node = @worklist.nodes.shift
+            node = @worklist.pop_node
             @worklist.count_node(node)
             if !@worklist.limit_exceeded?(node)
               current_result = @result[node]
               @result[node] = compute_result(node, @graph.parent_vertices(node))
               processed_nodes += 1
-              puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}" if processed_nodes % 1000 == 0
+              puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size} #{Time.now.to_i - timestamp_started_processing}" if processed_nodes % 1000 == 0
 
               if current_result != @result[node]
                 @graph.adjacent_vertices(node).each do |adjacent_node|

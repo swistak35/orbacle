@@ -1,3 +1,5 @@
+require 'fc'
+
 module Orbacle
   class Worklist
     BlockNode = Struct.new(:node)
@@ -8,7 +10,7 @@ module Orbacle
 
     def initialize
       @message_sends = Set.new
-      @nodes = []
+      @nodes = FastContainers::PriorityQueue.new(:max)
       @handled_message_sends = Set.new
       @nodes_counter = {}
     end
@@ -21,7 +23,11 @@ module Orbacle
     end
 
     def enqueue_node(v)
-      @nodes << v
+      @nodes.push(v, 1)
+    end
+
+    def pop_node
+      @nodes.pop
     end
 
     def count_node(node)

@@ -4,6 +4,7 @@ PATH
     orbacle (0.0.1)
       lsp-protocol (>= 0.0.2)
       parser (~> 2.4.0.2)
+      priority_queue_cxx
       rgl (~> 0.5.3)
       rubytree (~> 0.9.7)
 
@@ -19,6 +20,7 @@ GEM
     lsp-protocol (0.0.2)
     parser (2.4.0.2)
       ast (~> 2.3)
+    priority_queue_cxx (0.3.4)
     rgl (0.5.3)
       lazy_priority_queue (~> 0.1.0)
       stream (~> 0.5.0)
@@ -52,4 +54,4 @@ DEPENDENCIES
   rspec (~> 3.5.0)
 
 BUNDLED WITH
-   1.16.1
+   1.16.2
