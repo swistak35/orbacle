@@ -1013,6 +1013,23 @@ module Orbacle
         expect(result).to eq(union([nominal("String"), nominal("Integer")]))
       end
 
+      specify "call with splat arg to user-defined method with splat-arg" do
+        snippet = <<-END
+        class Foo
+          def bar(x, *y)
+            y
+          end
+        end
+        a = [1]
+        b = ["foo"]
+        Foo.new.bar(*a, *b)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
+      end
+
       specify "too many arguments applied isn't problematic" do
         snippet = <<-END
         class Foo

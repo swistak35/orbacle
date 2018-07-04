@@ -514,17 +514,14 @@ module Orbacle
           next if formal_arg.name.nil?
           node_formal_arg = found_method_nodes[formal_arg.name]
 
+          next if send_args[i].nil?
           case formal_arg
           when GlobalTree::ArgumentsTree::Regular
-            if send_args[i]
-              @graph.add_edge(send_args[i], node_formal_arg)
-              @worklist.enqueue_node(node_formal_arg)
-            end
+            @graph.add_edge(send_args[i], node_formal_arg)
+            @worklist.enqueue_node(node_formal_arg)
           when GlobalTree::ArgumentsTree::Optional
-            if send_args[i]
-              @graph.add_edge(send_args[i], node_formal_arg)
-              @worklist.enqueue_node(node_formal_arg)
-            end
+            @graph.add_edge(send_args[i], node_formal_arg)
+            @worklist.enqueue_node(node_formal_arg)
           when GlobalTree::ArgumentsTree::Splat
             send_args[i..-1].each do |send_arg|
               @graph.add_edge(send_arg, node_formal_arg)
