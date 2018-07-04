@@ -1,5 +1,13 @@
 module Orbacle
   class TypingService
+    TypingError = Class.new(StandardError)
+    class UnknownNodeKindError < TypingError
+      def initialize(node)
+        @node = node
+      end
+      attr_reader :node
+    end
+
     def initialize(logger)
       @logger = logger
     end
@@ -180,8 +188,14 @@ module Orbacle
       when :definition_by_id then handle_definition_by_id(node, sources)
       when :yield_result then handle_group(node, sources)
 
-      else raise ArgumentError.new(node.type)
+      else raise UnknownNodeKindError.new(node)
       end
+    rescue UnknownNodeKindError => e
+      logger.error("Unknown node kind '#{node.type}' at #{node.location}")
+      raise
+    rescue => e
+      logger.error("Typing failed at node #{node.type} at #{node.location}")
+      raise
     end
 
     def handle_int(node, sources)
