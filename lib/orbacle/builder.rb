@@ -34,6 +34,10 @@ module Orbacle
         handle_int(ast, context)
       when :float
         handle_float(ast, context)
+      when :rational
+        handle_rational(ast, context)
+      when :complex
+        handle_complex(ast, context)
       when :true
         handle_true(ast, context)
       when :false
@@ -210,6 +214,18 @@ module Orbacle
     def handle_float(ast, context)
       value = ast.children[0]
       n = add_vertex(Node.new(:float, { value: value }, build_location_from_ast(context, ast)))
+
+      return Result.new(n, context)
+    end
+
+    def handle_rational(ast, context)
+      n = add_vertex(Node.new(:rational, {}, build_location_from_ast(context, ast)))
+
+      return Result.new(n, context)
+    end
+
+    def handle_complex(ast, context)
+      n = add_vertex(Node.new(:complex, {}, build_location_from_ast(context, ast)))
 
       return Result.new(n, context)
     end

@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'support/graph_matchers'
 require 'support/builder_helper'
+require 'ostruct'
 
 module Orbacle
   RSpec.describe "Builder - primitives" do
@@ -44,6 +45,26 @@ module Orbacle
       result = build_graph(snippet)
 
       expect(result.final_node).to eq(node(:float, { value: -42.0 }))
+    end
+
+    specify "rational" do
+      snippet = <<-END
+      2.0r
+      END
+
+      result = build_graph(snippet)
+
+      expect(result.final_node).to eq(node(:rational))
+    end
+
+    specify "complex" do
+      snippet = <<-END
+      1i
+      END
+
+      result = build_graph(snippet)
+
+      expect(result.final_node).to eq(node(:complex))
     end
 
     specify "bool" do
