@@ -561,18 +561,6 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
-
-      specify "== on any class" do
-        snippet = <<-END
-        class Foo
-        end
-        Foo.new == Foo.new
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(nominal("Boolean"))
-      end
     end
 
     describe "custom built-ins Array" do
@@ -1577,14 +1565,54 @@ module Orbacle
     end
 
     describe "built-ins Object" do
-      specify "Object#display" do
+      specify "==" do
         snippet = <<-END
-        Object.new.display
+        Object.new == Object.new
         END
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(nominal("Nil"))
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "!" do
+        snippet = <<-END
+        !Object.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "!=" do
+        snippet = <<-END
+        Object.new != Object.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "object_id" do
+        snippet = <<-END
+        Object.new.object_id
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "__id__" do
+        snippet = <<-END
+        Object.new.__id__
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
       end
 
       specify "Object#equal?" do
@@ -1595,6 +1623,46 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "!~" do
+        snippet = <<-END
+        Object.new !~ Object.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "===" do
+        snippet = <<-END
+        Object.new === Object.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "<=>" do
+        snippet = <<-END
+        Object.new <=> Object.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("Nil"), nominal("Integer")]))
+      end
+
+      specify "Object#display" do
+        snippet = <<-END
+        Object.new.display
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Nil"))
       end
 
       specify "Object#eql?" do
@@ -1627,6 +1695,16 @@ module Orbacle
         expect(result).to eq(nominal("Boolean"))
       end
 
+      specify "Object#instance_variable_defined?" do
+        snippet = <<-END
+        Object.new.instance_variable_defined?(:@ivar)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
       specify "Object#is_a?" do
         snippet = <<-END
         Object.new.is_a?(Object)
@@ -1635,6 +1713,16 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#inspect" do
+        snippet = <<-END
+        Object.new.inspect
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
       end
 
       specify "Object#kind_of?" do
