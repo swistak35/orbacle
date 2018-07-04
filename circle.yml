@@ -4,8 +4,9 @@ database:
 
 machine:
   ruby:
-    version: 2.3.4
+    version: 2.3.7
 
 test:
-  post:
+  override:
+    - make test
     - make mutant
