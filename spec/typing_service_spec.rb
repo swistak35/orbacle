@@ -1627,6 +1627,16 @@ module Orbacle
         expect(result).to eq(nominal("Boolean"))
       end
 
+      specify "Object#is_a?" do
+        snippet = <<-END
+        Object.new.is_a?(Object)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
       specify "Object#kind_of?" do
         snippet = <<-END
         Object.new.kind_of?(Object)
@@ -1640,6 +1650,26 @@ module Orbacle
       specify "Object#nil?" do
         snippet = <<-END
         Object.new.nil?
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#respond_to?" do
+        snippet = <<-END
+        Object.new.respond_to?(Object)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#respond_to_missing?" do
+        snippet = <<-END
+        Object.new.respond_to_missing?(Object)
         END
 
         result = type_snippet(snippet)
