@@ -2,21 +2,21 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.3.7-jessie
+      - image: circleci/ruby:2.3.7
     steps:
       - checkout
       - run: make setup
       - run: make test
   build:
     docker:
-      - image: circleci/ruby:2.4.4-jessie
+      - image: circleci/ruby:2.4.4
     steps:
       - checkout
       - run: make setup
       - run: make test
   build:
     docker:
-      - image: circleci/ruby:2.5.1-jessie
+      - image: circleci/ruby:2.5.1
     steps:
       - checkout
       - run: make setup
