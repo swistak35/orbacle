@@ -191,10 +191,10 @@ module Orbacle
       else raise UnknownNodeKindError.new(node)
       end
     rescue UnknownNodeKindError => e
-      logger.error("Unknown node kind '#{node.type}' at #{node.location}")
+      logger.error("Unknown node kind '#{e.node.type}' at #{e.node.location}")
       raise
     rescue => e
-      logger.error("Typing failed at node #{node.type} at #{node.location}")
+      logger.error("Typing failed with error '#{e.inspect}' at node #{node.type} at #{node.location}")
       raise
     end
 
