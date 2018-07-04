@@ -18,4 +18,3 @@ Currently I do not accept contributions, as this is part of MSc thesis. However 
 
 * [Tern](http://marijnhaverbeke.nl/blog/tern.html)
 * Fast Interprocedural Class Analysis, Greg DeFouw, David Grove, Craig Chambers, July 1997
-
