@@ -26,10 +26,6 @@ module Orbacle
       yield self
     end
 
-    def pretty
-      "generic(#{name}, [#{parameters.map {|t| t.nil? ? "nil" : t.pretty }.join(", ")}])"
-    end
-
     def bottom?
       false
     end

@@ -51,6 +51,7 @@ module OrbacleServer
 
       nodes = graph.vertices
       filepaths = nodes.map {|n| n.location&.uri }.compact.uniq
+      type_pretty_printer = Orbacle::TypePrettyPrinter.new
 
       File.open("data.js", "w") do |f|
         f.puts "window.orbacleFiles = ["
@@ -62,7 +63,8 @@ module OrbacleServer
         sorted_nodes = nodes.reject {|n| n.location&.uri.nil? }
         sorted_nodes.each do |node|
           filepath = node.location.uri[project_root.to_s.size..-1]
-          f.puts "['#{node.type}', '#{typing_result[node]&.pretty}', '#{filepath}', #{node.location&.start&.line&.to_i}, #{node.location&.start&.character&.to_i}, #{node.location&.end&.line&.to_i}, #{node.location&.end&.character&.to_i}],"
+          pretty_type = type_pretty_printer.(typing_result[node])
+          f.puts "['#{node.type}', '#{pretty_type}', '#{filepath}', #{node.location&.start&.line&.to_i}, #{node.location&.start&.character&.to_i}, #{node.location&.end&.line&.to_i}, #{node.location&.end&.character&.to_i}],"
         end
         f.puts "];"
       end

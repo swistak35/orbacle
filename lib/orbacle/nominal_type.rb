@@ -23,10 +23,6 @@ module Orbacle
       yield self
     end
 
-    def pretty
-      name
-    end
-
     def bottom?
       false
     end

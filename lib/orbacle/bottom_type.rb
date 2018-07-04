@@ -14,10 +14,6 @@ module Orbacle
     def each_possible_type
     end
 
-    def pretty
-      "unknown"
-    end
-
     def bottom?
       true
     end

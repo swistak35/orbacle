@@ -16,14 +16,18 @@ module Orbacle
         .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(line, character) }
         .sort_by {|n| n.location.span }
 
-      pretty_print_type(@typing_result[relevant_nodes[0]])
+      type_pretty_printer.(@typing_result[relevant_nodes[0]])
     end
 
     private
     attr_reader :logger
 
     def pretty_print_type(type)
-      type.pretty
+      type_pretty_printer.(type)
+    end
+
+    def type_pretty_printer
+      @type_pretty_printer ||= TypePrettyPrinter.new
     end
   end
 end
