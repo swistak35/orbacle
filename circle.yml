@@ -1,12 +1,9 @@
-database:
-  override:
-    - echo "Skipping DB section."
-
-machine:
-  ruby:
-    version: 2.3.7
-
-test:
-  override:
-    - make test
-    - make mutant
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.4.1-jessie
+    steps:
+      - checkout
+      - run: bundle install
+      - run: bundle exec rspec spec
