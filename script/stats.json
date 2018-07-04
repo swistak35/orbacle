@@ -1,0 +1,4002 @@
+[
+  {
+    "name": "rspec-core",
+    "downloads": 253105847
+  },
+  {
+    "name": "diff-lcs",
+    "downloads": 252741363
+  },
+  {
+    "name": "rspec-expectations",
+    "downloads": 251983171
+  },
+  {
+    "name": "bundler",
+    "downloads": 251626790
+  },
+  {
+    "name": "rspec-mocks",
+    "downloads": 251081159
+  },
+  {
+    "name": "rspec",
+    "downloads": 236082950
+  },
+  {
+    "name": "rspec-support",
+    "downloads": 225832601
+  },
+  {
+    "name": "multi_json",
+    "downloads": 219656270
+  },
+  {
+    "name": "rack",
+    "downloads": 216646198
+  },
+  {
+    "name": "rake",
+    "downloads": 216600718
+  },
+  {
+    "name": "rspec-core",
+    "downloads": 253105847
+  },
+  {
+    "name": "diff-lcs",
+    "downloads": 252741363
+  },
+  {
+    "name": "rspec-expectations",
+    "downloads": 251983171
+  },
+  {
+    "name": "bundler",
+    "downloads": 251626790
+  },
+  {
+    "name": "rspec-mocks",
+    "downloads": 251081159
+  },
+  {
+    "name": "rspec",
+    "downloads": 236082950
+  },
+  {
+    "name": "rspec-support",
+    "downloads": 225832601
+  },
+  {
+    "name": "multi_json",
+    "downloads": 219656270
+  },
+  {
+    "name": "rack",
+    "downloads": 216646198
+  },
+  {
+    "name": "rake",
+    "downloads": 216600718
+  },
+  {
+    "name": "json",
+    "downloads": 205327853
+  },
+  {
+    "name": "mime-types",
+    "downloads": 199121046
+  },
+  {
+    "name": "activesupport",
+    "downloads": 192884254
+  },
+  {
+    "name": "i18n",
+    "downloads": 191578421
+  },
+  {
+    "name": "thor",
+    "downloads": 186588277
+  },
+  {
+    "name": "tzinfo",
+    "downloads": 181155822
+  },
+  {
+    "name": "nokogiri",
+    "downloads": 172201165
+  },
+  {
+    "name": "builder",
+    "downloads": 169975941
+  },
+  {
+    "name": "rubygems-update",
+    "downloads": 165734338
+  },
+  {
+    "name": "tilt",
+    "downloads": 148700151
+  },
+  {
+    "name": "minitest",
+    "downloads": 145607618
+  },
+  {
+    "name": "thread_safe",
+    "downloads": 141479393
+  },
+  {
+    "name": "activemodel",
+    "downloads": 141132083
+  },
+  {
+    "name": "activerecord",
+    "downloads": 140194356
+  },
+  {
+    "name": "sass",
+    "downloads": 136107664
+  },
+  {
+    "name": "rails",
+    "downloads": 135684921
+  },
+  {
+    "name": "actionpack",
+    "downloads": 134819851
+  },
+  {
+    "name": "erubis",
+    "downloads": 133130060
+  },
+  {
+    "name": "rack-test",
+    "downloads": 132961079
+  },
+  {
+    "name": "actionmailer",
+    "downloads": 131027523
+  },
+  {
+    "name": "arel",
+    "downloads": 130566739
+  },
+  {
+    "name": "mail",
+    "downloads": 129805563
+  },
+  {
+    "name": "railties",
+    "downloads": 125846001
+  },
+  {
+    "name": "sprockets",
+    "downloads": 120974219
+  },
+  {
+    "name": "ffi",
+    "downloads": 115520558
+  },
+  {
+    "name": "addressable",
+    "downloads": 103207436
+  },
+  {
+    "name": "execjs",
+    "downloads": 102048368
+  },
+  {
+    "name": "aws-sdk",
+    "downloads": 101662376
+  },
+  {
+    "name": "faraday",
+    "downloads": 101031804
+  },
+  {
+    "name": "uglifier",
+    "downloads": 95492422
+  },
+  {
+    "name": "multipart-post",
+    "downloads": 95448609
+  },
+  {
+    "name": "coffee-script-source",
+    "downloads": 92478746
+  },
+  {
+    "name": "jquery-rails",
+    "downloads": 91152201
+  },
+  {
+    "name": "daemons",
+    "downloads": 90647353
+  },
+  {
+    "name": "sass-rails",
+    "downloads": 88913576
+  },
+  {
+    "name": "sprockets-rails",
+    "downloads": 88273738
+  },
+  {
+    "name": "coffee-script",
+    "downloads": 87089704
+  },
+  {
+    "name": "actionview",
+    "downloads": 85286471
+  },
+  {
+    "name": "coffee-rails",
+    "downloads": 81659937
+  },
+  {
+    "name": "aws-sdk-core",
+    "downloads": 81356516
+  },
+  {
+    "name": "method_source",
+    "downloads": 79453755
+  },
+  {
+    "name": "rubygems-bundler",
+    "downloads": 79180986
+  },
+  {
+    "name": "rest-client",
+    "downloads": 78980348
+  },
+  {
+    "name": "coderay",
+    "downloads": 77409759
+  },
+  {
+    "name": "net-ssh",
+    "downloads": 76978372
+  },
+  {
+    "name": "aws-sdk-resources",
+    "downloads": 74987877
+  },
+  {
+    "name": "mini_portile2",
+    "downloads": 74365671
+  },
+  {
+    "name": "loofah",
+    "downloads": 73850867
+  },
+  {
+    "name": "activejob",
+    "downloads": 73838784
+  },
+  {
+    "name": "pry",
+    "downloads": 73252620
+  },
+  {
+    "name": "rails-dom-testing",
+    "downloads": 72704148
+  },
+  {
+    "name": "globalid",
+    "downloads": 71166768
+  },
+  {
+    "name": "rails-html-sanitizer",
+    "downloads": 70837034
+  },
+  {
+    "name": "concurrent-ruby",
+    "downloads": 68644223
+  },
+  {
+    "name": "eventmachine",
+    "downloads": 68441927
+  },
+  {
+    "name": "hike",
+    "downloads": 67302350
+  },
+  {
+    "name": "sinatra",
+    "downloads": 66674200
+  },
+  {
+    "name": "rubyzip",
+    "downloads": 66306746
+  },
+  {
+    "name": "slop",
+    "downloads": 65790477
+  },
+  {
+    "name": "redis",
+    "downloads": 65417308
+  },
+  {
+    "name": "rack-protection",
+    "downloads": 64717270
+  },
+  {
+    "name": "netrc",
+    "downloads": 63230818
+  },
+  {
+    "name": "jmespath",
+    "downloads": 62741099
+  },
+  {
+    "name": "rdoc",
+    "downloads": 61730919
+  },
+  {
+    "name": "jbuilder",
+    "downloads": 61575012
+  },
+  {
+    "name": "excon",
+    "downloads": 61253371
+  },
+  {
+    "name": "rb-fsevent",
+    "downloads": 60035072
+  },
+  {
+    "name": "multi_xml",
+    "downloads": 59672858
+  },
+  {
+    "name": "mini_portile",
+    "downloads": 58520687
+  },
+  {
+    "name": "hashie",
+    "downloads": 57873555
+  },
+  {
+    "name": "rb-inotify",
+    "downloads": 57236990
+  },
+  {
+    "name": "unf",
+    "downloads": 56768725
+  },
+  {
+    "name": "unf_ext",
+    "downloads": 56759292
+  },
+  {
+    "name": "domain_name",
+    "downloads": 56245617
+  },
+  {
+    "name": "pg",
+    "downloads": 55450535
+  },
+  {
+    "name": "polyglot",
+    "downloads": 55053078
+  },
+  {
+    "name": "highline",
+    "downloads": 54664222
+  },
+  {
+    "name": "treetop",
+    "downloads": 54301512
+  },
+  {
+    "name": "rails-deprecated_sanitizer",
+    "downloads": 53246164
+  },
+  {
+    "name": "awesome_print",
+    "downloads": 52723429
+  },
+  {
+    "name": "net-scp",
+    "downloads": 51722478
+  },
+  {
+    "name": "http-cookie",
+    "downloads": 51014245
+  },
+  {
+    "name": "mime-types-data",
+    "downloads": 50272240
+  },
+  {
+    "name": "turbolinks",
+    "downloads": 50054959
+  },
+  {
+    "name": "sqlite3",
+    "downloads": 48782754
+  },
+  {
+    "name": "jwt",
+    "downloads": 46631482
+  },
+  {
+    "name": "mysql2",
+    "downloads": 46596944
+  },
+  {
+    "name": "httparty",
+    "downloads": 46435365
+  },
+  {
+    "name": "sdoc",
+    "downloads": 45167962
+  },
+  {
+    "name": "rspec-rails",
+    "downloads": 45019495
+  },
+  {
+    "name": "formatador",
+    "downloads": 44134956
+  },
+  {
+    "name": "thin",
+    "downloads": 43888850
+  },
+  {
+    "name": "simplecov",
+    "downloads": 43545080
+  },
+  {
+    "name": "public_suffix",
+    "downloads": 43378539
+  },
+  {
+    "name": "activeresource",
+    "downloads": 43162092
+  },
+  {
+    "name": "simplecov-html",
+    "downloads": 42815026
+  },
+  {
+    "name": "faraday_middleware",
+    "downloads": 42647951
+  },
+  {
+    "name": "byebug",
+    "downloads": 42580972
+  },
+  {
+    "name": "ruby-progressbar",
+    "downloads": 42460434
+  },
+  {
+    "name": "capybara",
+    "downloads": 42315845
+  },
+  {
+    "name": "childprocess",
+    "downloads": 42237163
+  },
+  {
+    "name": "docile",
+    "downloads": 41323378
+  },
+  {
+    "name": "rainbow",
+    "downloads": 40028266
+  },
+  {
+    "name": "newrelic_rpm",
+    "downloads": 39160150
+  },
+  {
+    "name": "bcrypt",
+    "downloads": 38928028
+  },
+  {
+    "name": "xpath",
+    "downloads": 38866350
+  },
+  {
+    "name": "haml",
+    "downloads": 38463960
+  },
+  {
+    "name": "aws-sigv4",
+    "downloads": 38015166
+  },
+  {
+    "name": "safe_yaml",
+    "downloads": 37459909
+  },
+  {
+    "name": "factory_girl",
+    "downloads": 37426568
+  },
+  {
+    "name": "warden",
+    "downloads": 37271870
+  },
+  {
+    "name": "devise",
+    "downloads": 36914261
+  },
+  {
+    "name": "xml-simple",
+    "downloads": 36832339
+  },
+  {
+    "name": "parser",
+    "downloads": 36490547
+  },
+  {
+    "name": "listen",
+    "downloads": 36411351
+  },
+  {
+    "name": "launchy",
+    "downloads": 35744321
+  },
+  {
+    "name": "json_pure",
+    "downloads": 35279402
+  },
+  {
+    "name": "httpclient",
+    "downloads": 35157069
+  },
+  {
+    "name": "crack",
+    "downloads": 34647889
+  },
+  {
+    "name": "rubocop",
+    "downloads": 34641733
+  },
+  {
+    "name": "orm_adapter",
+    "downloads": 34565988
+  },
+  {
+    "name": "ast",
+    "downloads": 34403945
+  },
+  {
+    "name": "unicode-display_width",
+    "downloads": 33981915
+  },
+  {
+    "name": "webmock",
+    "downloads": 33752095
+  },
+  {
+    "name": "puma",
+    "downloads": 33639724
+  },
+  {
+    "name": "dotenv",
+    "downloads": 33178080
+  },
+  {
+    "name": "chunky_png",
+    "downloads": 33174041
+  },
+  {
+    "name": "database_cleaner",
+    "downloads": 33118170
+  },
+  {
+    "name": "kgio",
+    "downloads": 33106190
+  },
+  {
+    "name": "selenium-webdriver",
+    "downloads": 32997384
+  },
+  {
+    "name": "websocket-driver",
+    "downloads": 32855451
+  },
+  {
+    "name": "responders",
+    "downloads": 32335982
+  },
+  {
+    "name": "ipaddress",
+    "downloads": 32192496
+  },
+  {
+    "name": "connection_pool",
+    "downloads": 31742692
+  },
+  {
+    "name": "raindrops",
+    "downloads": 31547934
+  },
+  {
+    "name": "unicorn",
+    "downloads": 31534219
+  },
+  {
+    "name": "powerpack",
+    "downloads": 30552106
+  },
+  {
+    "name": "factory_girl_rails",
+    "downloads": 30538481
+  },
+  {
+    "name": "redis-namespace",
+    "downloads": 30171792
+  },
+  {
+    "name": "libv8",
+    "downloads": 30029123
+  },
+  {
+    "name": "kaminari",
+    "downloads": 30018643
+  },
+  {
+    "name": "websocket-extensions",
+    "downloads": 29868393
+  },
+  {
+    "name": "rack-cache",
+    "downloads": 29732447
+  },
+  {
+    "name": "parallel",
+    "downloads": 29645287
+  },
+  {
+    "name": "timecop",
+    "downloads": 29111347
+  },
+  {
+    "name": "fog-core",
+    "downloads": 28975925
+  },
+  {
+    "name": "uuidtools",
+    "downloads": 28715983
+  },
+  {
+    "name": "oauth2",
+    "downloads": 28211002
+  },
+  {
+    "name": "spring",
+    "downloads": 27830504
+  },
+  {
+    "name": "fog",
+    "downloads": 27300354
+  },
+  {
+    "name": "rack-ssl",
+    "downloads": 26844481
+  },
+  {
+    "name": "CFPropertyList",
+    "downloads": 26619321
+  },
+  {
+    "name": "therubyracer",
+    "downloads": 26483820
+  },
+  {
+    "name": "timers",
+    "downloads": 26078426
+  },
+  {
+    "name": "debug_inspector",
+    "downloads": 25926396
+  },
+  {
+    "name": "compass",
+    "downloads": 25840876
+  },
+  {
+    "name": "fog-json",
+    "downloads": 25735760
+  },
+  {
+    "name": "celluloid",
+    "downloads": 25653943
+  },
+  {
+    "name": "sidekiq",
+    "downloads": 25547388
+  },
+  {
+    "name": "aws-sdk-v1",
+    "downloads": 25396034
+  },
+  {
+    "name": "faker",
+    "downloads": 25293169
+  },
+  {
+    "name": "nio4r",
+    "downloads": 24840515
+  },
+  {
+    "name": "terminal-table",
+    "downloads": 24526758
+  },
+  {
+    "name": "systemu",
+    "downloads": 23953236
+  },
+  {
+    "name": "binding_of_caller",
+    "downloads": 23904094
+  },
+  {
+    "name": "http_parser.rb",
+    "downloads": 23582678
+  },
+  {
+    "name": "request_store",
+    "downloads": 23551329
+  },
+  {
+    "name": "oj",
+    "downloads": 23481465
+  },
+  {
+    "name": "logging",
+    "downloads": 23443601
+  },
+  {
+    "name": "htmlentities",
+    "downloads": 23410901
+  },
+  {
+    "name": "bootstrap-sass",
+    "downloads": 23291893
+  },
+  {
+    "name": "journey",
+    "downloads": 23178478
+  },
+  {
+    "name": "foreman",
+    "downloads": 22892391
+  },
+  {
+    "name": "fog-aws",
+    "downloads": 22882448
+  },
+  {
+    "name": "capistrano",
+    "downloads": 22791726
+  },
+  {
+    "name": "chronic",
+    "downloads": 22669779
+  },
+  {
+    "name": "websocket",
+    "downloads": 22644304
+  },
+  {
+    "name": "net-ssh-gateway",
+    "downloads": 22601914
+  },
+  {
+    "name": "ref",
+    "downloads": 22547929
+  },
+  {
+    "name": "little-plugger",
+    "downloads": 22519430
+  },
+  {
+    "name": "autoprefixer-rails",
+    "downloads": 22431047
+  },
+  {
+    "name": "fog-xml",
+    "downloads": 22411481
+  },
+  {
+    "name": "colorize",
+    "downloads": 22401025
+  },
+  {
+    "name": "rufus-scheduler",
+    "downloads": 22379612
+  },
+  {
+    "name": "oauth",
+    "downloads": 22341446
+  },
+  {
+    "name": "trollop",
+    "downloads": 22323558
+  },
+  {
+    "name": "shoulda-matchers",
+    "downloads": 22239483
+  },
+  {
+    "name": "equalizer",
+    "downloads": 22062977
+  },
+  {
+    "name": "omniauth",
+    "downloads": 21998271
+  },
+  {
+    "name": "hashdiff",
+    "downloads": 21898332
+  },
+  {
+    "name": "yajl-ruby",
+    "downloads": 21883871
+  },
+  {
+    "name": "gherkin",
+    "downloads": 21526723
+  },
+  {
+    "name": "redcarpet",
+    "downloads": 21257866
+  },
+  {
+    "name": "net-sftp",
+    "downloads": 21200160
+  },
+  {
+    "name": "cocaine",
+    "downloads": 21110550
+  },
+  {
+    "name": "guard",
+    "downloads": 20906551
+  },
+  {
+    "name": "paperclip",
+    "downloads": 20584087
+  },
+  {
+    "name": "will_paginate",
+    "downloads": 20348650
+  },
+  {
+    "name": "sexp_processor",
+    "downloads": 20297929
+  },
+  {
+    "name": "pry-rails",
+    "downloads": 20282946
+  },
+  {
+    "name": "jquery-ui-rails",
+    "downloads": 20231666
+  },
+  {
+    "name": "signet",
+    "downloads": 20027853
+  },
+  {
+    "name": "pry-byebug",
+    "downloads": 20026011
+  },
+  {
+    "name": "retriable",
+    "downloads": 19707187
+  },
+  {
+    "name": "mocha",
+    "downloads": 19654427
+  },
+  {
+    "name": "rspec-its",
+    "downloads": 19589784
+  },
+  {
+    "name": "hitimes",
+    "downloads": 19563609
+  },
+  {
+    "name": "ice_nine",
+    "downloads": 19542101
+  },
+  {
+    "name": "google-api-client",
+    "downloads": 19493404
+  },
+  {
+    "name": "temple",
+    "downloads": 19462912
+  },
+  {
+    "name": "cucumber",
+    "downloads": 19297630
+  },
+  {
+    "name": "ruby_parser",
+    "downloads": 19138281
+  },
+  {
+    "name": "fog-brightbox",
+    "downloads": 18909590
+  },
+  {
+    "name": "bcrypt-ruby",
+    "downloads": 18851555
+  },
+  {
+    "name": "mimemagic",
+    "downloads": 18830605
+  },
+  {
+    "name": "yard",
+    "downloads": 18789122
+  },
+  {
+    "name": "inflecto",
+    "downloads": 18788235
+  },
+  {
+    "name": "descendants_tracker",
+    "downloads": 18604259
+  },
+  {
+    "name": "lumberjack",
+    "downloads": 18584711
+  },
+  {
+    "name": "net-http-persistent",
+    "downloads": 18511254
+  },
+  {
+    "name": "memoist",
+    "downloads": 18478089
+  },
+  {
+    "name": "actioncable",
+    "downloads": 18279268
+  },
+  {
+    "name": "omniauth-oauth2",
+    "downloads": 18220739
+  },
+  {
+    "name": "climate_control",
+    "downloads": 18192637
+  },
+  {
+    "name": "bson",
+    "downloads": 17976650
+  },
+  {
+    "name": "metaclass",
+    "downloads": 17953592
+  },
+  {
+    "name": "octokit",
+    "downloads": 17309837
+  },
+  {
+    "name": "carrierwave",
+    "downloads": 17296850
+  },
+  {
+    "name": "dalli",
+    "downloads": 17217065
+  },
+  {
+    "name": "sass-listen",
+    "downloads": 17192268
+  },
+  {
+    "name": "backports",
+    "downloads": 17095416
+  },
+  {
+    "name": "virtus",
+    "downloads": 16949138
+  },
+  {
+    "name": "colored",
+    "downloads": 16898180
+  },
+  {
+    "name": "sawyer",
+    "downloads": 16740788
+  },
+  {
+    "name": "mini_magick",
+    "downloads": 16640697
+  },
+  {
+    "name": "fog-softlayer",
+    "downloads": 16618446
+  },
+  {
+    "name": "sequel",
+    "downloads": 16349409
+  },
+  {
+    "name": "coercible",
+    "downloads": 16301116
+  },
+  {
+    "name": "web-console",
+    "downloads": 16254486
+  },
+  {
+    "name": "columnize",
+    "downloads": 16237611
+  },
+  {
+    "name": "crass",
+    "downloads": 16113730
+  },
+  {
+    "name": "better_errors",
+    "downloads": 16104354
+  },
+  {
+    "name": "axiom-types",
+    "downloads": 16087035
+  },
+  {
+    "name": "googleauth",
+    "downloads": 16063914
+  },
+  {
+    "name": "kramdown",
+    "downloads": 16020388
+  },
+  {
+    "name": "typhoeus",
+    "downloads": 15772177
+  },
+  {
+    "name": "guard-rspec",
+    "downloads": 15720674
+  },
+  {
+    "name": "rack-cors",
+    "downloads": 15621562
+  },
+  {
+    "name": "poltergeist",
+    "downloads": 15569708
+  },
+  {
+    "name": "elasticsearch-api",
+    "downloads": 15559819
+  },
+  {
+    "name": "turbolinks-source",
+    "downloads": 15481388
+  },
+  {
+    "name": "tins",
+    "downloads": 15468933
+  },
+  {
+    "name": "elasticsearch-transport",
+    "downloads": 15462094
+  },
+  {
+    "name": "elasticsearch",
+    "downloads": 15382085
+  },
+  {
+    "name": "msgpack",
+    "downloads": 15373618
+  },
+  {
+    "name": "open4",
+    "downloads": 15316913
+  },
+  {
+    "name": "specinfra",
+    "downloads": 15266964
+  },
+  {
+    "name": "os",
+    "downloads": 15257481
+  },
+  {
+    "name": "ohai",
+    "downloads": 15248737
+  },
+  {
+    "name": "facter",
+    "downloads": 15142001
+  },
+  {
+    "name": "term-ansicolor",
+    "downloads": 15137752
+  },
+  {
+    "name": "nori",
+    "downloads": 15122333
+  },
+  {
+    "name": "fog-profitbricks",
+    "downloads": 15081309
+  },
+  {
+    "name": "fog-sakuracloud",
+    "downloads": 14970948
+  },
+  {
+    "name": "gyoku",
+    "downloads": 14912807
+  },
+  {
+    "name": "inspec",
+    "downloads": 14865518
+  },
+  {
+    "name": "fog-local",
+    "downloads": 14834282
+  },
+  {
+    "name": "fog-radosgw",
+    "downloads": 14803623
+  },
+  {
+    "name": "serverspec",
+    "downloads": 14761252
+  },
+  {
+    "name": "simple_form",
+    "downloads": 14622491
+  },
+  {
+    "name": "compass-import-once",
+    "downloads": 14604815
+  },
+  {
+    "name": "css_parser",
+    "downloads": 14540809
+  },
+  {
+    "name": "mongo",
+    "downloads": 14523037
+  },
+  {
+    "name": "fission",
+    "downloads": 14424492
+  },
+  {
+    "name": "rack-mount",
+    "downloads": 14392214
+  },
+  {
+    "name": "font-awesome-rails",
+    "downloads": 14360383
+  },
+  {
+    "name": "compass-core",
+    "downloads": 14307422
+  },
+  {
+    "name": "vcr",
+    "downloads": 14283464
+  },
+  {
+    "name": "fog-terremark",
+    "downloads": 14236196
+  },
+  {
+    "name": "slim",
+    "downloads": 14235170
+  },
+  {
+    "name": "fog-vmfusion",
+    "downloads": 14222799
+  },
+  {
+    "name": "fog-voxel",
+    "downloads": 14207845
+  },
+  {
+    "name": "uber",
+    "downloads": 14100871
+  },
+  {
+    "name": "fog-google",
+    "downloads": 14011506
+  },
+  {
+    "name": "fog-ecloud",
+    "downloads": 14010048
+  },
+  {
+    "name": "ethon",
+    "downloads": 14003998
+  },
+  {
+    "name": "cliver",
+    "downloads": 13980127
+  },
+  {
+    "name": "bunny",
+    "downloads": 13931100
+  },
+  {
+    "name": "fog-storm_on_demand",
+    "downloads": 13815434
+  },
+  {
+    "name": "train",
+    "downloads": 13802653
+  },
+  {
+    "name": "active_model_serializers",
+    "downloads": 13628188
+  },
+  {
+    "name": "money",
+    "downloads": 13531630
+  },
+  {
+    "name": "fog-atmos",
+    "downloads": 13470355
+  },
+  {
+    "name": "passenger",
+    "downloads": 13418796
+  },
+  {
+    "name": "polyamorous",
+    "downloads": 13281141
+  },
+  {
+    "name": "fog-serverlove",
+    "downloads": 13262125
+  },
+  {
+    "name": "whenever",
+    "downloads": 13252398
+  },
+  {
+    "name": "multi_test",
+    "downloads": 13198241
+  },
+  {
+    "name": "mixlib-cli",
+    "downloads": 13140673
+  },
+  {
+    "name": "xcodeproj",
+    "downloads": 13107677
+  },
+  {
+    "name": "httpi",
+    "downloads": 13106236
+  },
+  {
+    "name": "net-ldap",
+    "downloads": 13010475
+  },
+  {
+    "name": "representable",
+    "downloads": 12969434
+  },
+  {
+    "name": "slack-notifier",
+    "downloads": 12925112
+  },
+  {
+    "name": "knapsack",
+    "downloads": 12856905
+  },
+  {
+    "name": "mixlib-shellout",
+    "downloads": 12804078
+  },
+  {
+    "name": "rouge",
+    "downloads": 12791347
+  },
+  {
+    "name": "mini_mime",
+    "downloads": 12774541
+  },
+  {
+    "name": "fog-riakcs",
+    "downloads": 12740491
+  },
+  {
+    "name": "airbrake",
+    "downloads": 12686600
+  },
+  {
+    "name": "redis-store",
+    "downloads": 12581968
+  },
+  {
+    "name": "hiredis",
+    "downloads": 12567651
+  },
+  {
+    "name": "dotenv-rails",
+    "downloads": 12538438
+  },
+  {
+    "name": "resque",
+    "downloads": 12523943
+  },
+  {
+    "name": "puppet",
+    "downloads": 12418620
+  },
+  {
+    "name": "executable-hooks",
+    "downloads": 12398354
+  },
+  {
+    "name": "nenv",
+    "downloads": 12345181
+  },
+  {
+    "name": "vegas",
+    "downloads": 12320148
+  },
+  {
+    "name": "sfl",
+    "downloads": 12225532
+  },
+  {
+    "name": "notiffany",
+    "downloads": 12202913
+  },
+  {
+    "name": "akami",
+    "downloads": 12185219
+  },
+  {
+    "name": "fog-powerdns",
+    "downloads": 12098567
+  },
+  {
+    "name": "redis-activesupport",
+    "downloads": 12055513
+  },
+  {
+    "name": "bundler-unload",
+    "downloads": 12021718
+  },
+  {
+    "name": "wasabi",
+    "downloads": 11928606
+  },
+  {
+    "name": "brakeman",
+    "downloads": 11892529
+  },
+  {
+    "name": "haml-rails",
+    "downloads": 11847359
+  },
+  {
+    "name": "sentry-raven",
+    "downloads": 11815571
+  },
+  {
+    "name": "net-telnet",
+    "downloads": 11779219
+  },
+  {
+    "name": "ansi",
+    "downloads": 11777754
+  },
+  {
+    "name": "rails_stdout_logging",
+    "downloads": 11748870
+  },
+  {
+    "name": "savon",
+    "downloads": 11747166
+  },
+  {
+    "name": "atomic",
+    "downloads": 11698186
+  },
+  {
+    "name": "redis-rack",
+    "downloads": 11681681
+  },
+  {
+    "name": "rmagick",
+    "downloads": 11653855
+  },
+  {
+    "name": "hiera",
+    "downloads": 11639955
+  },
+  {
+    "name": "sshkit",
+    "downloads": 11578764
+  },
+  {
+    "name": "redis-actionpack",
+    "downloads": 11496898
+  },
+  {
+    "name": "rails_serve_static_assets",
+    "downloads": 11467352
+  },
+  {
+    "name": "delayed_job",
+    "downloads": 11412320
+  },
+  {
+    "name": "fastercsv",
+    "downloads": 11354653
+  },
+  {
+    "name": "shellany",
+    "downloads": 11260425
+  },
+  {
+    "name": "ruby-prof",
+    "downloads": 11231669
+  },
+  {
+    "name": "state_machine",
+    "downloads": 11181568
+  },
+  {
+    "name": "redis-rails",
+    "downloads": 11142918
+  },
+  {
+    "name": "rspec_junit_formatter",
+    "downloads": 11138871
+  },
+  {
+    "name": "mixlib-log",
+    "downloads": 11031902
+  },
+  {
+    "name": "erubi",
+    "downloads": 10952500
+  },
+  {
+    "name": "test-unit",
+    "downloads": 10908562
+  },
+  {
+    "name": "gem-empty",
+    "downloads": 10886374
+  },
+  {
+    "name": "pkg-config",
+    "downloads": 10827020
+  },
+  {
+    "name": "rails_12factor",
+    "downloads": 10818431
+  },
+  {
+    "name": "fssm",
+    "downloads": 10810068
+  },
+  {
+    "name": "http",
+    "downloads": 10808213
+  },
+  {
+    "name": "parallel_tests",
+    "downloads": 10802255
+  },
+  {
+    "name": "rbvmomi",
+    "downloads": 10780674
+  },
+  {
+    "name": "mixlib-config",
+    "downloads": 10769818
+  },
+  {
+    "name": "geocoder",
+    "downloads": 10677418
+  },
+  {
+    "name": "mustache",
+    "downloads": 10675608
+  },
+  {
+    "name": "bourbon",
+    "downloads": 10639345
+  },
+  {
+    "name": "plist",
+    "downloads": 10587025
+  },
+  {
+    "name": "bullet",
+    "downloads": 10573388
+  },
+  {
+    "name": "guard-compat",
+    "downloads": 10485777
+  },
+  {
+    "name": "ruby-hmac",
+    "downloads": 10480659
+  },
+  {
+    "name": "cocoapods",
+    "downloads": 10459985
+  },
+  {
+    "name": "spring-commands-rspec",
+    "downloads": 10456411
+  },
+  {
+    "name": "json-schema",
+    "downloads": 10407335
+  },
+  {
+    "name": "log4r",
+    "downloads": 10405881
+  },
+  {
+    "name": "dpl",
+    "downloads": 10386332
+  },
+  {
+    "name": "git",
+    "downloads": 10371469
+  },
+  {
+    "name": "minitar",
+    "downloads": 10358539
+  },
+  {
+    "name": "paper_trail",
+    "downloads": 10282876
+  },
+  {
+    "name": "ruby_dep",
+    "downloads": 10282055
+  },
+  {
+    "name": "uniform_notifier",
+    "downloads": 10260391
+  },
+  {
+    "name": "omniauth-facebook",
+    "downloads": 10210281
+  },
+  {
+    "name": "liquid",
+    "downloads": 10206841
+  },
+  {
+    "name": "omniauth-google-oauth2",
+    "downloads": 10203130
+  },
+  {
+    "name": "browser",
+    "downloads": 10202663
+  },
+  {
+    "name": "ttfunk",
+    "downloads": 10187657
+  },
+  {
+    "name": "amq-protocol",
+    "downloads": 10182899
+  },
+  {
+    "name": "docker-api",
+    "downloads": 10124030
+  },
+  {
+    "name": "lograge",
+    "downloads": 10104262
+  },
+  {
+    "name": "quiet_assets",
+    "downloads": 10089420
+  },
+  {
+    "name": "extlib",
+    "downloads": 10036700
+  },
+  {
+    "name": "cocoapods-core",
+    "downloads": 9961475
+  },
+  {
+    "name": "macaddr",
+    "downloads": 9907563
+  },
+  {
+    "name": "fog-dynect",
+    "downloads": 9889771
+  },
+  {
+    "name": "activerecord-import",
+    "downloads": 9869980
+  },
+  {
+    "name": "claide",
+    "downloads": 9857265
+  },
+  {
+    "name": "aws-partitions",
+    "downloads": 9783382
+  },
+  {
+    "name": "ransack",
+    "downloads": 9768334
+  },
+  {
+    "name": "chef",
+    "downloads": 9656805
+  },
+  {
+    "name": "require_all",
+    "downloads": 9615540
+  },
+  {
+    "name": "mixlib-authentication",
+    "downloads": 9609811
+  },
+  {
+    "name": "uuid",
+    "downloads": 9562096
+  },
+  {
+    "name": "ci_reporter",
+    "downloads": 9501754
+  },
+  {
+    "name": "simple_oauth",
+    "downloads": 9470753
+  },
+  {
+    "name": "spoon",
+    "downloads": 9463778
+  },
+  {
+    "name": "gli",
+    "downloads": 9367511
+  },
+  {
+    "name": "mustermann",
+    "downloads": 9299514
+  },
+  {
+    "name": "delayed_job_active_record",
+    "downloads": 9249031
+  },
+  {
+    "name": "paranoia",
+    "downloads": 9234920
+  },
+  {
+    "name": "cancancan",
+    "downloads": 9200894
+  },
+  {
+    "name": "activerecord-deprecated_finders",
+    "downloads": 9125623
+  },
+  {
+    "name": "sanitize",
+    "downloads": 9096713
+  },
+  {
+    "name": "mechanize",
+    "downloads": 9074327
+  },
+  {
+    "name": "letter_opener",
+    "downloads": 9053940
+  },
+  {
+    "name": "premailer",
+    "downloads": 9018191
+  },
+  {
+    "name": "posix-spawn",
+    "downloads": 9008315
+  },
+  {
+    "name": "molinillo",
+    "downloads": 8893628
+  },
+  {
+    "name": "fog-openstack",
+    "downloads": 8886271
+  },
+  {
+    "name": "capybara-screenshot",
+    "downloads": 8866051
+  },
+  {
+    "name": "chef-sugar",
+    "downloads": 8800140
+  },
+  {
+    "name": "deep_merge",
+    "downloads": 8793566
+  },
+  {
+    "name": "debugger-linecache",
+    "downloads": 8786054
+  },
+  {
+    "name": "compass-rails",
+    "downloads": 8780793
+  },
+  {
+    "name": "has_scope",
+    "downloads": 8755580
+  },
+  {
+    "name": "net-ssh-multi",
+    "downloads": 8736016
+  },
+  {
+    "name": "mysql",
+    "downloads": 8703166
+  },
+  {
+    "name": "grape",
+    "downloads": 8651461
+  },
+  {
+    "name": "parseconfig",
+    "downloads": 8646734
+  },
+  {
+    "name": "mono_logger",
+    "downloads": 8605878
+  },
+  {
+    "name": "formtastic",
+    "downloads": 8563214
+  },
+  {
+    "name": "select2-rails",
+    "downloads": 8560974
+  },
+  {
+    "name": "fastimage",
+    "downloads": 8555175
+  },
+  {
+    "name": "acts_as_list",
+    "downloads": 8554329
+  },
+  {
+    "name": "twilio-ruby",
+    "downloads": 8515581
+  },
+  {
+    "name": "restforce",
+    "downloads": 8494619
+  },
+  {
+    "name": "bson_ext",
+    "downloads": 8472056
+  },
+  {
+    "name": "rack-accept",
+    "downloads": 8431616
+  },
+  {
+    "name": "fastlane",
+    "downloads": 8406967
+  },
+  {
+    "name": "fog-aliyun",
+    "downloads": 8389904
+  },
+  {
+    "name": "net-http-digest_auth",
+    "downloads": 8372234
+  },
+  {
+    "name": "rubyntlm",
+    "downloads": 8362853
+  },
+  {
+    "name": "right_aws",
+    "downloads": 8312895
+  },
+  {
+    "name": "ruby-ole",
+    "downloads": 8298079
+  },
+  {
+    "name": "cucumber-core",
+    "downloads": 8277888
+  },
+  {
+    "name": "spreadsheet",
+    "downloads": 8267505
+  },
+  {
+    "name": "curb",
+    "downloads": 8250961
+  },
+  {
+    "name": "autoparse",
+    "downloads": 8247876
+  },
+  {
+    "name": "acts-as-taggable-on",
+    "downloads": 8205560
+  },
+  {
+    "name": "stringex",
+    "downloads": 8205532
+  },
+  {
+    "name": "sys-proctable",
+    "downloads": 8195526
+  },
+  {
+    "name": "aws-sdk-s3",
+    "downloads": 8191767
+  },
+  {
+    "name": "cancan",
+    "downloads": 8183308
+  },
+  {
+    "name": "http-form_data",
+    "downloads": 8173106
+  },
+  {
+    "name": "dogapi",
+    "downloads": 8153521
+  },
+  {
+    "name": "prawn",
+    "downloads": 8131683
+  },
+  {
+    "name": "fog-vsphere",
+    "downloads": 8087233
+  },
+  {
+    "name": "aws-sdk-kms",
+    "downloads": 7992976
+  },
+  {
+    "name": "power_assert",
+    "downloads": 7965190
+  },
+  {
+    "name": "celluloid-io",
+    "downloads": 7951550
+  },
+  {
+    "name": "countries",
+    "downloads": 7923920
+  },
+  {
+    "name": "webrobots",
+    "downloads": 7919738
+  },
+  {
+    "name": "stripe",
+    "downloads": 7903918
+  },
+  {
+    "name": "friendly_id",
+    "downloads": 7898021
+  },
+  {
+    "name": "cocoapods-downloader",
+    "downloads": 7858584
+  },
+  {
+    "name": "declarative",
+    "downloads": 7826113
+  },
+  {
+    "name": "fog-xenserver",
+    "downloads": 7825179
+  },
+  {
+    "name": "email_spec",
+    "downloads": 7772753
+  },
+  {
+    "name": "puppet-lint",
+    "downloads": 7737223
+  },
+  {
+    "name": "cucumber-rails",
+    "downloads": 7706209
+  },
+  {
+    "name": "escape",
+    "downloads": 7697269
+  },
+  {
+    "name": "cocoapods-trunk",
+    "downloads": 7664037
+  },
+  {
+    "name": "nap",
+    "downloads": 7586120
+  },
+  {
+    "name": "ffaker",
+    "downloads": 7559840
+  },
+  {
+    "name": "rack-attack",
+    "downloads": 7554232
+  },
+  {
+    "name": "memoizable",
+    "downloads": 7473159
+  },
+  {
+    "name": "draper",
+    "downloads": 7457884
+  },
+  {
+    "name": "inherited_resources",
+    "downloads": 7452450
+  },
+  {
+    "name": "right_http_connection",
+    "downloads": 7449338
+  },
+  {
+    "name": "resque-scheduler",
+    "downloads": 7444594
+  },
+  {
+    "name": "Ascii85",
+    "downloads": 7425738
+  },
+  {
+    "name": "busser",
+    "downloads": 7411880
+  },
+  {
+    "name": "rollbar",
+    "downloads": 7407669
+  },
+  {
+    "name": "astrolabe",
+    "downloads": 7400418
+  },
+  {
+    "name": "pdf-reader",
+    "downloads": 7380727
+  },
+  {
+    "name": "encryptor",
+    "downloads": 7373612
+  },
+  {
+    "name": "capistrano-bundler",
+    "downloads": 7371032
+  },
+  {
+    "name": "fog-rackspace",
+    "downloads": 7275492
+  },
+  {
+    "name": "mongoid",
+    "downloads": 7260560
+  },
+  {
+    "name": "aws-sdk-ec2",
+    "downloads": 7247091
+  },
+  {
+    "name": "rvm",
+    "downloads": 7246243
+  },
+  {
+    "name": "ntlm-http",
+    "downloads": 7229091
+  },
+  {
+    "name": "rails-i18n",
+    "downloads": 7202905
+  },
+  {
+    "name": "rails-observers",
+    "downloads": 7185027
+  },
+  {
+    "name": "premailer-rails",
+    "downloads": 7155306
+  },
+  {
+    "name": "text",
+    "downloads": 7147847
+  },
+  {
+    "name": "moneta",
+    "downloads": 7125211
+  },
+  {
+    "name": "fattr",
+    "downloads": 7124747
+  },
+  {
+    "name": "statsd-ruby",
+    "downloads": 7122958
+  },
+  {
+    "name": "aasm",
+    "downloads": 7114627
+  },
+  {
+    "name": "omniauth-oauth",
+    "downloads": 7076248
+  },
+  {
+    "name": "twitter",
+    "downloads": 7067309
+  },
+  {
+    "name": "kaminari-core",
+    "downloads": 7053415
+  },
+  {
+    "name": "ruby-rc4",
+    "downloads": 7023820
+  },
+  {
+    "name": "abstract",
+    "downloads": 6999750
+  },
+  {
+    "name": "hashery",
+    "downloads": 6997050
+  },
+  {
+    "name": "gettext",
+    "downloads": 6989817
+  },
+  {
+    "name": "debugger-ruby_core_source",
+    "downloads": 6958791
+  },
+  {
+    "name": "fast_gettext",
+    "downloads": 6946135
+  },
+  {
+    "name": "declarative-option",
+    "downloads": 6929303
+  },
+  {
+    "name": "archive-tar-minitar",
+    "downloads": 6923061
+  },
+  {
+    "name": "ruby2ruby",
+    "downloads": 6921301
+  },
+  {
+    "name": "em-websocket",
+    "downloads": 6908866
+  },
+  {
+    "name": "hirb",
+    "downloads": 6908141
+  },
+  {
+    "name": "rspec-collection_matchers",
+    "downloads": 6883219
+  },
+  {
+    "name": "RedCloth",
+    "downloads": 6876255
+  },
+  {
+    "name": "kaminari-actionview",
+    "downloads": 6860603
+  },
+  {
+    "name": "kaminari-activerecord",
+    "downloads": 6855893
+  },
+  {
+    "name": "fuubar",
+    "downloads": 6840107
+  },
+  {
+    "name": "rabl",
+    "downloads": 6821115
+  },
+  {
+    "name": "get_process_mem",
+    "downloads": 6803217
+  },
+  {
+    "name": "annotate",
+    "downloads": 6788388
+  },
+  {
+    "name": "locale",
+    "downloads": 6784849
+  },
+  {
+    "name": "less",
+    "downloads": 6778924
+  },
+  {
+    "name": "aws-sdk-sqs",
+    "downloads": 6704636
+  },
+  {
+    "name": "libxml-ruby",
+    "downloads": 6649538
+  },
+  {
+    "name": "codeclimate-test-reporter",
+    "downloads": 6587797
+  },
+  {
+    "name": "clamp",
+    "downloads": 6585427
+  },
+  {
+    "name": "cocoapods-try",
+    "downloads": 6576991
+  },
+  {
+    "name": "doorkeeper",
+    "downloads": 6558527
+  },
+  {
+    "name": "aws-sdk-sns",
+    "downloads": 6557341
+  },
+  {
+    "name": "capistrano-rails",
+    "downloads": 6547849
+  },
+  {
+    "name": "daemon_controller",
+    "downloads": 6520929
+  },
+  {
+    "name": "fpm",
+    "downloads": 6518768
+  },
+  {
+    "name": "aws-sdk-rds",
+    "downloads": 6483060
+  },
+  {
+    "name": "aws-sdk-ssm",
+    "downloads": 6481861
+  },
+  {
+    "name": "tzinfo-data",
+    "downloads": 6440590
+  },
+  {
+    "name": "useragent",
+    "downloads": 6430595
+  },
+  {
+    "name": "i18n_data",
+    "downloads": 6420140
+  },
+  {
+    "name": "aws-sdk-dynamodb",
+    "downloads": 6418963
+  },
+  {
+    "name": "hpricot",
+    "downloads": 6416811
+  },
+  {
+    "name": "omniauth-twitter",
+    "downloads": 6408725
+  },
+  {
+    "name": "aws-sdk-ses",
+    "downloads": 6408235
+  },
+  {
+    "name": "aws-sdk-ecs",
+    "downloads": 6406161
+  },
+  {
+    "name": "hipchat",
+    "downloads": 6405616
+  },
+  {
+    "name": "aws-sdk-autoscaling",
+    "downloads": 6404214
+  },
+  {
+    "name": "aws-sdk-cloudwatch",
+    "downloads": 6393180
+  },
+  {
+    "name": "commonjs",
+    "downloads": 6379950
+  },
+  {
+    "name": "em-http-request",
+    "downloads": 6374746
+  },
+  {
+    "name": "test_after_commit",
+    "downloads": 6374745
+  },
+  {
+    "name": "babosa",
+    "downloads": 6368281
+  },
+  {
+    "name": "unicode_utils",
+    "downloads": 6366183
+  },
+  {
+    "name": "aws-sdk-cloudformation",
+    "downloads": 6363702
+  },
+  {
+    "name": "aws-sdk-elasticloadbalancingv2",
+    "downloads": 6352683
+  },
+  {
+    "name": "aws-sdk-appstream",
+    "downloads": 6346669
+  },
+  {
+    "name": "aws-sdk-configservice",
+    "downloads": 6342899
+  },
+  {
+    "name": "busser-serverspec",
+    "downloads": 6342352
+  },
+  {
+    "name": "diffy",
+    "downloads": 6331226
+  },
+  {
+    "name": "aws-sdk-route53",
+    "downloads": 6330900
+  },
+  {
+    "name": "aws-sdk-codebuild",
+    "downloads": 6329277
+  },
+  {
+    "name": "aws-sdk-lambda",
+    "downloads": 6322048
+  },
+  {
+    "name": "aws-sdk-apigateway",
+    "downloads": 6316272
+  },
+  {
+    "name": "aws-sdk-elasticbeanstalk",
+    "downloads": 6314601
+  },
+  {
+    "name": "aws-sdk-cloudwatchlogs",
+    "downloads": 6303326
+  },
+  {
+    "name": "gon",
+    "downloads": 6302281
+  },
+  {
+    "name": "aws-sdk-iam",
+    "downloads": 6301892
+  },
+  {
+    "name": "nanaimo",
+    "downloads": 6300326
+  },
+  {
+    "name": "aws-sdk-devicefarm",
+    "downloads": 6300050
+  },
+  {
+    "name": "aws-sdk-databasemigrationservice",
+    "downloads": 6294080
+  },
+  {
+    "name": "aws-sdk-elasticsearchservice",
+    "downloads": 6291215
+  },
+  {
+    "name": "aws-sdk-organizations",
+    "downloads": 6289080
+  },
+  {
+    "name": "aws-sdk-redshift",
+    "downloads": 6288893
+  },
+  {
+    "name": "aws-sdk-kinesis",
+    "downloads": 6285256
+  },
+  {
+    "name": "pundit",
+    "downloads": 6270797
+  },
+  {
+    "name": "aws-sdk-ecr",
+    "downloads": 6270059
+  },
+  {
+    "name": "aws-sdk-mturk",
+    "downloads": 6268588
+  },
+  {
+    "name": "aws-sdk-batch",
+    "downloads": 6268109
+  },
+  {
+    "name": "aws-sdk-pinpoint",
+    "downloads": 6268021
+  },
+  {
+    "name": "aws-sdk-acm",
+    "downloads": 6263147
+  },
+  {
+    "name": "pmap",
+    "downloads": 6262628
+  },
+  {
+    "name": "cucumber-wire",
+    "downloads": 6261543
+  },
+  {
+    "name": "aws-sdk-elasticloadbalancing",
+    "downloads": 6260349
+  },
+  {
+    "name": "aws-sdk-cloudwatchevents",
+    "downloads": 6258930
+  },
+  {
+    "name": "aws-sdk-applicationautoscaling",
+    "downloads": 6258767
+  },
+  {
+    "name": "aws-sdk-budgets",
+    "downloads": 6253058
+  },
+  {
+    "name": "aws-sdk-servicecatalog",
+    "downloads": 6251645
+  },
+  {
+    "name": "aws-sdk-glacier",
+    "downloads": 6247350
+  },
+  {
+    "name": "aws-sdk-greengrass",
+    "downloads": 6246202
+  },
+  {
+    "name": "aws-sdk-storagegateway",
+    "downloads": 6245770
+  },
+  {
+    "name": "fuzzy_match",
+    "downloads": 6243214
+  },
+  {
+    "name": "aws-sdk-cloudfront",
+    "downloads": 6240034
+  },
+  {
+    "name": "aws-sdk-codepipeline",
+    "downloads": 6237329
+  },
+  {
+    "name": "aws-sdk-glue",
+    "downloads": 6236367
+  },
+  {
+    "name": "aws-sdk-iot",
+    "downloads": 6235862
+  },
+  {
+    "name": "aws-sdk-waf",
+    "downloads": 6231041
+  },
+  {
+    "name": "aws-sdk-wafregional",
+    "downloads": 6230098
+  },
+  {
+    "name": "attr_encrypted",
+    "downloads": 6224213
+  },
+  {
+    "name": "aws-sdk-codecommit",
+    "downloads": 6218946
+  },
+  {
+    "name": "aws-sdk-lexmodelbuildingservice",
+    "downloads": 6217235
+  },
+  {
+    "name": "aws-sdk-firehose",
+    "downloads": 6215257
+  },
+  {
+    "name": "aws-sdk-opsworks",
+    "downloads": 6213731
+  },
+  {
+    "name": "aws-sdk-polly",
+    "downloads": 6213511
+  },
+  {
+    "name": "aws-sdk-inspector",
+    "downloads": 6212700
+  },
+  {
+    "name": "bundler-audit",
+    "downloads": 6211744
+  },
+  {
+    "name": "html2haml",
+    "downloads": 6208164
+  },
+  {
+    "name": "aws-sdk-elasticache",
+    "downloads": 6204591
+  },
+  {
+    "name": "aws-sdk-lex",
+    "downloads": 6202155
+  },
+  {
+    "name": "aws-sdk-clouddirectory",
+    "downloads": 6201730
+  },
+  {
+    "name": "aws-sdk-lightsail",
+    "downloads": 6197470
+  },
+  {
+    "name": "aws-sdk-kinesisanalytics",
+    "downloads": 6187368
+  },
+  {
+    "name": "aws-sdk-codedeploy",
+    "downloads": 6187352
+  },
+  {
+    "name": "aws-sdk-snowball",
+    "downloads": 6184641
+  },
+  {
+    "name": "aws-sdk-opsworkscm",
+    "downloads": 6178720
+  },
+  {
+    "name": "aws-sdk-migrationhub",
+    "downloads": 6177883
+  },
+  {
+    "name": "aws-sdk-route53domains",
+    "downloads": 6172131
+  },
+  {
+    "name": "aws-sdk-cloudhsm",
+    "downloads": 6165738
+  },
+  {
+    "name": "aws-sdk-rekognition",
+    "downloads": 6163697
+  },
+  {
+    "name": "aws-sdk-cognitoidentityprovider",
+    "downloads": 6163343
+  },
+  {
+    "name": "roo",
+    "downloads": 6161752
+  },
+  {
+    "name": "commander",
+    "downloads": 6161656
+  },
+  {
+    "name": "aws-sdk-gamelift",
+    "downloads": 6145185
+  },
+  {
+    "name": "rack-contrib",
+    "downloads": 6139693
+  },
+  {
+    "name": "aws-sdk-elastictranscoder",
+    "downloads": 6139465
+  },
+  {
+    "name": "aws-sdk-athena",
+    "downloads": 6138135
+  },
+  {
+    "name": "aws-sdk-swf",
+    "downloads": 6137499
+  },
+  {
+    "name": "aws-sdk-machinelearning",
+    "downloads": 6129617
+  },
+  {
+    "name": "aws-sdk-iotdataplane",
+    "downloads": 6126950
+  },
+  {
+    "name": "aws-sdk-efs",
+    "downloads": 6124590
+  },
+  {
+    "name": "aws-sdk-cloudtrail",
+    "downloads": 6123440
+  },
+  {
+    "name": "aws-sdk-cognitoidentity",
+    "downloads": 6122799
+  },
+  {
+    "name": "aws-sdk-cloudsearch",
+    "downloads": 6122439
+  },
+  {
+    "name": "aws-sdk-cloudsearchdomain",
+    "downloads": 6122321
+  },
+  {
+    "name": "aws-sdk-workspaces",
+    "downloads": 6121301
+  },
+  {
+    "name": "aws-sdk-directoryservice",
+    "downloads": 6121287
+  },
+  {
+    "name": "aws-sdk-support",
+    "downloads": 6120902
+  },
+  {
+    "name": "aws-sdk-cognitosync",
+    "downloads": 6120436
+  },
+  {
+    "name": "aws-sdk-datapipeline",
+    "downloads": 6119429
+  },
+  {
+    "name": "aws-sdk-simpledb",
+    "downloads": 6118946
+  },
+  {
+    "name": "aws-sdk-dynamodbstreams",
+    "downloads": 6118904
+  },
+  {
+    "name": "aws-sdk-marketplacemetering",
+    "downloads": 6118213
+  },
+  {
+    "name": "aws-sdk-health",
+    "downloads": 6117847
+  },
+  {
+    "name": "aws-sdk-importexport",
+    "downloads": 6117494
+  },
+  {
+    "name": "aws-sdk-marketplacecommerceanalytics",
+    "downloads": 6117391
+  },
+  {
+    "name": "aws-sdk-lambdapreview",
+    "downloads": 6117129
+  },
+  {
+    "name": "aws-sdk-sms",
+    "downloads": 6116237
+  },
+  {
+    "name": "aws-sdk-xray",
+    "downloads": 6115797
+  },
+  {
+    "name": "spring-watcher-listen",
+    "downloads": 6113041
+  },
+  {
+    "name": "aws-sdk-costandusagereportservice",
+    "downloads": 6112918
+  },
+  {
+    "name": "aws-sdk-marketplaceentitlementservice",
+    "downloads": 6110478
+  },
+  {
+    "name": "aws-sdk-shield",
+    "downloads": 6109745
+  },
+  {
+    "name": "aws-sdk-resourcegroupstaggingapi",
+    "downloads": 6109306
+  },
+  {
+    "name": "aws-sdk-dax",
+    "downloads": 6105478
+  },
+  {
+    "name": "aws-sdk-applicationdiscoveryservice",
+    "downloads": 6104764
+  },
+  {
+    "name": "aws-sdk-states",
+    "downloads": 6102614
+  },
+  {
+    "name": "aws-sdk-emr",
+    "downloads": 6102000
+  },
+  {
+    "name": "aws-sdk-directconnect",
+    "downloads": 6096825
+  },
+  {
+    "name": "cookiejar",
+    "downloads": 6088045
+  },
+  {
+    "name": "aws-sdk-workdocs",
+    "downloads": 6085319
+  },
+  {
+    "name": "puppetlabs_spec_helper",
+    "downloads": 6084657
+  },
+  {
+    "name": "aws-sdk-cloudhsmv2",
+    "downloads": 6081135
+  },
+  {
+    "name": "jekyll",
+    "downloads": 6066098
+  },
+  {
+    "name": "cocoapods-plugins",
+    "downloads": 6026335
+  },
+  {
+    "name": "rack-mini-profiler",
+    "downloads": 5991387
+  },
+  {
+    "name": "aws-sdk-codestar",
+    "downloads": 5969734
+  },
+  {
+    "name": "pry-stack_explorer",
+    "downloads": 5957032
+  },
+  {
+    "name": "aws-sigv2",
+    "downloads": 5954076
+  },
+  {
+    "name": "afm",
+    "downloads": 5927040
+  },
+  {
+    "name": "rspec-puppet",
+    "downloads": 5920790
+  },
+  {
+    "name": "salesforce_bulk_query",
+    "downloads": 5886682
+  },
+  {
+    "name": "aws-sdk-mobile",
+    "downloads": 5884795
+  },
+  {
+    "name": "blankslate",
+    "downloads": 5880325
+  },
+  {
+    "name": "jruby-openssl",
+    "downloads": 5867119
+  },
+  {
+    "name": "sys-filesystem",
+    "downloads": 5856338
+  },
+  {
+    "name": "koala",
+    "downloads": 5846087
+  },
+  {
+    "name": "em-socksify",
+    "downloads": 5839987
+  },
+  {
+    "name": "rubocop-rspec",
+    "downloads": 5830965
+  },
+  {
+    "name": "less-rails",
+    "downloads": 5797443
+  },
+  {
+    "name": "coveralls",
+    "downloads": 5747988
+  },
+  {
+    "name": "keystore",
+    "downloads": 5720599
+  },
+  {
+    "name": "eventmachine_httpserver",
+    "downloads": 5683045
+  },
+  {
+    "name": "slim-rails",
+    "downloads": 5680792
+  },
+  {
+    "name": "chef-zero",
+    "downloads": 5680007
+  },
+  {
+    "name": "recaptcha",
+    "downloads": 5669655
+  },
+  {
+    "name": "monetize",
+    "downloads": 5659809
+  },
+  {
+    "name": "currencies",
+    "downloads": 5657069
+  },
+  {
+    "name": "shoulda-context",
+    "downloads": 5656088
+  },
+  {
+    "name": "rb-readline",
+    "downloads": 5648063
+  },
+  {
+    "name": "ruby-graphviz",
+    "downloads": 5636839
+  },
+  {
+    "name": "gh_inspector",
+    "downloads": 5579074
+  },
+  {
+    "name": "ruby-saml",
+    "downloads": 5565831
+  },
+  {
+    "name": "stomp",
+    "downloads": 5548743
+  },
+  {
+    "name": "arbre",
+    "downloads": 5521822
+  },
+  {
+    "name": "capybara-webkit",
+    "downloads": 5490885
+  },
+  {
+    "name": "scss_lint",
+    "downloads": 5459121
+  },
+  {
+    "name": "wicked_pdf",
+    "downloads": 5458244
+  },
+  {
+    "name": "phantomjs",
+    "downloads": 5449184
+  },
+  {
+    "name": "naught",
+    "downloads": 5405326
+  },
+  {
+    "name": "xcpretty",
+    "downloads": 5399116
+  },
+  {
+    "name": "shoulda",
+    "downloads": 5390606
+  },
+  {
+    "name": "logstash-event",
+    "downloads": 5388180
+  },
+  {
+    "name": "babel-source",
+    "downloads": 5367932
+  },
+  {
+    "name": "puppet-syntax",
+    "downloads": 5364886
+  },
+  {
+    "name": "fog-cloudatcost",
+    "downloads": 5363477
+  },
+  {
+    "name": "cocoapods-stats",
+    "downloads": 5340407
+  },
+  {
+    "name": "protected_attributes",
+    "downloads": 5331459
+  },
+  {
+    "name": "httpauth",
+    "downloads": 5330278
+  },
+  {
+    "name": "chef-vault",
+    "downloads": 5310956
+  },
+  {
+    "name": "pry-remote",
+    "downloads": 5299284
+  },
+  {
+    "name": "unicorn-worker-killer",
+    "downloads": 5283311
+  },
+  {
+    "name": "rqrcode",
+    "downloads": 5272976
+  },
+  {
+    "name": "activemerchant",
+    "downloads": 5243010
+  },
+  {
+    "name": "nested_form",
+    "downloads": 5230778
+  },
+  {
+    "name": "rspec-retry",
+    "downloads": 5209300
+  },
+  {
+    "name": "jasmine-core",
+    "downloads": 5199218
+  },
+  {
+    "name": "pry-doc",
+    "downloads": 5191624
+  },
+  {
+    "name": "gooddata-dss-jdbc",
+    "downloads": 5168351
+  },
+  {
+    "name": "honeybadger",
+    "downloads": 5153677
+  },
+  {
+    "name": "settingslogic",
+    "downloads": 5107995
+  },
+  {
+    "name": "rotp",
+    "downloads": 5103573
+  },
+  {
+    "name": "rack-timeout",
+    "downloads": 5098573
+  },
+  {
+    "name": "socksify",
+    "downloads": 5069999
+  },
+  {
+    "name": "ffi-yajl",
+    "downloads": 5062630
+  },
+  {
+    "name": "hurley",
+    "downloads": 5056322
+  },
+  {
+    "name": "origin",
+    "downloads": 5053884
+  },
+  {
+    "name": "session",
+    "downloads": 5042485
+  },
+  {
+    "name": "babel-transpiler",
+    "downloads": 5034107
+  },
+  {
+    "name": "buftok",
+    "downloads": 5014575
+  },
+  {
+    "name": "airbrussh",
+    "downloads": 5004268
+  },
+  {
+    "name": "ruby-openid",
+    "downloads": 4997413
+  },
+  {
+    "name": "io-like",
+    "downloads": 4995033
+  },
+  {
+    "name": "spork",
+    "downloads": 4978435
+  },
+  {
+    "name": "figaro",
+    "downloads": 4972931
+  },
+  {
+    "name": "geoip",
+    "downloads": 4972050
+  },
+  {
+    "name": "rush",
+    "downloads": 4962546
+  },
+  {
+    "name": "sys-cpu",
+    "downloads": 4960249
+  },
+  {
+    "name": "sensu-plugin",
+    "downloads": 4958019
+  },
+  {
+    "name": "aws-s3",
+    "downloads": 4952623
+  },
+  {
+    "name": "hoe",
+    "downloads": 4928554
+  },
+  {
+    "name": "pdf-core",
+    "downloads": 4913270
+  },
+  {
+    "name": "retryable",
+    "downloads": 4912198
+  },
+  {
+    "name": "grape-entity",
+    "downloads": 4891229
+  },
+  {
+    "name": "sixarm_ruby_unaccent",
+    "downloads": 4885178
+  },
+  {
+    "name": "inifile",
+    "downloads": 4852375
+  },
+  {
+    "name": "cocoapods-search",
+    "downloads": 4843995
+  },
+  {
+    "name": "colored2",
+    "downloads": 4835743
+  },
+  {
+    "name": "colorator",
+    "downloads": 4803960
+  },
+  {
+    "name": "ruby-ip",
+    "downloads": 4794200
+  },
+  {
+    "name": "bugsnag",
+    "downloads": 4787094
+  },
+  {
+    "name": "chef-handler-datadog",
+    "downloads": 4785306
+  },
+  {
+    "name": "faye-websocket",
+    "downloads": 4778952
+  },
+  {
+    "name": "remotipart",
+    "downloads": 4776248
+  },
+  {
+    "name": "exception_notification",
+    "downloads": 4769469
+  },
+  {
+    "name": "gooddata_datawarehouse",
+    "downloads": 4756740
+  },
+  {
+    "name": "subexec",
+    "downloads": 4755901
+  },
+  {
+    "name": "arr-pm",
+    "downloads": 4749451
+  },
+  {
+    "name": "wkhtmltopdf-binary",
+    "downloads": 4742869
+  },
+  {
+    "name": "stackprof",
+    "downloads": 4740918
+  },
+  {
+    "name": "flay",
+    "downloads": 4731174
+  },
+  {
+    "name": "parslet",
+    "downloads": 4719337
+  },
+  {
+    "name": "elasticsearch-model",
+    "downloads": 4714613
+  },
+  {
+    "name": "rails-controller-testing",
+    "downloads": 4711435
+  },
+  {
+    "name": "simplecov-rcov",
+    "downloads": 4704084
+  },
+  {
+    "name": "faraday-cookie_jar",
+    "downloads": 4695828
+  },
+  {
+    "name": "debugger",
+    "downloads": 4692147
+  },
+  {
+    "name": "libyajl2",
+    "downloads": 4679410
+  },
+  {
+    "name": "foreman-upstart-scaling",
+    "downloads": 4655520
+  },
+  {
+    "name": "state_machines",
+    "downloads": 4652040
+  },
+  {
+    "name": "pry-nav",
+    "downloads": 4651218
+  },
+  {
+    "name": "sinatra-contrib",
+    "downloads": 4650918
+  },
+  {
+    "name": "net-ping",
+    "downloads": 4641050
+  },
+  {
+    "name": "semantic_puppet",
+    "downloads": 4626696
+  },
+  {
+    "name": "headless",
+    "downloads": 4618723
+  },
+  {
+    "name": "google-protobuf",
+    "downloads": 4606808
+  },
+  {
+    "name": "font-awesome-sass",
+    "downloads": 4597014
+  },
+  {
+    "name": "gettext-setup",
+    "downloads": 4574129
+  },
+  {
+    "name": "rdiscount",
+    "downloads": 4567476
+  },
+  {
+    "name": "hiera-dyml",
+    "downloads": 4563555
+  },
+  {
+    "name": "jekyll-sass-converter",
+    "downloads": 4554613
+  },
+  {
+    "name": "stud",
+    "downloads": 4547897
+  },
+  {
+    "name": "puppet_forge",
+    "downloads": 4530288
+  },
+  {
+    "name": "sitemap_generator",
+    "downloads": 4517846
+  },
+  {
+    "name": "bindex",
+    "downloads": 4509324
+  },
+  {
+    "name": "celluloid-supervision",
+    "downloads": 4501196
+  },
+  {
+    "name": "charlock_holmes",
+    "downloads": 4490994
+  },
+  {
+    "name": "jekyll-watch",
+    "downloads": 4470391
+  },
+  {
+    "name": "momentjs-rails",
+    "downloads": 4469961
+  },
+  {
+    "name": "i18n-js",
+    "downloads": 4448629
+  },
+  {
+    "name": "cabin",
+    "downloads": 4438734
+  },
+  {
+    "name": "cocoapods-deintegrate",
+    "downloads": 4436136
+  },
+  {
+    "name": "geokit",
+    "downloads": 4425680
+  },
+  {
+    "name": "jsonapi-renderer",
+    "downloads": 4424238
+  },
+  {
+    "name": "mercenary",
+    "downloads": 4423846
+  },
+  {
+    "name": "activerecord-session_store",
+    "downloads": 4414202
+  },
+  {
+    "name": "braintree",
+    "downloads": 4393873
+  },
+  {
+    "name": "state_machines-activemodel",
+    "downloads": 4379146
+  },
+  {
+    "name": "escape_utils",
+    "downloads": 4370827
+  },
+  {
+    "name": "bindata",
+    "downloads": 4355385
+  },
+  {
+    "name": "aws-sdk-pricing",
+    "downloads": 4350107
+  },
+  {
+    "name": "pusher",
+    "downloads": 4303831
+  },
+  {
+    "name": "celluloid-essentials",
+    "downloads": 4298618
+  },
+  {
+    "name": "celluloid-pool",
+    "downloads": 4285050
+  },
+  {
+    "name": "celluloid-extras",
+    "downloads": 4281447
+  },
+  {
+    "name": "celluloid-fsm",
+    "downloads": 4280059
+  },
+  {
+    "name": "terminal-notifier",
+    "downloads": 4262829
+  },
+  {
+    "name": "yui-compressor",
+    "downloads": 4257073
+  },
+  {
+    "name": "aws-sdk-costexplorer",
+    "downloads": 4248884
+  },
+  {
+    "name": "axlsx",
+    "downloads": 4246383
+  },
+  {
+    "name": "tty-screen",
+    "downloads": 4243041
+  },
+  {
+    "name": "timeliness",
+    "downloads": 4235791
+  },
+  {
+    "name": "dynamic_form",
+    "downloads": 4231811
+  },
+  {
+    "name": "et-orbi",
+    "downloads": 4224459
+  },
+  {
+    "name": "dogstatsd-ruby",
+    "downloads": 4221490
+  },
+  {
+    "name": "to_bool",
+    "downloads": 4191312
+  },
+  {
+    "name": "rinku",
+    "downloads": 4185439
+  },
+  {
+    "name": "wmi-lite",
+    "downloads": 4184659
+  },
+  {
+    "name": "aws-sdk-medialive",
+    "downloads": 4180462
+  },
+  {
+    "name": "nokogumbo",
+    "downloads": 4175582
+  },
+  {
+    "name": "choice",
+    "downloads": 4158513
+  },
+  {
+    "name": "aws-sdk-sagemaker",
+    "downloads": 4142823
+  },
+  {
+    "name": "awesome_nested_set",
+    "downloads": 4131450
+  },
+  {
+    "name": "rack-oauth2",
+    "downloads": 4111651
+  },
+  {
+    "name": "aws-sdk-alexaforbusiness",
+    "downloads": 4110506
+  },
+  {
+    "name": "aws-sdk-mediapackage",
+    "downloads": 4105108
+  },
+  {
+    "name": "aws-sdk-mediaconvert",
+    "downloads": 4092100
+  },
+  {
+    "name": "meta_request",
+    "downloads": 4092042
+  },
+  {
+    "name": "rugged",
+    "downloads": 4086388
+  },
+  {
+    "name": "aws-sdk-guardduty",
+    "downloads": 4070297
+  },
+  {
+    "name": "aws-sdk-serverlessapplicationrepository",
+    "downloads": 4070143
+  },
+  {
+    "name": "attr_required",
+    "downloads": 4069083
+  },
+  {
+    "name": "aws-sdk-translate",
+    "downloads": 4065587
+  },
+  {
+    "name": "aws-sdk-mediastore",
+    "downloads": 4063257
+  },
+  {
+    "name": "aws-sdk-appsync",
+    "downloads": 4057863
+  },
+  {
+    "name": "state_machines-activerecord",
+    "downloads": 4047298
+  },
+  {
+    "name": "aws-sdk-mediastoredata",
+    "downloads": 4040382
+  },
+  {
+    "name": "fourflusher",
+    "downloads": 4018414
+  },
+  {
+    "name": "aws-sdk-cloud9",
+    "downloads": 4010676
+  },
+  {
+    "name": "aws-sdk-comprehend",
+    "downloads": 4006805
+  },
+  {
+    "name": "aws-sdk-mq",
+    "downloads": 4002750
+  },
+  {
+    "name": "scrolls",
+    "downloads": 3996222
+  },
+  {
+    "name": "aws-sdk-iotjobsdataplane",
+    "downloads": 3993677
+  },
+  {
+    "name": "aws-sdk-kinesisvideo",
+    "downloads": 3993566
+  },
+  {
+    "name": "aws-sdk-kinesisvideoarchivedmedia",
+    "downloads": 3993484
+  },
+  {
+    "name": "aws-sdk-kinesisvideomedia",
+    "downloads": 3993423
+  },
+  {
+    "name": "aws-sdk-sagemakerruntime",
+    "downloads": 3992504
+  },
+  {
+    "name": "aws-sdk-servicediscovery",
+    "downloads": 3985731
+  },
+  {
+    "name": "aws-sdk-resourcegroups",
+    "downloads": 3985573
+  },
+  {
+    "name": "rack-proxy",
+    "downloads": 3985396
+  },
+  {
+    "name": "twitter-bootstrap-rails",
+    "downloads": 3973083
+  },
+  {
+    "name": "formtastic_i18n",
+    "downloads": 3969255
+  },
+  {
+    "name": "gem-wrappers",
+    "downloads": 3961486
+  },
+  {
+    "name": "rails_autolink",
+    "downloads": 3947819
+  },
+  {
+    "name": "guard-livereload",
+    "downloads": 3929398
+  },
+  {
+    "name": "grpc",
+    "downloads": 3922452
+  },
+  {
+    "name": "chef-handler-graphite",
+    "downloads": 3908934
+  },
+  {
+    "name": "chef-rewind",
+    "downloads": 3904445
+  },
+  {
+    "name": "thread",
+    "downloads": 3893804
+  },
+  {
+    "name": "asset_sync",
+    "downloads": 3893439
+  },
+  {
+    "name": "roadie",
+    "downloads": 3881026
+  },
+  {
+    "name": "benchmark-ips",
+    "downloads": 3880521
+  },
+  {
+    "name": "recursive-open-struct",
+    "downloads": 3870951
+  },
+  {
+    "name": "jquery-turbolinks",
+    "downloads": 3863577
+  },
+  {
+    "name": "chronic_duration",
+    "downloads": 3855615
+  },
+  {
+    "name": "numerizer",
+    "downloads": 3845091
+  },
+  {
+    "name": "aws-sdk-workmail",
+    "downloads": 3842360
+  },
+  {
+    "name": "ZenTest",
+    "downloads": 3839855
+  },
+  {
+    "name": "capistrano-ext",
+    "downloads": 3813888
+  },
+  {
+    "name": "underscore-rails",
+    "downloads": 3807247
+  },
+  {
+    "name": "fastthread",
+    "downloads": 3804616
+  },
+  {
+    "name": "minitest-reporters",
+    "downloads": 3794850
+  },
+  {
+    "name": "callsite",
+    "downloads": 3784793
+  },
+  {
+    "name": "psych",
+    "downloads": 3775364
+  },
+  {
+    "name": "jasmine",
+    "downloads": 3763749
+  },
+  {
+    "name": "chromedriver-helper",
+    "downloads": 3753392
+  },
+  {
+    "name": "rack-openid",
+    "downloads": 3746621
+  },
+  {
+    "name": "elasticsearch-rails",
+    "downloads": 3744839
+  },
+  {
+    "name": "rails-erd",
+    "downloads": 3737247
+  },
+  {
+    "name": "chef-config",
+    "downloads": 3736805
+  },
+  {
+    "name": "ice_cube",
+    "downloads": 3731473
+  },
+  {
+    "name": "factory_bot",
+    "downloads": 3730391
+  },
+  {
+    "name": "ridley",
+    "downloads": 3706481
+  },
+  {
+    "name": "fluentd",
+    "downloads": 3675564
+  },
+  {
+    "name": "github-markup",
+    "downloads": 3666124
+  },
+  {
+    "name": "devise_invitable",
+    "downloads": 3661371
+  },
+  {
+    "name": "ejs",
+    "downloads": 3660744
+  },
+  {
+    "name": "rspec-activemodel-mocks",
+    "downloads": 3624174
+  },
+  {
+    "name": "cri",
+    "downloads": 3622487
+  },
+  {
+    "name": "bundle",
+    "downloads": 3593174
+  },
+  {
+    "name": "iso_country_codes",
+    "downloads": 3578611
+  },
+  {
+    "name": "money-rails",
+    "downloads": 3572355
+  },
+  {
+    "name": "open_uri_redirections",
+    "downloads": 3558013
+  },
+  {
+    "name": "logger",
+    "downloads": 3552513
+  },
+  {
+    "name": "activeadmin",
+    "downloads": 3543950
+  },
+  {
+    "name": "foreigner",
+    "downloads": 3530571
+  },
+  {
+    "name": "country_select",
+    "downloads": 3523593
+  },
+  {
+    "name": "seed-fu",
+    "downloads": 3522480
+  },
+  {
+    "name": "moped",
+    "downloads": 3514421
+  },
+  {
+    "name": "phony",
+    "downloads": 3507688
+  },
+  {
+    "name": "http_accept_language",
+    "downloads": 3489613
+  },
+  {
+    "name": "r10k",
+    "downloads": 3487039
+  },
+  {
+    "name": "resque-retry",
+    "downloads": 3477973
+  },
+  {
+    "name": "zendesk_api",
+    "downloads": 3457990
+  },
+  {
+    "name": "sidekiq-cron",
+    "downloads": 3445733
+  },
+  {
+    "name": "react-rails",
+    "downloads": 3442458
+  },
+  {
+    "name": "rails_best_practices",
+    "downloads": 3434919
+  },
+  {
+    "name": "cocoon",
+    "downloads": 3424310
+  },
+  {
+    "name": "reek",
+    "downloads": 3417636
+  },
+  {
+    "name": "archive-zip",
+    "downloads": 3408032
+  },
+  {
+    "name": "json_spec",
+    "downloads": 3406959
+  },
+  {
+    "name": "omniauth-github",
+    "downloads": 3401946
+  },
+  {
+    "name": "ancestry",
+    "downloads": 3401648
+  },
+  {
+    "name": "airbrake-ruby",
+    "downloads": 3394853
+  },
+  {
+    "name": "active_utils",
+    "downloads": 3392977
+  },
+  {
+    "name": "logstash-logger",
+    "downloads": 3390012
+  },
+  {
+    "name": "rake-compiler",
+    "downloads": 3384531
+  },
+  {
+    "name": "sqlite3-ruby",
+    "downloads": 3375206
+  },
+  {
+    "name": "rack-rewrite",
+    "downloads": 3374644
+  },
+  {
+    "name": "ruby-macho",
+    "downloads": 3370351
+  },
+  {
+    "name": "influxdb",
+    "downloads": 3367663
+  },
+  {
+    "name": "pdfkit",
+    "downloads": 3367228
+  },
+  {
+    "name": "faraday-http-cache",
+    "downloads": 3366240
+  },
+  {
+    "name": "semverse",
+    "downloads": 3365441
+  },
+  {
+    "name": "security",
+    "downloads": 3350030
+  },
+  {
+    "name": "pygments.rb",
+    "downloads": 3324171
+  },
+  {
+    "name": "case_transform",
+    "downloads": 3314449
+  },
+  {
+    "name": "analytics-ruby",
+    "downloads": 3306321
+  },
+  {
+    "name": "mixlib-versioning",
+    "downloads": 3303268
+  },
+  {
+    "name": "gssapi",
+    "downloads": 3290866
+  },
+  {
+    "name": "zip-zip",
+    "downloads": 3271887
+  },
+  {
+    "name": "html-pipeline",
+    "downloads": 3239928
+  },
+  {
+    "name": "commander-fastlane",
+    "downloads": 3237302
+  },
+  {
+    "name": "authlogic",
+    "downloads": 3231283
+  },
+  {
+    "name": "asciidoctor",
+    "downloads": 3224571
+  },
+  {
+    "name": "jsonpath",
+    "downloads": 3223894
+  },
+  {
+    "name": "inflection",
+    "downloads": 3217055
+  },
+  {
+    "name": "clockwork",
+    "downloads": 3215586
+  },
+  {
+    "name": "mailcatcher",
+    "downloads": 3212862
+  },
+  {
+    "name": "varia_model",
+    "downloads": 3212594
+  },
+  {
+    "name": "fast-stemmer",
+    "downloads": 3205799
+  },
+  {
+    "name": "heroku",
+    "downloads": 3183407
+  },
+  {
+    "name": "icalendar",
+    "downloads": 3182734
+  },
+  {
+    "name": "aws-sdk-autoscalingplans",
+    "downloads": 3179232
+  },
+  {
+    "name": "pry-rescue",
+    "downloads": 3174888
+  },
+  {
+    "name": "netaddr",
+    "downloads": 3174778
+  },
+  {
+    "name": "aws-sdk-transcribeservice",
+    "downloads": 3173644
+  },
+  {
+    "name": "algorithms",
+    "downloads": 3168766
+  },
+  {
+    "name": "default_value_for",
+    "downloads": 3166511
+  },
+  {
+    "name": "buff-extensions",
+    "downloads": 3163457
+  },
+  {
+    "name": "xcpretty-travis-formatter",
+    "downloads": 3160865
+  },
+  {
+    "name": "interception",
+    "downloads": 3150688
+  },
+  {
+    "name": "factory_bot_rails",
+    "downloads": 3135620
+  },
+  {
+    "name": "secure_headers",
+    "downloads": 3132669
+  },
+  {
+    "name": "watir-webdriver",
+    "downloads": 3132359
+  },
+  {
+    "name": "data_objects",
+    "downloads": 3121556
+  },
+  {
+    "name": "pony",
+    "downloads": 3112454
+  },
+  {
+    "name": "rsolr",
+    "downloads": 3111548
+  },
+  {
+    "name": "skinny",
+    "downloads": 3104264
+  },
+  {
+    "name": "heroku-api",
+    "downloads": 3097318
+  },
+  {
+    "name": "buff-shell_out",
+    "downloads": 3090391
+  },
+  {
+    "name": "flog",
+    "downloads": 3089679
+  },
+  {
+    "name": "mock_redis",
+    "downloads": 3085715
+  },
+  {
+    "name": "buff-ruby_engine",
+    "downloads": 3079680
+  },
+  {
+    "name": "rb-kqueue",
+    "downloads": 3073722
+  },
+  {
+    "name": "rvm-capistrano",
+    "downloads": 3067759
+  },
+  {
+    "name": "buff-config",
+    "downloads": 3060625
+  },
+  {
+    "name": "carmen",
+    "downloads": 3060047
+  },
+  {
+    "name": "rsync",
+    "downloads": 3058355
+  },
+  {
+    "name": "chartkick",
+    "downloads": 3036876
+  },
+  {
+    "name": "Platform",
+    "downloads": 3022350
+  },
+  {
+    "name": "truncate_html",
+    "downloads": 2988989
+  },
+  {
+    "name": "mixlib-install",
+    "downloads": 2986190
+  },
+  {
+    "name": "bluepill",
+    "downloads": 2985504
+  },
+  {
+    "name": "guard-bundler",
+    "downloads": 2978653
+  },
+  {
+    "name": "dm-core",
+    "downloads": 2977508
+  },
+  {
+    "name": "serverengine",
+    "downloads": 2965484
+  },
+  {
+    "name": "mustermann-grape",
+    "downloads": 2965479
+  },
+  {
+    "name": "capistrano-rvm",
+    "downloads": 2952345
+  },
+  {
+    "name": "jquery-fileupload-rails",
+    "downloads": 2946334
+  },
+  {
+    "name": "whois",
+    "downloads": 2943134
+  },
+  {
+    "name": "lru_redux",
+    "downloads": 2928727
+  },
+  {
+    "name": "health_check",
+    "downloads": 2919301
+  },
+  {
+    "name": "sidekiq-failures",
+    "downloads": 2912014
+  },
+  {
+    "name": "gibbon",
+    "downloads": 2908127
+  },
+  {
+    "name": "dante",
+    "downloads": 2903799
+  },
+  {
+    "name": "code_analyzer",
+    "downloads": 2902095
+  },
+  {
+    "name": "handlebars_assets",
+    "downloads": 2892530
+  },
+  {
+    "name": "iniparse",
+    "downloads": 2891262
+  },
+  {
+    "name": "actionpack-action_caching",
+    "downloads": 2876872
+  },
+  {
+    "name": "zookeeper",
+    "downloads": 2874130
+  }
+]

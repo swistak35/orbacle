@@ -3,3 +3,6 @@ mutant: ## Install gem dependencies
 
 test:
 	bundle exec rspec spec
+
+refresh-stats:
+	bundle exec ruby script/fetch_most_popular_rubygems_list.rb
