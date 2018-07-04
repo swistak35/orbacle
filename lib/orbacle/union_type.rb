@@ -29,10 +29,6 @@ module Orbacle
       end
     end
 
-    def pretty
-      "Union(#{types.map {|t| t.nil? ? "nil" : t.pretty }.join(" or ")})"
-    end
-
     def bottom?
       false
     end

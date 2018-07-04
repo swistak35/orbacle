@@ -636,9 +636,15 @@ module Orbacle
           "each" => method(:send_primitive_array_each),
         },
         "Object" => {
-          "freeze" => method(:send_primitive_object_freeze),
-          "clone" => method(:send_primitive_object_freeze),
           "class" => method(:send_primitive_object_class),
+          "clone" => method(:send_primitive_object_freeze),
+          "dup" => method(:send_primitive_object_freeze),
+          "freeze" => method(:send_primitive_object_freeze),
+          "itself" => method(:send_primitive_object_freeze),
+          "taint" => method(:send_primitive_object_freeze),
+          "trust" => method(:send_primitive_object_freeze),
+          "untaint" => method(:send_primitive_object_freeze),
+          "untrust" => method(:send_primitive_object_freeze),
         },
       }
     end
