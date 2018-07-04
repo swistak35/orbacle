@@ -18,8 +18,16 @@ module Orbacle
         GlobalTree::Constant.new("Object", Scope.empty, nil, klass.id))
 
       define_object_opeq(klass)
-      template_just_str(klass, "to_s", 0)
       template_just_nil(klass, "display", 0)
+      template_just_bool(klass, "equal?", 0)
+      template_just_bool(klass, "eql?", 0)
+      template_just_bool(klass, "frozen?", 0)
+      template_just_bool(klass, "instance_of?", 0)
+      template_just_bool(klass, "kind_of?", 0)
+      template_just_bool(klass, "nil?", 0)
+      template_just_bool(klass, "tainted?", 0)
+      template_just_bool(klass, "untrusted?", 0)
+      template_just_str(klass, "to_s", 0)
     end
 
     def add_integer_klass
@@ -113,6 +121,12 @@ module Orbacle
     def template_just_str(klass, name, args)
       metod = template_args(klass, name, args)
       str_node = Node.new(:str, {})
+      @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
+    end
+
+    def template_just_bool(klass, name, args)
+      metod = template_args(klass, name, args)
+      str_node = Node.new(:bool, {})
       @graph.add_edge(str_node, @graph.get_metod_nodes(metod.id).result)
     end
 

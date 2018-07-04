@@ -1576,15 +1576,105 @@ module Orbacle
       end
     end
 
-    describe "simple built-ins" do
+    describe "built-ins Object" do
       specify "Object#display" do
         snippet = <<-END
-        1.display
+        Object.new.display
         END
 
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("Nil"))
+      end
+
+      specify "Object#equal?" do
+        snippet = <<-END
+        Object.new.equal?(Object.new)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#eql?" do
+        snippet = <<-END
+        Object.new.eql?(Object.new)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#frozen?" do
+        snippet = <<-END
+        Object.new.frozen?
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#instance_of?" do
+        snippet = <<-END
+        Object.new.instance_of?(Object)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#kind_of?" do
+        snippet = <<-END
+        Object.new.kind_of?(Object)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#nil?" do
+        snippet = <<-END
+        Object.new.nil?
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#tainted?" do
+        snippet = <<-END
+        Object.new.tainted?
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
+      end
+
+      specify "Object#to_s" do
+        snippet = <<-END
+        Object.new.to_s
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+      specify "Object#untrusted?" do
+        snippet = <<-END
+        Object.new.untrusted?
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Boolean"))
       end
     end
 
