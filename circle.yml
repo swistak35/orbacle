@@ -3,25 +3,61 @@ jobs:
   build-2.3.7:
     docker:
       - image: circleci/ruby:2.3.7
+        environment:
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: vendor/bundle
     steps:
       - checkout
-      - run: make setup
+      - restore_cache:
+        keys:
+          - bundle-v2-{{ checksum "Gemfile.lock" }}
+          - bundle-v2-
+      - run: make bundle
+      - save_cache:
+        key: bundle-v2-{{ checksum "Gemfile.lock" }}
+        paths:
+          - vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.4.4:
     docker:
       - image: circleci/ruby:2.4.4
+        environment:
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: vendor/bundle
     steps:
       - checkout
-      - run: make setup
+      - restore_cache:
+        keys:
+          - bundle-v2-{{ checksum "Gemfile.lock" }}
+          - bundle-v2-
+      - run: make bundle
+      - save_cache:
+        key: bundle-v2-{{ checksum "Gemfile.lock" }}
+        paths:
+          - vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.5.1:
     docker:
       - image: circleci/ruby:2.5.1
+        environment:
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: vendor/bundle
     steps:
       - checkout
-      - run: make setup
+      - restore_cache:
+        keys:
+          - bundle-v2-{{ checksum "Gemfile.lock" }}
+          - bundle-v2-
+      - run: make bundle
+      - save_cache:
+        key: bundle-v2-{{ checksum "Gemfile.lock" }}
+        paths:
+          - vendor/bundle
       - run: make test
       - run: make index-itself
 workflows:
