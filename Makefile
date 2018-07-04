@@ -6,3 +6,6 @@ test:
 
 refresh-stats:
 	bundle exec ruby script/fetch_most_popular_rubygems_list.rb
+
+setup:
+	bundle install
