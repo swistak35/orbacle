@@ -6,7 +6,7 @@ jobs:
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
-          BUNDLE_PATH: vendor/bundle
+          BUNDLE_PATH: /tmp/vendor/bundle
     steps:
       - checkout
       - restore_cache:
@@ -26,7 +26,7 @@ jobs:
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
-          BUNDLE_PATH: vendor/bundle
+          BUNDLE_PATH: ../vendor/bundle
     steps:
       - checkout
       - restore_cache:
@@ -46,7 +46,7 @@ jobs:
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
-          BUNDLE_PATH: vendor/bundle
+          BUNDLE_PATH: ~/vendor/bundle
     steps:
       - checkout
       - restore_cache:
