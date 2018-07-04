@@ -1,22 +1,24 @@
 module Orbacle
   class UnionType
     def initialize(types)
-      @types = Set.new(types)
+      @types_set = Set.new(types)
     end
 
+    attr_reader :types_set
+
     def types
-      @types.to_a
+      @types_set.to_a
     end
 
     def ==(other)
       self.class == other.class &&
-        self.types == other.types
+        self.types_set == other.types_set
     end
 
     def hash
       [
         self.class,
-        self.types,
+        self.types_set,
       ].hash ^ BIG_VALUE
     end
     alias eql? ==
