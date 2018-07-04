@@ -74,20 +74,6 @@ module Orbacle
       template_just_str(eigenklass, "read", 1)
     end
 
-    def define_object_opeq(klass)
-      arg_names = build_arg_names(1)
-      arg_nodes = build_arg_nodes(arg_names)
-      metod = @tree.add_method(GlobalTree::Method.new(
-        place_of_definition_id: klass.id,
-        name: "==",
-        location: nil,
-        args: build_arg_tree(arg_names),
-        visibility: :public))
-      @graph.store_metod_nodes(metod.id, build_nodes_hash(arg_nodes))
-      bool_node = Node.new(:bool, {})
-      @graph.add_edge(bool_node, @graph.get_metod_nodes(metod.id).result)
-    end
-
     def define_dir_glob(klass)
       arg_names = build_arg_names(1)
       arg_nodes = build_arg_nodes(arg_names)
