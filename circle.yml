@@ -10,14 +10,14 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        keys:
-          - bundle-v2-{{ checksum "Gemfile.lock" }}
-          - bundle-v2-
+          keys:
+            - bundle-v2-{{ checksum "Gemfile.lock" }}
+            - bundle-v2-
       - run: make bundle
       - save_cache:
-        key: bundle-v2-{{ checksum "Gemfile.lock" }}
-        paths:
-          - vendor/bundle
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.4.4:
@@ -30,14 +30,14 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        keys:
-          - bundle-v2-{{ checksum "Gemfile.lock" }}
-          - bundle-v2-
+          keys:
+            - bundle-v2-{{ checksum "Gemfile.lock" }}
+            - bundle-v2-
       - run: make bundle
       - save_cache:
-        key: bundle-v2-{{ checksum "Gemfile.lock" }}
-        paths:
-          - vendor/bundle
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.5.1:
@@ -50,14 +50,14 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        keys:
-          - bundle-v2-{{ checksum "Gemfile.lock" }}
-          - bundle-v2-
+          keys:
+            - bundle-v2-{{ checksum "Gemfile.lock" }}
+            - bundle-v2-
       - run: make bundle
       - save_cache:
-        key: bundle-v2-{{ checksum "Gemfile.lock" }}
-        paths:
-          - vendor/bundle
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run: make test
       - run: make index-itself
 workflows:
