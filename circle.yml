@@ -9,15 +9,15 @@ jobs:
           BUNDLE_PATH: /tmp/vendor/bundle
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - bundle-v2-{{ checksum "Gemfile.lock" }}
-            - bundle-v2-
+      # - restore_cache:
+      #     keys:
+      #       - bundle-v2-{{ checksum "Gemfile.lock" }}
+      #       - bundle-v2-
       - run: make bundle
-      - save_cache:
-          key: bundle-v2-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      # - save_cache:
+      #     key: bundle-v2-{{ checksum "Gemfile.lock" }}
+      #     paths:
+      #       - vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.4.4:
@@ -29,15 +29,15 @@ jobs:
           BUNDLE_PATH: ../vendor/bundle
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - bundle-v2-{{ checksum "Gemfile.lock" }}
-            - bundle-v2-
+      # - restore_cache:
+      #     keys:
+      #       - bundle-v2-{{ checksum "Gemfile.lock" }}
+      #       - bundle-v2-
       - run: make bundle
-      - save_cache:
-          key: bundle-v2-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      # - save_cache:
+      #     key: bundle-v2-{{ checksum "Gemfile.lock" }}
+      #     paths:
+      #       - vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.5.1:
@@ -49,15 +49,15 @@ jobs:
           BUNDLE_PATH: ~/vendor/bundle
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - bundle-v2-{{ checksum "Gemfile.lock" }}
-            - bundle-v2-
+      # - restore_cache:
+      #     keys:
+      #       - bundle-v2-{{ checksum "Gemfile.lock" }}
+      #       - bundle-v2-
       - run: make bundle
-      - save_cache:
-          key: bundle-v2-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      # - save_cache:
+      #     key: bundle-v2-{{ checksum "Gemfile.lock" }}
+      #     paths:
+      #       - vendor/bundle
       - run: make test
       - run: make index-itself
 workflows:
