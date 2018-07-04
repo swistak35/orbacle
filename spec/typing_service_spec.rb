@@ -934,7 +934,7 @@ module Orbacle
         expect(result).to eq(union([nominal("Integer"), nominal("String")]))
       end
 
-      specify "MISBEHAVIOUR - user-defined method call with named argument" do
+      specify "MISBEHAVIOUR - user-defined method call with keyword splat argument" do
         snippet = <<-END
         class Foo
           def bar(**kwargs)
@@ -1030,6 +1030,23 @@ module Orbacle
         expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
       end
 
+      specify "call with splat arg to user-defined method with splat-arg not being last" do
+        snippet = <<-END
+        class Foo
+          def bar(*y, z)
+            z
+          end
+        end
+        a = [1]
+        b = ["foo"]
+        Foo.new.bar(*a, *b)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Integer")]))
+      end
+
       specify "too many arguments applied isn't problematic" do
         snippet = <<-END
         class Foo
@@ -1038,6 +1055,21 @@ module Orbacle
           end
         end
         Foo.new.bar(42, "foo")
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "too little arguments applied isn't problematic" do
+        snippet = <<-END
+        class Foo
+          def bar(x, y)
+            x
+          end
+        end
+        Foo.new.bar(42)
         END
 
         result = type_snippet(snippet)
