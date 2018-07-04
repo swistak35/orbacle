@@ -8,6 +8,25 @@ module Orbacle
       attr_reader :node
     end
 
+    class ResultHash
+      def initialize
+        @impl = Hash.new
+        @default = BottomType.new
+      end
+
+      def [](key)
+        @impl[key] || @default
+      end
+
+      def []=(key, newvalue)
+        @impl[key] = newvalue
+      end
+
+      def find(&block)
+        @impl.enum_for(:each).find(&block)
+      end
+    end
+
     def initialize(logger)
       @logger = logger
     end
@@ -17,11 +36,7 @@ module Orbacle
       @graph = graph
       @tree = tree
 
-      @result = Hash.new {|h,k| h[k] = BottomType.new }
-      def @result.[]=(key, newvalue)
-        raise ArgumentError if newvalue.nil?
-        super
-      end
+      @result = ResultHash.new
 
       processed_nodes = 0
       timestamp_started_processing = Time.now.to_i
@@ -34,7 +49,9 @@ module Orbacle
             @worklist.count_node(node)
             if !@worklist.limit_exceeded?(node)
               current_result = @result[node]
-              @result[node] = compute_result(node, @graph.parent_vertices(node))
+              new_result = compute_result(node, @graph.parent_vertices(node))
+              raise ArgumentError.new(node) if new_result.nil?
+              @result[node] = new_result
               processed_nodes += 1
               puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size} #{Time.now.to_i - timestamp_started_processing}" if processed_nodes % 1000 == 0
 
@@ -121,7 +138,7 @@ module Orbacle
       when :range then handle_range(node, sources)
 
       when :lvar then handle_group(node, sources)
-      when :lvasgn then handle_pass1(node, sources)
+      when :lvasgn then handle_pass_lte1(node, sources)
 
       when :ivasgn then handle_group(node, sources)
       when :ivar_definition then handle_group(node, sources)
