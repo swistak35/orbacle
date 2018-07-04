@@ -3,3 +3,6 @@ mutant: ## Install gem dependencies
 
 test:
 	bundle exec rspec spec
+
+setup:
+	bundle install

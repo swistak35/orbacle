@@ -1,9 +1,23 @@
 version: 2
 jobs:
-  build-2.4.4:
+  build:
+    docker:
+      - image: circleci/ruby:2.3.7-jessie
+    steps:
+      - checkout
+      - run: make setup
+      - run: make test
+  build:
     docker:
       - image: circleci/ruby:2.4.4-jessie
     steps:
       - checkout
-      - run: bundle install
-      - run: bundle exec rspec spec
+      - run: make setup
+      - run: make test
+  build:
+    docker:
+      - image: circleci/ruby:2.5.1-jessie
+    steps:
+      - checkout
+      - run: make setup
+      - run: make test
