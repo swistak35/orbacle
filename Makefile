@@ -6,6 +6,3 @@ test:
 
 setup:
 	bundle install
-
-index-itself:
-	bundle exec exe/orbaclerun index
