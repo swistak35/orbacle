@@ -484,26 +484,54 @@ module Orbacle
       end
     end
 
-    def connect_regular_args(found_method_args, found_method_nodes, send_args)
-      found_method_args.each_with_index do |formal_arg, i|
-        next if formal_arg.name.nil?
-        node_formal_arg = found_method_nodes[formal_arg.name]
-
-        case formal_arg
-        when GlobalTree::ArgumentsTree::Regular
-          @graph.add_edge(send_args[i], node_formal_arg)
-          @worklist.enqueue_node(node_formal_arg)
-        when GlobalTree::ArgumentsTree::Optional
-          if send_args[i]
-            @graph.add_edge(send_args[i], node_formal_arg)
-            @worklist.enqueue_node(node_formal_arg)
-          end
-        when GlobalTree::ArgumentsTree::Splat
-          send_args[i..-1].each do |send_arg|
-            @graph.add_edge(send_arg, node_formal_arg)
-            @worklist.enqueue_node(node_formal_arg)
+    def generate_possible_args(splatsize, send_args)
+      if send_args.empty?
+        [[]]
+      else
+        head, *rest = send_args
+        tails = generate_possible_args(splatsize, rest)
+        if head.type == :call_arg
+          tails.map {|tail| [head, *tail] }
+        elsif head.type == :call_splatarg
+          unwrap_node = Node.new(:unwrap_array, {})
+          @graph.add_edge(head, unwrap_node)
+          @worklist.enqueue_node(unwrap_node)
+          (splatsize + 1).times.flat_map do |splat_array_possible_size|
+            unwraps = [unwrap_node] * splat_array_possible_size
+            tails.map do |tail|
+              [*unwraps, *tail]
+            end
           end
         else raise
+        end
+      end
+    end
+
+    def connect_regular_args(found_method_args, found_method_nodes, basic_send_args)
+      possible_send_args = generate_possible_args(found_method_args.size, basic_send_args)
+      possible_send_args.each do |send_args|
+        found_method_args.each_with_index do |formal_arg, i|
+          next if formal_arg.name.nil?
+          node_formal_arg = found_method_nodes[formal_arg.name]
+
+          case formal_arg
+          when GlobalTree::ArgumentsTree::Regular
+            if send_args[i]
+              @graph.add_edge(send_args[i], node_formal_arg)
+              @worklist.enqueue_node(node_formal_arg)
+            end
+          when GlobalTree::ArgumentsTree::Optional
+            if send_args[i]
+              @graph.add_edge(send_args[i], node_formal_arg)
+              @worklist.enqueue_node(node_formal_arg)
+            end
+          when GlobalTree::ArgumentsTree::Splat
+            send_args[i..-1].each do |send_arg|
+              @graph.add_edge(send_arg, node_formal_arg)
+              @worklist.enqueue_node(node_formal_arg)
+            end
+          else raise
+          end
         end
       end
     end
