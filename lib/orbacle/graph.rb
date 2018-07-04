@@ -2,7 +2,8 @@ require 'rgl/adjacency'
 
 module Orbacle
   class Graph
-    Metod = Struct.new(:args, :result, :yields, :yield_results)
+    ZSuper = Struct.new(:send_result, :block)
+    Metod = Struct.new(:args, :result, :yields, :yield_results, :zsupers)
     Lambda = Struct.new(:args, :result)
 
     def initialize
@@ -103,6 +104,7 @@ module Orbacle
       metods[metod_id] ||= Metod.new(
         arguments_nodes,
         add_vertex(Node.new(:method_result, {})),
+        [],
         [],
         [])
     end

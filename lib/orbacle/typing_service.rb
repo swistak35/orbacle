@@ -75,11 +75,6 @@ module Orbacle
                 handle_super_send(message_send)
                 @worklist.mark_message_send_as_handled(message_send)
               end
-            when Worklist::Super0Send
-              if !@worklist.message_send_handled?(message_send)
-                handle_super0_send(message_send)
-                @worklist.mark_message_send_as_handled(message_send)
-              end
             else raise "Not handled message send"
             end
           end
@@ -95,11 +90,6 @@ module Orbacle
           when Worklist::SuperSend
             if !@worklist.message_send_handled?(message_send)
               handle_super_send(message_send)
-              @worklist.mark_message_send_as_handled(message_send)
-            end
-          when Worklist::Super0Send
-            if !@worklist.message_send_handled?(message_send)
-              handle_super0_send(message_send)
               @worklist.mark_message_send_as_handled(message_send)
             end
           else raise "Not handled message send"
@@ -481,8 +471,7 @@ module Orbacle
       end
     end
 
-    def handle_custom_message_send(found_method, message_send)
-
+    def connect_actual_args_to_formal_args(found_method, message_send)
       if message_send.send_args.last
         found_method_nodes = @graph.get_metod_nodes(found_method.id).args
 
@@ -503,6 +492,19 @@ module Orbacle
             end
           end
         end
+      end
+    end
+
+    def handle_custom_message_send(found_method, message_send)
+      connect_actual_args_to_formal_args(found_method, message_send)
+
+      found_method_nodes = @graph.get_metod_nodes(found_method.id)
+      found_method_nodes.zsupers.each do |zsuper_call|
+        super_method = @tree.find_super_method(found_method.id)
+        next if super_method.nil?
+
+        connect_actual_args_to_formal_args(super_method, message_send)
+        connect_method_result_to_node(super_method.id, zsuper_call.send_result)
       end
 
       if !@graph.get_metod_nodes(found_method.id).yields.empty?
@@ -611,13 +613,6 @@ module Orbacle
 
       handle_custom_message_send(super_method, super_send)
 
-      connect_method_result_to_node(super_method.id, super_send.send_result)
-    end
-
-    def handle_super0_send(super_send)
-      super_method = @tree.find_super_method(super_send.method_id)
-      return if super_method.nil?
-      connect_formal_args_to_formal_args(super_send.method_id, super_method.id)
       connect_method_result_to_node(super_method.id, super_send.send_result)
     end
 

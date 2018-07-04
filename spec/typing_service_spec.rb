@@ -1544,7 +1544,7 @@ module Orbacle
     end
 
     describe "zsuper calls" do
-      xspecify "basic example" do
+      specify "basic example" do
         snippet = <<-END
         class Parent
           def foo(x)

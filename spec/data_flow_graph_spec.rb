@@ -1209,10 +1209,9 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      zsuper_send = result.message_sends.first
-      expect(zsuper_send).to be_a(Worklist::Super0Send)
-      expect(zsuper_send.send_result).to eq(node(:call_result))
-      expect(zsuper_send.block).to be_nil
+      expect(result.graph).to include_edge(
+        node(:call_result),
+        node(:method_result))
     end
 
     describe "control flow operators" do
