@@ -575,7 +575,7 @@ module Orbacle
       end
     end
 
-    describe "custom message sends" do
+    describe "custom built-ins Array" do
       specify "Array#map" do
         snippet = <<-END
         x = [1,2]
@@ -608,7 +608,9 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
+    end
 
+    describe "custom built-ins Object" do
       specify "class on nominal self" do
         snippet = <<-END
         class Foo
