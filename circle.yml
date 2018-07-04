@@ -1,8 +1,8 @@
 version: 2
 jobs:
-  build:
+  build-2.4.4:
     docker:
-      - image: circleci/ruby:2.4.1-jessie
+      - image: circleci/ruby:2.4.4-jessie
     steps:
       - checkout
       - run: bundle install
