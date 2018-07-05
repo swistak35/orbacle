@@ -10,9 +10,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - bundle-v2-{{ checksum "Gemfile.lock" }}
-            - bundle-v2-
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
       - run: make bundle
       - save_cache:
           key: bundle-v2-{{ checksum "Gemfile.lock" }}
@@ -30,9 +28,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - bundle-v2-{{ checksum "Gemfile.lock" }}
-            - bundle-v2-
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
       - run: make bundle
       - save_cache:
           key: bundle-v2-{{ checksum "Gemfile.lock" }}
@@ -50,9 +46,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - bundle-v2-{{ checksum "Gemfile.lock" }}
-            - bundle-v2-
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
       - run: make bundle
       - save_cache:
           key: bundle-v2-{{ checksum "Gemfile.lock" }}
