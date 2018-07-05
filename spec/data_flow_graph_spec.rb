@@ -1834,9 +1834,6 @@ module Orbacle
         expect(result.graph).to include_edge(
           node(:yield_result),
           node(:method_result))
-        expect(result.graph).to include_edge(
-          node(:nil),
-          node(:yield))
       end
 
       specify "simple yield" do
@@ -1847,10 +1844,16 @@ module Orbacle
         END
 
         result = generate_cfg(snippet)
+      end
 
-        expect(result.graph).to include_edge(
-          node(:int, { value: 42 }),
-          node(:yield))
+      specify "yield with two arguments" do
+        snippet = <<-END
+        def foo
+          yield 42, 78
+        end
+        END
+
+        result = generate_cfg(snippet)
       end
     end
 

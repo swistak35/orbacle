@@ -1097,22 +1097,12 @@ module Orbacle
     def handle_yield(ast, context)
       exprs = ast.children
 
-      node_yield = add_vertex(Node.new(:yield, {}))
-      final_context = if exprs.empty?
-        @graph.add_edge(Node.new(:nil, {}), node_yield)
-        context
-      else
-        exprs.reduce(context) do |current_context, current_expr|
-          current_expr_result = process(current_expr, current_context)
-          @graph.add_edge(current_expr_result.node, node_yield)
-          current_expr_result.context
-        end
-      end
+      final_context, call_arg_nodes, _block_node = prepare_argument_nodes(context, exprs)
+
       result_node = add_vertex(Node.new(:yield_result, {}))
       if context.analyzed_method
         method_nodes = @graph.get_metod_nodes(context.analyzed_method)
-        method_nodes.yields << node_yield
-        method_nodes.yield_results << result_node
+        method_nodes.yields << Graph::Yield.new(call_arg_nodes, result_node)
       end
 
       return Result.new(result_node, final_context)

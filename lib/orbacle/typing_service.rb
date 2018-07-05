@@ -471,22 +471,21 @@ module Orbacle
       end
     end
 
-    def connect_actual_args_to_formal_args(found_method_argtree, found_method_nodes, message_send)
-      # def connect_actual_args_to_formal_args(found_method, message_send)
-      if message_send.send_args.last
+    def connect_actual_args_to_formal_args(found_method_argtree, found_method_nodes, send_args)
+      if send_args.last
         if found_method_argtree.kwargs.empty?
-          regular_args = message_send.send_args
+          regular_args = send_args
           connect_regular_args(found_method_argtree.args, found_method_nodes, regular_args)
         else
-          @result[message_send.send_args.last].each_possible_type do |type|
+          @result[send_args.last].each_possible_type do |type|
             if type.name == "Hash"
-              regular_args = message_send.send_args[0..-2]
-              kwarg_arg = message_send.send_args.last
+              regular_args = send_args[0..-2]
+              kwarg_arg = send_args.last
 
               connect_regular_args(found_method_argtree.args, found_method_nodes, regular_args)
               connect_keyword_args(found_method_argtree.kwargs, found_method_nodes, kwarg_arg)
             else
-              regular_args = message_send.send_args
+              regular_args = send_args
               connect_regular_args(found_method_argtree.args, found_method_nodes, regular_args)
             end
           end
@@ -496,22 +495,21 @@ module Orbacle
 
     def handle_custom_message_send(found_method, message_send)
       found_method_nodes = @graph.get_metod_nodes(found_method.id)
-      connect_actual_args_to_formal_args(found_method.args, found_method_nodes.args, message_send)
+      connect_actual_args_to_formal_args(found_method.args, found_method_nodes.args, message_send.send_args)
 
       found_method_nodes.zsupers.each do |zsuper_call|
         super_method = @tree.find_super_method(found_method.id)
         next if super_method.nil?
 
         super_method_nodes = @graph.get_metod_nodes(super_method.id)
-        connect_actual_args_to_formal_args(super_method.args, super_method_nodes.args, message_send)
+        connect_actual_args_to_formal_args(super_method.args, super_method_nodes.args, message_send.send_args)
         connect_method_result_to_node(super_method.id, zsuper_call.send_result)
       end
 
-      @graph.get_metod_nodes(found_method.id).yields.each do |node_yield|
-        block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
-        arg_node = block_lambda_nodes.args.values[0]
-        @graph.add_edge(node_yield, arg_node)
-        @worklist.enqueue_node(arg_node)
+      @graph.get_metod_nodes(found_method.id).yields.each do |yield_nodes|
+        block_lambda = @tree.get_lambda(message_send.block.lambda_id)
+        block_lambda_nodes = @graph.get_lambda_nodes(block_lambda.id)
+        connect_actual_args_to_formal_args(block_lambda.args, block_lambda_nodes.args, yield_nodes.send_args)
       end
     end
 
