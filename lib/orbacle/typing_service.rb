@@ -190,7 +190,7 @@ module Orbacle
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
       when :extract_class then handle_extract_class(node, sources)
-      when :lambda then handle_nil(node, sources)
+      when :lambda then handle_lambda(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
       when :yield_result then handle_group(node, sources)
 
@@ -254,6 +254,10 @@ module Orbacle
 
     def handle_bottom(node, sources)
       BottomType.new
+    end
+
+    def handle_lambda(node, sources)
+      LambdaType.new(node.params.fetch(:id))
     end
 
     def handle_unwrap_hash_keys(node, sources)
@@ -410,12 +414,22 @@ module Orbacle
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, possible_type.name, message_send)
+        elsif possible_type.instance_of?(LambdaType) && message_send.message_send == "call"
+          handle_proc_call(possible_type, message_send)
         elsif possible_type.is_a?(ClassType)
           handle_class_send(possible_type.name, message_send)
         else
           handle_instance_send(possible_type.name, message_send)
         end
       end
+    end
+
+    def handle_proc_call(lambda_type, message_send)
+      found_lambda = @tree.get_lambda(lambda_type.lambda_id)
+      found_lambda_nodes = @graph.get_lambda_nodes(found_lambda.id)
+      connect_actual_args_to_formal_args(found_lambda.args, found_lambda_nodes.args, message_send.send_args)
+      @graph.add_edge(found_lambda_nodes.result, message_send.send_result)
+      @worklist.enqueue_node(message_send.send_result)
     end
 
     def handle_constructor_send(original_class_name, class_name, message_send)
