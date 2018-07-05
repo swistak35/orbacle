@@ -1211,6 +1211,24 @@ module Orbacle
         expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(union([nominal("Integer"), nominal("String")]))
       end
 
+      specify "handling yield result" do
+        snippet = <<-END
+        class Foo
+          def bar
+            $res = yield 42
+          end
+        end
+        Foo.new.bar do |x|
+          "foo"
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
       specify "call method with block with 2 args" do
         snippet = <<-END
         class Foo
@@ -1497,6 +1515,28 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "passing block" do
+        snippet = <<-END
+        class Parent
+          def foo()
+            $res = yield 42
+          end
+        end
+        class Child < Parent
+          def foo()
+            super() do |y|
+              "foo"
+            end
+          end
+        end
+        Child.new.foo
+        $res
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
       end
     end
 

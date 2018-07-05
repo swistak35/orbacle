@@ -509,6 +509,9 @@ module Orbacle
         block_lambda = @tree.get_lambda(message_send.block.lambda_id)
         block_lambda_nodes = @graph.get_lambda_nodes(block_lambda.id)
         connect_actual_args_to_formal_args(block_lambda.args, block_lambda_nodes.args, yield_nodes.send_args)
+
+        @graph.add_edge(block_lambda_nodes.result, yield_nodes.send_result)
+        @worklist.enqueue_node(yield_nodes.send_result)
       end
     end
 
