@@ -64,12 +64,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
       - run: make bundle
       - save_cache:
-        key: bundle-v2-{{ checksum "Gemfile.lock" }}
-        paths:
-          - ~/vendor/bundle
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~/vendor/bundle
       - run: make mutant
 
 workflows:
