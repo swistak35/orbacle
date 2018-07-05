@@ -2,6 +2,8 @@
 
 [![CircleCI](https://circleci.com/gh/swistak35/orbacle/tree/master.svg?style=svg)](https://circleci.com/gh/swistak35/orbacle/tree/master)
 
+<img src="https://swistak35.com/img/orbacle-logo.png" alt="Orbacle logo" width="120px" align="left" />
+
 Program allowing for smart jump-to-definitions, autocompletion, constant renaming and more.
 
 Doing as MSc thesis for [Institute of Computer Science, University of Wrocław](http://ii.uni.wroc.pl).
