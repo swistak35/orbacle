@@ -1476,6 +1476,28 @@ module Orbacle
           type_snippet(snippet)
         end.not_to raise_error
       end
+
+      specify "passing block" do
+        snippet = <<-END
+        class Parent
+          def foo()
+            yield 42
+          end
+        end
+        class Child < Parent
+          def foo()
+            super() do |y|
+              $res = y
+            end
+          end
+        end
+        Child.new.foo
+        $res
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "loop operators" do

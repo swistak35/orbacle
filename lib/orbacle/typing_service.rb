@@ -189,7 +189,6 @@ module Orbacle
       when :const_definition then handle_group(node, sources)
       when :constructor then handle_constructor(node, sources)
       when :method_result then handle_group(node, sources)
-      when :yield then handle_group(node, sources)
       when :extract_class then handle_extract_class(node, sources)
       when :lambda then handle_nil(node, sources)
       when :definition_by_id then handle_definition_by_id(node, sources)
