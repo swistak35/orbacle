@@ -1,6 +1,6 @@
-# Orbacle
-
 [![CircleCI](https://circleci.com/gh/swistak35/orbacle/tree/master.svg?style=svg)](https://circleci.com/gh/swistak35/orbacle/tree/master)
+
+# Orbacle
 
 <img src="http://swistak35.com/img/orbacle-logo.png" alt="Orbacle logo" width="120px" align="left" />
 
