@@ -54,6 +54,24 @@ jobs:
             - ~/vendor/bundle
       - run: make test
       - run: make index-itself
+  mutant:
+    docker:
+      - image: circleci/ruby:2.5.1
+        environment:
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: ~/vendor/bundle
+    steps:
+      - checkout
+      - restore_cache:
+        key: bundle-v2-{{ checksum "Gemfile.lock" }}
+      - run: make bundle
+      - save_cache:
+        key: bundle-v2-{{ checksum "Gemfile.lock" }}
+        paths:
+          - ~/vendor/bundle
+      - run: make mutant
+
 workflows:
   version: 2
   main:
@@ -61,3 +79,4 @@ workflows:
       - build-2.3.7
       - build-2.4.4
       - build-2.5.1
+      - mutant
