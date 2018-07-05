@@ -1808,6 +1808,30 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
+
+      specify "overriding block" do
+        snippet = <<-END
+        class Parent
+          def foo
+            yield 42
+          end
+        end
+        class Child < Parent
+          def foo
+            super do |y|
+              $res = y
+            end
+          end
+        end
+        Child.new.foo do |y|
+          y
+        end
+        $res
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "built-ins Object" do
