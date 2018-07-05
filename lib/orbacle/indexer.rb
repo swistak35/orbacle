@@ -19,8 +19,9 @@ module Orbacle
       files.each do |file_path|
         begin
           file_content = File.read(file_path)
+          ast = Parser::CurrentRuby.parse(file_content)
           logger.info "Processing #{file_path}"
-          @parser.process_file(file_content, file_path)
+          @parser.process_file(ast, file_path)
         rescue Parser::SyntaxError
           logger.warn "Warning: Skipped #{file_path} because of syntax error"
         end

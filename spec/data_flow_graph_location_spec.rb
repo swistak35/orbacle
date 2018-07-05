@@ -104,7 +104,7 @@ module Orbacle
       graph = Graph.new
       tree = GlobalTree.new
       service = Builder.new(graph, worklist, tree)
-      result = service.process_file(snippet, "")
+      result = service.process_file(Parser::CurrentRuby.parse(snippet), "")
       OpenStruct.new(
         final_node: result.node,
         tree: tree)

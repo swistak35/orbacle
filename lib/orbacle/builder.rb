@@ -16,10 +16,10 @@ module Orbacle
       @tree = tree
     end
 
-    def process_file(file, filepath)
-      ast = Parser::CurrentRuby.parse(file)
+    def process_file(ast, filepath)
       initial_context = Context.new(filepath, Selfie.main, Nesting.empty, Context::AnalyzedKlass.new(nil, :public), nil, {})
-      return process(ast, initial_context)
+      result = process(ast, initial_context)
+      return result
     end
 
     private

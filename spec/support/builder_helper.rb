@@ -3,7 +3,7 @@ module BuilderHelper
     worklist = Orbacle::Worklist.new
     graph = Orbacle::Graph.new
     service = Orbacle::Builder.new(graph, worklist, Orbacle::GlobalTree.new)
-    result = service.process_file(snippet, "")
+    result = service.process_file(Parser::CurrentRuby.parse(snippet), "")
     OpenStruct.new(
       graph: graph,
       final_lenv: result.context.lenv,
