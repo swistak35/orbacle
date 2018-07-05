@@ -521,7 +521,18 @@ module Orbacle
     end
 
     describe "custom built-ins Array" do
-      specify "Array#map" do
+      specify "Array#map without a block" do
+        snippet = <<-END
+        x = [1,2]
+        x.map
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
+      specify "Array#map with simple block" do
         snippet = <<-END
         x = [1,2]
         x.map {|y| y }
@@ -532,15 +543,27 @@ module Orbacle
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
 
-      specify "Array#map" do
+      specify "MISBEHAVIOUR - Array#map - passing block by blockarg" do
         snippet = <<-END
         x = [1,2]
-        x.map {|y| y.to_s }
+        y = ->(y) { y.to_s }
+        x.map(&y)
         END
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Array", [nominal("String")]))
+        expect(result).to eq(bottom)
+      end
+
+      specify "Array#each without a block" do
+        snippet = <<-END
+        x = [1,2]
+        x.each {|y| y.to_s }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
 
       specify "Array#each" do

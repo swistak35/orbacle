@@ -704,12 +704,13 @@ module Orbacle
     end
 
     def send_primitive_array_map(_class_name, message_send)
-      raise if message_send.block.nil?
+      return unless Worklist::BlockLambda === message_send.block
 
       unwrapping_node = Node.new(:unwrap_array, {}, nil)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
+
       block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
       arg_node = block_lambda_nodes.args.values.first
       @graph.add_edge(unwrapping_node, arg_node)
@@ -724,7 +725,7 @@ module Orbacle
     end
 
     def send_primitive_array_each(_class_name, message_send)
-      raise if message_send.block.nil?
+      return unless Worklist::BlockLambda === message_send.block
 
       unwrapping_node = Node.new(:unwrap_array, {}, nil)
       @graph.add_vertex(unwrapping_node)
