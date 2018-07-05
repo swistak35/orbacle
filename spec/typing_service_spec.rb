@@ -1211,6 +1211,134 @@ module Orbacle
         expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(union([nominal("Integer"), nominal("String")]))
       end
 
+      specify "call method with block with 2 args" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42, "foo"
+          end
+        end
+        Foo.new.bar do |x, y|
+          $x = x
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "call method with block with 2 args 2" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42, "foo"
+          end
+        end
+        Foo.new.bar do |x, y|
+          $x = y
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+      specify "call method with block with 2 args and one named" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42, "foo", foo: 42.0
+          end
+        end
+        Foo.new.bar do |x, y, foo:|
+          $res = foo
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Float"))
+      end
+
+      specify "call method with block with splat" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42, "foo", :bar
+          end
+        end
+        Foo.new.bar do |x, *y|
+          $x = y
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Symbol")])]))
+      end
+
+      specify "call method with yield with splat with block pt1" do
+        snippet = <<-END
+        class Foo
+          def bar
+            arr = ["foo", :bar]
+            yield 42, *arr
+          end
+        end
+        Foo.new.bar do |x, y, z|
+          $res = y
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+      end
+
+      specify "call method with yield with splat with block pt2" do
+        snippet = <<-END
+        class Foo
+          def bar
+            arr = ["foo", :bar]
+            yield 42, *arr
+          end
+        end
+        Foo.new.bar do |x, y, z|
+          $res = z
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+      end
+
+      specify "call method with block with optional argument" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42
+          end
+        end
+        Foo.new.bar do |x, y = "foo"|
+          $x = y
+        end
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
       specify "method call from parent class" do
         snippet = <<-END
         class Foo
