@@ -1809,7 +1809,7 @@ module Orbacle
         expect(result).to eq(nominal("Integer"))
       end
 
-      specify "overriding block" do
+      specify "overriding block pt1" do
         snippet = <<-END
         class Parent
           def foo
@@ -1831,6 +1831,30 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "overriding block pt2" do
+        snippet = <<-END
+        class Parent
+          def foo
+            yield 42
+          end
+        end
+        class Child < Parent
+          def foo
+            super do |y|
+              y
+            end
+          end
+        end
+        Child.new.foo do |y|
+          $res = y
+        end
+        $res
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
       end
     end
 
