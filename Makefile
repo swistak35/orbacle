@@ -1,4 +1,4 @@
-mutant: ## Install gem dependencies
+mutant:
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_int"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_float"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_rational"
