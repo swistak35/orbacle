@@ -529,12 +529,24 @@ module Orbacle
 
     def connect_yields_to_block_lambda(yields_nodes, block_node)
       yields_nodes.each do |yield_nodes|
-        block_lambda = @tree.get_lambda(block_node.lambda_id)
-        block_lambda_nodes = @graph.get_lambda_nodes(block_lambda.id)
-        connect_actual_args_to_formal_args(block_lambda.args, block_lambda_nodes.args, yield_nodes.send_args)
+        lambda_ids = if Worklist::BlockLambda === block_node
+          [block_node.lambda_id]
+        elsif Worklist::BlockNode === block_node
+          @result[block_node.node].enum_for(:each_possible_type).map do |possible_type|
+            if possible_type.instance_of?(LambdaType)
+              possible_type.lambda_id
+            end
+          end.compact
+        end
 
-        @graph.add_edge(block_lambda_nodes.result, yield_nodes.send_result)
-        @worklist.enqueue_node(yield_nodes.send_result)
+        lambda_ids.each do |lambda_id|
+          block_lambda = @tree.get_lambda(lambda_id)
+          block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
+          connect_actual_args_to_formal_args(block_lambda.args, block_lambda_nodes.args, yield_nodes.send_args)
+
+          @graph.add_edge(block_lambda_nodes.result, yield_nodes.send_result)
+          @worklist.enqueue_node(yield_nodes.send_result)
+        end
       end
     end
 

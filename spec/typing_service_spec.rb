@@ -1337,7 +1337,7 @@ module Orbacle
         expect(result).to eq(nominal("String"))
       end
 
-      xspecify "call method with blockarg" do
+      specify "call method with blockarg" do
         snippet = <<-END
         class Bar
           def foo
@@ -1352,6 +1352,44 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("String"))
+      end
+
+      specify "call method with blockarg, more than one lambda possible" do
+        snippet = <<-END
+        class Bar
+          def foo
+            $res = yield 42
+          end
+        end
+        y = if random
+          ->(y) { "foo" }
+        else
+          ->(y) { :foo }
+        end
+        Bar.new.foo(&y)
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+      end
+
+      specify "call method with stupid blockarg" do
+        snippet = <<-END
+        class Bar
+          def foo
+            $res = yield 42
+          end
+        end
+        y = 78
+        Bar.new.foo(&y)
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
       end
 
       specify "method call from parent class" do
