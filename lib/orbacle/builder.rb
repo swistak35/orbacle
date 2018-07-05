@@ -205,17 +205,17 @@ module Orbacle
     end
 
     def handle_int(ast, context)
-      value = ast.children[0]
-      n = add_vertex(Node.new(:int, { value: value }, build_location_from_ast(context, ast)))
+      value = one(ast.children)
+      n = add_vertex(Node.new(:int, { value: value }))
 
-      return Result.new(n, context)
+      Result.new(n, context)
     end
 
     def handle_float(ast, context)
-      value = ast.children[0]
-      n = add_vertex(Node.new(:float, { value: value }, build_location_from_ast(context, ast)))
+      value = one(ast.children)
+      n = add_vertex(Node.new(:float, { value: value }))
 
-      return Result.new(n, context)
+      Result.new(n, context)
     end
 
     def handle_rational(ast, context)
@@ -1343,6 +1343,10 @@ module Orbacle
 
     def lambda_ast?(send_expr)
       send_expr == Parser::AST::Node.new(:send, [nil, :lambda])
+    end
+
+    def one(arr)
+      arr[0]
     end
   end
 end

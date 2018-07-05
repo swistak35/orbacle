@@ -4,47 +4,53 @@ require 'support/builder_helper'
 require 'ostruct'
 
 module Orbacle
-  RSpec.describe "Builder - primitives" do
+  RSpec.describe Builder do
     include BuilderHelper
 
-    specify "int" do
-      snippet = <<-END
-      42
-      END
+    describe "#handle_int" do
+      specify "int" do
+        snippet = <<-END
+        42
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:int, { value: 42 }))
+        expect(result.graph).to include_node(node(:int, { value: 42 }))
+        expect(result.final_node).to eq(node(:int, { value: 42 }))
+      end
+
+      specify "negative int" do
+        snippet = <<-END
+        -42
+        END
+
+        result = build_graph(snippet)
+
+        expect(result.final_node).to eq(node(:int, { value: -42 }))
+      end
     end
 
-    specify "negative int" do
-      snippet = <<-END
-      -42
-      END
+    describe "#handle_float" do
+      specify "float" do
+        snippet = <<-END
+        42.0
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:int, { value: -42 }))
-    end
+        expect(result.graph).to include_node(node(:float, { value: 42.0 }))
+        expect(result.final_node).to eq(node(:float, { value: 42.0 }))
+      end
 
-    specify "float" do
-      snippet = <<-END
-      42.0
-      END
+      specify "negative float" do
+        snippet = <<-END
+        -42.0
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:float, { value: 42.0 }))
-    end
-
-    specify "negative float" do
-      snippet = <<-END
-      -42.0
-      END
-
-      result = build_graph(snippet)
-
-      expect(result.final_node).to eq(node(:float, { value: -42.0 }))
+        expect(result.final_node).to eq(node(:float, { value: -42.0 }))
+      end
     end
 
     specify "rational" do

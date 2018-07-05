@@ -1,5 +1,6 @@
 mutant: ## Install gem dependencies
-	# @bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::ParseFileMethods"
+	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_int"
+	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_float"
 
 test:
 	bundle exec rspec spec
@@ -12,3 +13,5 @@ bundle:
 
 index-itself:
 	bundle exec exe/orbaclerun index
+
+setup: bundle
