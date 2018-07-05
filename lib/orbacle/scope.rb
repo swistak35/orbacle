@@ -4,9 +4,9 @@ module Orbacle
       new([], false)
     end
 
-    def initialize(elems, is_metaklass)
+    def initialize(elems, is_eigenclass)
       @elems = elems
-      @is_metaklass = is_metaklass
+      @is_eigenclass = is_eigenclass
     end
 
     attr_reader :elems
@@ -15,17 +15,17 @@ module Orbacle
       if const_ref.absolute?
         Scope.new(const_ref.const_name.elems, false)
       else
-        Scope.new(elems + const_ref.const_name.elems, metaklass?)
+        Scope.new(elems + const_ref.const_name.elems, eigenclass?)
       end
     end
 
-    def increase_by_metaklass
-      raise if metaklass?
+    def increase_by_eigenclass
+      raise if eigenclass?
       Scope.new(elems, true)
     end
 
     def decrease
-      if metaklass?
+      if eigenclass?
         Scope.new(elems, false)
       elsif elems.empty?
         raise
@@ -40,19 +40,19 @@ module Orbacle
 
     def absolute_str
       klasslike_name = elems.join("::")
-      if metaklass?
+      if eigenclass?
         "Metaklass(#{klasslike_name})"
       else
         klasslike_name
       end
     end
 
-    def metaklass?
-      @is_metaklass
+    def eigenclass?
+      @is_eigenclass
     end
 
     def ==(other)
-      @elems == other.elems && metaklass? == other.metaklass?
+      @elems == other.elems && eigenclass? == other.eigenclass?
     end
 
     def to_s
