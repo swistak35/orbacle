@@ -257,7 +257,7 @@ module Orbacle
     end
 
     def handle_lambda(node, sources)
-      LambdaType.new(node.params.fetch(:id))
+      ProcType.new(node.params.fetch(:id))
     end
 
     def handle_unwrap_hash_keys(node, sources)
@@ -414,7 +414,7 @@ module Orbacle
       @result[message_send.send_obj].each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, possible_type.name, message_send)
-        elsif possible_type.instance_of?(LambdaType) && message_send.message_send == "call"
+        elsif possible_type.instance_of?(ProcType) && message_send.message_send == "call"
           handle_proc_call(possible_type, message_send)
         elsif possible_type.is_a?(ClassType)
           handle_class_send(possible_type.name, message_send)
@@ -533,7 +533,7 @@ module Orbacle
           [block_node.lambda_id]
         elsif Worklist::BlockNode === block_node
           @result[block_node.node].enum_for(:each_possible_type).map do |possible_type|
-            if possible_type.instance_of?(LambdaType)
+            if possible_type.instance_of?(ProcType)
               possible_type.lambda_id
             elsif possible_type == NominalType.new("Symbol")
             end

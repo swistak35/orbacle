@@ -1,5 +1,5 @@
 module Orbacle
-  class LambdaType
+  class ProcType
     def initialize(lambda_id)
       @lambda_id = lambda_id
     end
