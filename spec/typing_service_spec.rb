@@ -1582,6 +1582,20 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
+
+      specify "when can't find super" do
+        snippet = <<-END
+        class Child
+          def foo(x)
+            super
+          end
+        end
+        Child.new.foo(42)
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
     end
 
     describe "built-ins Object" do
