@@ -39,9 +39,9 @@ module Orbacle
       when :complex
         handle_complex(ast, context)
       when :true
-        handle_true(ast, context)
+        handle_bool(ast, context)
       when :false
-        handle_false(ast, context)
+        handle_bool(ast, context)
       when :nil
         handle_nil(ast, context)
       when :str
@@ -218,28 +218,22 @@ module Orbacle
       Result.new(n, context)
     end
 
-    def handle_rational(ast, context)
-      n = add_vertex(Node.new(:rational, {}, build_location_from_ast(context, ast)))
+    def handle_rational(_ast, context)
+      n = add_vertex(Node.new(:rational, {}))
 
-      return Result.new(n, context)
+      Result.new(n, context)
     end
 
-    def handle_complex(ast, context)
-      n = add_vertex(Node.new(:complex, {}, build_location_from_ast(context, ast)))
+    def handle_complex(_ast, context)
+      n = add_vertex(Node.new(:complex, {}))
 
-      return Result.new(n, context)
+      Result.new(n, context)
     end
 
-    def handle_true(ast, context)
-      n = add_vertex(Node.new(:bool, { value: true }, build_location_from_ast(context, ast)))
+    def handle_bool(_ast, context)
+      n = add_vertex(Node.new(:bool, {}))
 
-      return Result.new(n, context)
-    end
-
-    def handle_false(ast, context)
-      n = add_vertex(Node.new(:bool, { value: false }, build_location_from_ast(context, ast)))
-
-      return Result.new(n, context)
+      Result.new(n, context)
     end
 
     def handle_nil(ast, context)

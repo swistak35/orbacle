@@ -53,44 +53,53 @@ module Orbacle
       end
     end
 
-    specify "rational" do
-      snippet = <<-END
-      2.0r
-      END
+    describe "#handle_rational" do
+      specify "rational" do
+        snippet = <<-END
+        2.0r
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:rational))
+        expect(result.graph).to include_node(node(:rational))
+        expect(result.final_node).to eq(node(:rational))
+      end
     end
 
-    specify "complex" do
-      snippet = <<-END
-      1i
-      END
+    describe "#handle_complex" do
+      specify "complex" do
+        snippet = <<-END
+        1i
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:complex))
+        expect(result.graph).to include_node(node(:complex))
+        expect(result.final_node).to eq(node(:complex))
+      end
     end
 
-    specify "bool" do
-      snippet = <<-END
-      true
-      END
+    describe "#handle_bool" do
+      specify "true" do
+        snippet = <<-END
+        true
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:bool, { value: true }))
-    end
+        expect(result.graph).to include_node(node(:bool))
+        expect(result.final_node).to eq(node(:bool))
+      end
 
-    specify "bool" do
-      snippet = <<-END
-      false
-      END
+      specify "false" do
+        snippet = <<-END
+        false
+        END
 
-      result = build_graph(snippet)
+        result = build_graph(snippet)
 
-      expect(result.final_node).to eq(node(:bool, { value: false }))
+        expect(result.final_node).to eq(node(:bool))
+      end
     end
 
     specify "nil" do

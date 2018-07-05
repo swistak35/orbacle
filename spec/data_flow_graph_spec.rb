@@ -1223,7 +1223,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:bool, { value: false }),
+          node(:bool),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
@@ -1250,7 +1250,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:bool, { value: false }),
+          node(:bool),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
@@ -1265,7 +1265,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:bool, { value: false }),
+          node(:bool),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
@@ -1280,7 +1280,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:bool, { value: false }),
+          node(:bool),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
@@ -1626,7 +1626,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.final_node).to eq(node(:nil))
       end
 
@@ -1639,7 +1639,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.graph).to include_node(node(:int, { value: 42 }))
         expect(result.final_node).to eq(node(:nil))
       end
@@ -1652,7 +1652,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.final_node).to eq(node(:nil))
       end
 
@@ -1665,7 +1665,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.graph).to include_node(node(:int, { value: 42 }))
         expect(result.final_node).to eq(node(:nil))
       end
@@ -1678,7 +1678,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.final_node).to eq(node(:nil))
       end
 
@@ -1691,7 +1691,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.graph).to include_node(node(:int, { value: 42 }))
         expect(result.final_node).to eq(node(:nil))
       end
@@ -1704,7 +1704,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.final_node).to eq(node(:nil))
       end
 
@@ -1717,7 +1717,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.graph).to include_node(node(:int, { value: 42 }))
         expect(result.final_node).to eq(node(:nil))
       end
@@ -1776,7 +1776,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:bool, { value: true }))
+        expect(result.graph).to include_node(node(:bool))
         expect(result.graph).to include_node(node(:sym, { value: :foo }))
         expect(result.graph).to include_edge(
           node(:str, { value: "foo" }),
