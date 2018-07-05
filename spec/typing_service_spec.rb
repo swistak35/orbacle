@@ -1183,7 +1183,42 @@ module Orbacle
     end
 
     describe "calling user-defined methods - blocks" do
-      specify "simple block" do
+      specify "yield no args, block no args" do
+        snippet = <<-END
+        class Foo
+          def bar
+            $res = yield
+          end
+        end
+        Foo.new.bar do
+        end
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Nil"))
+      end
+
+      specify "yield no args, block one arg MISBEHAVIOUR" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield
+          end
+        end
+        Foo.new.bar do |x|
+          $res = x
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        # expect(result).to eq(nominal("Nil"))
+        expect(result).to eq(bottom)
+      end
+
+      specify "yield one arg, block one arg pt1" do
         snippet = <<-END
         class Foo
           def bar
@@ -1201,7 +1236,25 @@ module Orbacle
         expect(result).to eq(nominal("Integer"))
       end
 
-      specify "method with more than one yield" do
+      specify "yield one arg, block one arg pt2" do
+        snippet = <<-END
+        class Foo
+          def bar
+            $res = yield 42
+          end
+        end
+        Foo.new.bar do |x|
+          x
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "two yields, block one arg" do
         snippet = <<-END
         class Foo
           def bar
@@ -1210,24 +1263,43 @@ module Orbacle
           end
         end
         Foo.new.bar do |x|
-          x
+          $res = x
         end
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :lvar, { var_name: "x" })).to eq(union([nominal("Integer"), nominal("String")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("String")]))
       end
 
-      specify "handling yield result" do
+      specify "yield two args, block two args pt1" do
         snippet = <<-END
         class Foo
           def bar
-            $res = yield 42
+            yield 42, "foo"
           end
         end
-        Foo.new.bar do |x|
-          "foo"
+        Foo.new.bar do |x, y|
+          $res = x
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "yield two args, block two args pt2" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42, "foo"
+          end
+        end
+        Foo.new.bar do |x, y|
+          $res = y
         end
         $res
         END
@@ -1237,50 +1309,14 @@ module Orbacle
         expect(result).to eq(nominal("String"))
       end
 
-      specify "call method with block with 2 args" do
+      specify "yield arg and named, block one arg one named" do
         snippet = <<-END
         class Foo
           def bar
-            yield 42, "foo"
+            yield 42, foo: 42.0
           end
         end
-        Foo.new.bar do |x, y|
-          $x = x
-        end
-        $x
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(nominal("Integer"))
-      end
-
-      specify "call method with block with 2 args 2" do
-        snippet = <<-END
-        class Foo
-          def bar
-            yield 42, "foo"
-          end
-        end
-        Foo.new.bar do |x, y|
-          $x = y
-        end
-        $x
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(nominal("String"))
-      end
-
-      specify "call method with block with 2 args and one named" do
-        snippet = <<-END
-        class Foo
-          def bar
-            yield 42, "foo", foo: 42.0
-          end
-        end
-        Foo.new.bar do |x, y, foo:|
+        Foo.new.bar do |x, foo:|
           $res = foo
         end
         $res
@@ -1291,25 +1327,25 @@ module Orbacle
         expect(result).to eq(nominal("Float"))
       end
 
-      specify "call method with block with splat" do
+      specify "yield two args, block one splat" do
         snippet = <<-END
         class Foo
           def bar
-            yield 42, "foo", :bar
+            yield 42, "foo"
           end
         end
-        Foo.new.bar do |x, *y|
-          $x = y
+        Foo.new.bar do |*x|
+          $res = x
         end
-        $x
+        $res
         END
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Symbol")])]))
+        expect(result).to eq(generic("Array", [union([nominal("String"), nominal("Integer")])]))
       end
 
-      specify "call method with yield with splat with block pt1" do
+      specify "yield one arg one splat, block three args pt1" do
         snippet = <<-END
         class Foo
           def bar
@@ -1328,7 +1364,7 @@ module Orbacle
         expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
       end
 
-      specify "call method with yield with splat with block pt2" do
+      specify "yield one arg one splat, block three args pt2" do
         snippet = <<-END
         class Foo
           def bar
@@ -1347,7 +1383,7 @@ module Orbacle
         expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
       end
 
-      specify "call method with block with optional argument" do
+      specify "yield one arg, block one arg one opt arg" do
         snippet = <<-END
         class Foo
           def bar
@@ -1355,14 +1391,32 @@ module Orbacle
           end
         end
         Foo.new.bar do |x, y = "foo"|
-          $x = y
+          $res = y
         end
-        $x
+        $res
         END
 
         result = type_snippet(snippet)
 
         expect(result).to eq(nominal("String"))
+      end
+
+      specify "yield two args, block one arg one opt arg" do
+        snippet = <<-END
+        class Foo
+          def bar
+            yield 42, 42
+          end
+        end
+        Foo.new.bar do |x, y = "foo"|
+          $res = y
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Integer")]))
       end
 
       specify "call method with blockarg" do
@@ -1419,6 +1473,22 @@ module Orbacle
 
         expect(result).to eq(bottom)
       end
+
+      xspecify "block shorthand notation" do
+        snippet = <<-END
+        class Bar
+          def foo
+            $res = yield 42
+          end
+        end
+        Bar.new.foo(&:succ)
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "calling user-defined methods call objects" do
@@ -1440,7 +1510,6 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
-
 
       specify "method call from parent class" do
         snippet = <<-END

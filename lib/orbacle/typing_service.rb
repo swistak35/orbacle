@@ -535,6 +535,7 @@ module Orbacle
           @result[block_node.node].enum_for(:each_possible_type).map do |possible_type|
             if possible_type.instance_of?(LambdaType)
               possible_type.lambda_id
+            elsif possible_type == NominalType.new("Symbol")
             end
           end.compact
         end
