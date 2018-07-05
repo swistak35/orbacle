@@ -1517,7 +1517,7 @@ module Orbacle
         expect(result).to eq(nominal("Integer"))
       end
 
-      specify "passing block" do
+      specify "passing block - testing yield result" do
         snippet = <<-END
         class Parent
           def foo()
@@ -1785,6 +1785,28 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(bottom)
+      end
+
+      specify "passing block" do
+        snippet = <<-END
+        class Parent
+          def foo
+            yield 42
+          end
+        end
+        class Child < Parent
+          def foo
+            super
+          end
+        end
+        Child.new.foo do |y|
+          $res = y
+        end
+        $res
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
       end
     end
 

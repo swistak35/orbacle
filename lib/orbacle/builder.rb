@@ -1046,10 +1046,11 @@ module Orbacle
 
       if context.analyzed_method
         method_nodes = @graph.get_metod_nodes(context.analyzed_method)
-        method_nodes.zsupers << Graph::ZSuper.new(call_result_node, nil)
+        zsuper = Graph::ZSuper.new(call_result_node, nil)
+        method_nodes.zsupers << zsuper
       end
 
-      return Result.new(call_result_node, context)
+      return Result.new(call_result_node, context, { message_send: zsuper })
     end
 
     def handle_while(ast, context)

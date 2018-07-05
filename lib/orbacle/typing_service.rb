@@ -502,11 +502,16 @@ module Orbacle
 
         super_method_nodes = @graph.get_metod_nodes(super_method.id)
         connect_actual_args_to_formal_args(super_method.args, super_method_nodes.args, message_send.send_args)
+        connect_yields_to_block_lambda(@graph.get_metod_nodes(super_method.id).yields, message_send.block)
         connect_method_result_to_node(super_method.id, zsuper_call.send_result)
       end
 
-      @graph.get_metod_nodes(found_method.id).yields.each do |yield_nodes|
-        block_lambda = @tree.get_lambda(message_send.block.lambda_id)
+      connect_yields_to_block_lambda(@graph.get_metod_nodes(found_method.id).yields, message_send.block)
+    end
+
+    def connect_yields_to_block_lambda(yields_nodes, block_node)
+      yields_nodes.each do |yield_nodes|
+        block_lambda = @tree.get_lambda(block_node.lambda_id)
         block_lambda_nodes = @graph.get_lambda_nodes(block_lambda.id)
         connect_actual_args_to_formal_args(block_lambda.args, block_lambda_nodes.args, yield_nodes.send_args)
 
