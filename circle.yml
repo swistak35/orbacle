@@ -33,7 +33,7 @@ jobs:
       - save_cache:
           key: bundle-v2-{{ checksum "Gemfile.lock" }}
           paths:
-            - ~vendor/bundle
+            - ~/vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.5.1:
