@@ -2,6 +2,7 @@ module Orbacle
   class Node
     def initialize(type, params, location = nil)
       @type = type
+      raise if !params.is_a?(Hash)
       @params = params
       @location = location
     end

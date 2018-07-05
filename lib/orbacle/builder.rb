@@ -606,7 +606,7 @@ module Orbacle
           location: location,
           args: GlobalTree::ArgumentsTree.new([], [], nil),
           visibility: context.analyzed_klass.method_visibility))
-      @graph.store_metod_nodes(metod.id, [])
+      @graph.store_metod_nodes(metod.id, {})
       @graph.add_edge(ivar_definition_node, @graph.get_metod_nodes(metod.id).result)
     end
 

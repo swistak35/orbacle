@@ -102,6 +102,7 @@ module Orbacle
     end
 
     def store_metod_nodes(metod_id, arguments_nodes)
+      raise if !arguments_nodes.is_a?(Hash)
       metods[metod_id] ||= Metod.new(
         arguments_nodes,
         add_vertex(Node.new(:method_result, {})),

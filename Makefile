@@ -4,6 +4,7 @@ mutant:
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_rational"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_complex"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_bool"
+	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::DefineBuiltins"
 
 test:
 	bundle exec rspec spec
