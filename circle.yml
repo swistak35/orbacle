@@ -6,18 +6,18 @@ jobs:
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
-          BUNDLE_PATH: /tmp/vendor/bundle
+          BUNDLE_PATH: ~/vendor/bundle
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - bundle-v2-{{ checksum "Gemfile.lock" }}
-      #       - bundle-v2-
+      - restore_cache:
+          keys:
+            - bundle-v2-{{ checksum "Gemfile.lock" }}
+            - bundle-v2-
       - run: make bundle
-      # - save_cache:
-      #     key: bundle-v2-{{ checksum "Gemfile.lock" }}
-      #     paths:
-      #       - vendor/bundle
+      - save_cache:
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~/vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.4.4:
@@ -26,18 +26,18 @@ jobs:
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
-          BUNDLE_PATH: ../vendor/bundle
+          BUNDLE_PATH: ~/vendor/bundle
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - bundle-v2-{{ checksum "Gemfile.lock" }}
-      #       - bundle-v2-
+      - restore_cache:
+          keys:
+            - bundle-v2-{{ checksum "Gemfile.lock" }}
+            - bundle-v2-
       - run: make bundle
-      # - save_cache:
-      #     key: bundle-v2-{{ checksum "Gemfile.lock" }}
-      #     paths:
-      #       - vendor/bundle
+      - save_cache:
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~vendor/bundle
       - run: make test
       - run: make index-itself
   build-2.5.1:
@@ -49,15 +49,15 @@ jobs:
           BUNDLE_PATH: ~/vendor/bundle
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - bundle-v2-{{ checksum "Gemfile.lock" }}
-      #       - bundle-v2-
+      - restore_cache:
+          keys:
+            - bundle-v2-{{ checksum "Gemfile.lock" }}
+            - bundle-v2-
       - run: make bundle
-      # - save_cache:
-      #     key: bundle-v2-{{ checksum "Gemfile.lock" }}
-      #     paths:
-      #       - vendor/bundle
+      - save_cache:
+          key: bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~/vendor/bundle
       - run: make test
       - run: make index-itself
 workflows:
