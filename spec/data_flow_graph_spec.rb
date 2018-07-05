@@ -1391,6 +1391,20 @@ module Orbacle
       end
     end
 
+    describe "undef" do
+      specify do
+        snippet = <<-END
+        class Foo
+          undef bar
+        end
+        END
+
+        expect do
+          generate_cfg(snippet)
+        end.not_to raise_error
+      end
+    end
+
     describe "multiple assignment" do
       specify "multiple assignment - local variables" do
         snippet = <<-END

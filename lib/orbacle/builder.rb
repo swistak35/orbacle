@@ -99,6 +99,8 @@ module Orbacle
         handle_ref(ast, context, :nthref)
       when :defined?
         handle_defined(ast, context)
+      when :undef
+        handle_undef(ast, context)
       when :begin
         handle_begin(ast, context)
       when :kwbegin
@@ -360,6 +362,12 @@ module Orbacle
       node = add_vertex(Node.new(:defined, {}, build_location_from_ast(context, ast)))
 
       return Result.new(node, context)
+    end
+
+    def handle_undef(ast, context)
+      node = add_vertex(Node.new(:nil, {}))
+
+      Result.new(node, context)
     end
 
     def handle_begin(ast, context)
