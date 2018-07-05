@@ -1562,6 +1562,26 @@ module Orbacle
 
         expect(result).to eq(nominal("String"))
       end
+
+      specify "constructor example" do
+        snippet = <<-END
+        class Parent
+          def initialize(x)
+            x
+          end
+        end
+        class Child < Parent
+          def initialize(x)
+            $x = super
+          end
+        end
+        Child.new(42)
+        $x
+        END
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "built-ins Object" do
