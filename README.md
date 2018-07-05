@@ -2,11 +2,13 @@
 
 # Orbacle
 
-<img src="http://swistak35.com/img/orbacle-logo.png" alt="Orbacle logo" width="120px" align="left" />
+<img src="http://swistak35.com/img/orbacle-logo.png" alt="Orbacle logo" width="100px" align="left" />
 
-Program allowing for smart jump-to-definitions, autocompletion, constant renaming and more.
+Language server using engine allowing for smart jump-to-definitions, understanding metaprogramming definitions, refactoring and more.
 
 Doing as MSc thesis for [Institute of Computer Science, University of Wrocław](http://ii.uni.wroc.pl).
+
+
 
 ## Objectives
 
