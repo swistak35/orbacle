@@ -1183,6 +1183,21 @@ module Orbacle
     end
 
     describe "calling user-defined methods - blocks" do
+      specify "yield, no block" do
+        snippet = <<-END
+        class Foo
+          def bar
+            $res = yield
+          end
+        end
+        Foo.new.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
       specify "yield no args, block no args" do
         snippet = <<-END
         class Foo

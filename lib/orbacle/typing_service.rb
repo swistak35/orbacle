@@ -538,6 +538,8 @@ module Orbacle
             elsif possible_type == NominalType.new("Symbol")
             end
           end.compact
+        else
+          []
         end
 
         lambda_ids.each do |lambda_id|
