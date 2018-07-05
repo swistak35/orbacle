@@ -243,32 +243,35 @@ module Orbacle
     end
 
     describe "instance variables" do
-      specify "usage of uninitialized instance variable" do
+      specify "usage of uninitialized instance variable MISBEHAVIOUR" do
         snippet = <<-END
         class Foo
           def bar
-            @baz
+            $res = @baz
           end
         end
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar_definition)).to eq(bottom)
+        # expect(result).to eq(nominal("Nil"))
+        expect(result).to eq(bottom)
       end
 
       specify "assignment of instance variable" do
         snippet = <<-END
         class Foo
           def bar
-            @baz = 42
+            $res = (@baz = 42)
           end
         end
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+        expect(result).to eq(nominal("Integer"))
       end
 
       specify "usage of instance variable" do
@@ -279,17 +282,39 @@ module Orbacle
           end
 
           def bar
-            @baz
+            $res = @baz
           end
         end
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar, { var_name: "@baz" })).to eq(nominal("Integer"))
+        expect(result).to eq(nominal("Integer"))
       end
 
-      specify "distinguish instance variables from class level instance variables" do
+      specify "distinguish instance variables from class level instance variables pt1" do
+        snippet = <<-END
+        class Fizz
+          @baz = 42
+
+          def setting_baz
+            @baz = "foo"
+          end
+
+          def getting_baz
+            $res = @baz
+          end
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("String"))
+      end
+
+      specify "distinguish instance variables from class level instance variables pt2" do
         snippet = <<-END
         class Fizz
           @baz = 42
@@ -302,12 +327,15 @@ module Orbacle
             @baz
           end
         end
+        class Fizz
+          $res = @baz
+        end
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar_definition)).to eq(nominal("String"))
-        expect(find_by_node(result, :clivar_definition)).to eq(nominal("Integer"))
+        expect(result).to eq(nominal("Integer"))
       end
 
       specify "usage of instance variable inside selfed method" do
@@ -316,14 +344,15 @@ module Orbacle
           @baz = 42
 
           def self.bar
-            @baz
+            $res = @baz
           end
         end
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar, { var_name: "@baz" })).to eq(nominal("Integer"))
+        expect(result).to eq(nominal("Integer"))
       end
     end
 
@@ -750,34 +779,33 @@ module Orbacle
         snippet = <<-END
         class Foo
           def initialize(foo)
-            @foo = foo
+            $res = foo
           end
         end
         Foo.new(42)
+        $res
         END
 
-        result = full_type_snippet(snippet)
-        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
-
-        final_result = type_snippet(snippet)
-        expect(final_result).to eq(nominal("Foo"))
+        result = type_snippet(snippet)
+        expect(result).to eq(nominal("Integer"))
       end
 
       specify "calling constructor from parent class" do
         snippet = <<-END
         class Foo
           def initialize(foo)
-            @foo = foo
+            $res = foo
           end
         end
         class Bar < Foo
         end
         Bar.new(42)
+        $res
         END
 
-        result = full_type_snippet(snippet)
+        result = type_snippet(snippet)
 
-        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+        expect(result).to eq(nominal("Integer"))
       end
 
       specify "constructor within module" do
@@ -785,17 +813,18 @@ module Orbacle
         module Foo
           class Bar
             def initialize(foo)
-              @foo = foo
+              $res = foo
             end
           end
         end
         module Foo
-          x = Bar.new(42)
+          Bar.new(42)
         end
+        $res
         END
 
-        result = full_type_snippet(snippet)
-        expect(find_by_node(result, :ivar_definition)).to eq(nominal("Integer"))
+        result = type_snippet(snippet)
+        expect(result).to eq(nominal("Integer"))
       end
     end
 
@@ -2058,14 +2087,6 @@ module Orbacle
       result = Builder.new(graph, worklist, tree).process_file(snippet, nil)
       typing_result = TypingService.new(Logger.new(nil)).(graph, worklist, tree)
       typing_result[result.node]
-    end
-
-    def full_type_snippet(snippet)
-      worklist = Worklist.new
-      graph = Graph.new
-      tree = GlobalTree.new
-      result = Builder.new(graph, worklist, tree).process_file(snippet, nil)
-      TypingService.new(Logger.new(nil)).(graph, worklist, tree)
     end
 
     def nominal(*args)
