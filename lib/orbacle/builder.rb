@@ -1292,7 +1292,7 @@ module Orbacle
     end
 
     def handle_match_with_lvasgn(ast, context)
-      return Result.new(add_vertex(Node.new(:str, {})), context)
+      return Result.new(add_vertex(Node.new(:int, {})), context)
     end
 
     def merge_contexts(context1, context2)

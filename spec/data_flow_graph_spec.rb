@@ -190,6 +190,18 @@ module Orbacle
       end
     end
 
+    describe "match-with-lvasgn" do
+      specify do
+        snippet = <<-END
+        /(?<foo>x)/ =~ bar
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:int))
+      end
+    end
+
     describe "local variables" do
       specify "local variable assignment" do
         snippet = <<-END
