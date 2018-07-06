@@ -202,6 +202,43 @@ module Orbacle
       end
     end
 
+    describe "match-current-line" do
+      specify do
+        snippet = <<-END
+        if /a/
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool))
+      end
+    end
+
+    describe "flipflop" do
+      specify "iflipflop" do
+        snippet = <<-END
+        if (x == 42)..(x == 44)
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool))
+      end
+
+      specify "eflipflop" do
+        snippet = <<-END
+        if (x == 42)...(x == 44)
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool))
+      end
+    end
+
     describe "local variables" do
       specify "local variable assignment" do
         snippet = <<-END

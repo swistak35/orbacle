@@ -170,6 +170,9 @@ module Orbacle
       when :and_asgn then handle_and_asgn(ast, context)
 
       when :match_with_lvasgn then handle_match_with_lvasgn(ast, context)
+      when :match_current_line then handle_match_current_line(ast, context)
+      when :iflipflop then handle_flipflop(ast, context)
+      when :eflipflop then handle_flipflop(ast, context)
 
       else raise ArgumentError.new(ast.type)
       end
@@ -1293,6 +1296,14 @@ module Orbacle
 
     def handle_match_with_lvasgn(ast, context)
       return Result.new(add_vertex(Node.new(:int, {})), context)
+    end
+
+    def handle_match_current_line(ast, context)
+      Result.new(add_vertex(Node.new(:bool, {})), context)
+    end
+
+    def handle_flipflop(ast, context)
+      Result.new(add_vertex(Node.new(:bool, {})), context)
     end
 
     def merge_contexts(context1, context2)
