@@ -4,8 +4,8 @@ module Orbacle
   class Worklist
     BlockNode = Struct.new(:node)
     BlockLambda = Struct.new(:lambda_id)
-    MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block)
-    SuperSend = Struct.new(:send_args, :send_result, :block, :method_id)
+    MessageSend = Struct.new(:message_send, :send_obj, :send_args, :send_result, :block, :location)
+    SuperSend = Struct.new(:send_args, :send_result, :block, :method_id, :location)
 
     def initialize
       @message_sends = Set.new

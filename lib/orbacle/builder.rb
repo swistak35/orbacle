@@ -524,7 +524,7 @@ module Orbacle
 
       call_result_node = add_vertex(Node.new(:call_result, { csend: csend }))
 
-      message_send = Worklist::MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, block_node)
+      message_send = Worklist::MessageSend.new(message_name, call_obj_node, call_arg_nodes, call_result_node, block_node, build_location_from_ast(context, ast))
       @worklist.add_message_send(message_send)
 
       return Result.new(call_result_node, final_context, { message_send: message_send })
@@ -1040,7 +1040,7 @@ module Orbacle
 
       call_result_node = add_vertex(Node.new(:call_result, {}))
 
-      super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, block_node, final_context.analyzed_method)
+      super_send = Worklist::SuperSend.new(call_arg_nodes, call_result_node, block_node, final_context.analyzed_method, build_location_from_ast(context, ast))
       @worklist.add_message_send(super_send)
 
       return Result.new(call_result_node, final_context, { message_send: super_send })

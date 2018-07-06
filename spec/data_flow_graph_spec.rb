@@ -1185,11 +1185,7 @@ module Orbacle
         node(:const, { const_ref: ConstRef.from_full_name("Foo", Nesting.empty) }),
         node(:call_obj))
 
-      expect(result.message_sends).to include(
-        msend("new",
-              node(:call_obj),
-              [],
-              node(:call_result, { csend: false })))
+      expect(result.message_sends.last.message_send).to eq("new")
     end
 
     describe "super calls" do
