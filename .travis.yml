@@ -4,4 +4,4 @@ rvm:
 script:
   - make build
   - make install
-  - ./script/index_gems.sh 0 10
+  - ./script/index_gems.sh 0 100

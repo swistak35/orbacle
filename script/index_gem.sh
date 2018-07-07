@@ -1,8 +1,5 @@
 #!/bin/sh
 
-set -e
-set -x
-
 gem_number=$1
 current_sha=$(git rev-parse HEAD)
 results_path="tmp/results/$current_sha"
