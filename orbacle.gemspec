@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.description   = "A simple hello world gem"
   spec.homepage      = 'https://github.com/swistak35/orbacle'
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features|script)/}) }
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
