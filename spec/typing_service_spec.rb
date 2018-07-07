@@ -2077,6 +2077,29 @@ module Orbacle
 
         expect(result).to eq(bottom)
       end
+
+      specify "super not in the method" do
+        snippet = <<-END
+        super
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
+      specify "super in a method which is not in a class" do
+        snippet = <<-END
+        def foo
+          $res = super
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
     end
 
     describe "lambdas" do
