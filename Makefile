@@ -19,3 +19,9 @@ index-itself:
 	bundle exec exe/orbaclerun index
 
 setup: bundle
+
+build:
+	@gem build orbacle.gemspec
+
+install: build
+	@gem install orbacle-0.0.1.gem
