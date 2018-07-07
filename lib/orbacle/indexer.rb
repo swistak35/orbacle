@@ -1,9 +1,42 @@
 require 'pathname'
 require 'thread'
+require 'benchmark'
 
 module Orbacle
   class Indexer
     QueueElement = Struct.new(:ast, :file_path)
+    class StatsRecorder
+      def initialize
+        @timers = Hash.new(0.0)
+        @counters = Hash.new(0)
+        @values = Hash.new
+      end
+
+      def measure(timer)
+        process_result = nil
+        benchmark_result = Benchmark.measure do
+          process_result = yield
+        end
+        @timers[timer] += benchmark_result.real
+        process_result
+      end
+
+      def all_stats
+        @timers.merge(@counters).merge(@values)
+      end
+
+      def inc(counter_key, by = 1)
+        @counters[counter_key] += by
+      end
+
+      def counter(counter_key)
+        @counters[counter_key]
+      end
+
+      def set_value(key, value)
+        @values[key] = value
+      end
+    end
 
     class ParsingProcess
       def initialize(logger, queue, files)
@@ -51,6 +84,7 @@ module Orbacle
       project_root_path = Pathname.new(project_root)
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
+      stats_recorder = StatsRecorder.new
       worklist = Worklist.new
       tree = GlobalTree.new
       graph = Graph.new
@@ -61,16 +95,17 @@ module Orbacle
 
       logger.info "Parsing..."
       parsing_process = ParsingProcess.new(logger, queue, files)
-      parsing_process.call()
+      stats_recorder.measure(:parsing) { parsing_process.call() }
 
       logger.info "Building graph..."
       building_process = BuildingProcess.new(queue, @parser)
-      building_process.call()
+      stats_recorder.measure(:building) { building_process.call() }
 
       logger.info "Typing..."
-      typing_result = TypingService.new(logger).(graph, worklist, tree)
+      typing_service = TypingService.new(logger, stats_recorder)
+      typing_result = stats_recorder.measure(:typing) { typing_service.(graph, worklist, tree) }
 
-      return tree, typing_result, graph
+      return tree, typing_result, graph, stats_recorder
     end
 
     private

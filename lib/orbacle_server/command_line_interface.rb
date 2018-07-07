@@ -3,6 +3,7 @@ require 'logger'
 require 'fileutils'
 require 'orbacle'
 require 'lsp'
+require 'json'
 
 module OrbacleServer
   class CommandLineInterface
@@ -30,6 +31,7 @@ module OrbacleServer
 
       engine = Orbacle::Engine.new(logger)
       engine.index(project_root)
+      puts engine.stats_recorder.all_stats.to_json
     end
 
     def file_server(options)

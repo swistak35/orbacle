@@ -8,27 +8,9 @@ module Orbacle
       attr_reader :node
     end
 
-    class ResultHash
-      def initialize
-        @impl = Hash.new
-        @default = BottomType.new
-      end
-
-      def [](key)
-        @impl[key] || @default
-      end
-
-      def []=(key, newvalue)
-        @impl[key] = newvalue
-      end
-
-      def find(&block)
-        @impl.enum_for(:each).find(&block)
-      end
-    end
-
-    def initialize(logger)
+    def initialize(logger, stats)
       @logger = logger
+      @stats = stats
     end
 
     def call(graph, worklist, tree)
@@ -36,10 +18,10 @@ module Orbacle
       @graph = graph
       @tree = tree
 
-      @result = ResultHash.new
+      @result = Hash.new(BottomType.new)
 
-      processed_nodes = 0
-      timestamp_started_processing = Time.now.to_i
+      stats.set_value(:initial_nodes, @graph.vertices.size)
+      stats.set_value(:initial_message_sends, @worklist.message_sends.size)
 
       @graph.vertices.to_a.each {|v| @worklist.enqueue_node(v) }
       while !@worklist.nodes.empty?
@@ -52,8 +34,8 @@ module Orbacle
               new_result = compute_result(node, @graph.parent_vertices(node))
               raise ArgumentError.new(node) if new_result.nil?
               @result[node] = new_result
-              processed_nodes += 1
-              puts "Processed nodes: #{processed_nodes} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size} #{Time.now.to_i - timestamp_started_processing}" if processed_nodes % 1000 == 0
+              stats.inc(:processed_nodes)
+              logger.debug("Processed nodes: #{stats.counter(:processed_nodes)} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}") if stats.counter(:processed_nodes) % 1000 == 0
 
               if current_result != @result[node]
                 @graph.adjacent_vertices(node).each do |adjacent_node|
@@ -97,11 +79,16 @@ module Orbacle
         end
       end
 
+      stats.set_value(:typed_nodes_all, @result.size)
+      stats.set_value(:typed_nodes_not_bottom, @result.count {|k,v| !v.bottom? })
+      stats.set_value(:typed_nodes_call_result, @result.count {|k,v| k.type == :call_result })
+      stats.set_value(:typed_nodes_call_result_not_bottom, @result.count {|k,v| k.type == :call_result && !v.bottom? })
+
       return @result
     end
 
     private
-    attr_reader :logger
+    attr_reader :logger, :stats
 
     def compute_result(node, sources)
       case node.type

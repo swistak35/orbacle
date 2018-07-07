@@ -4,9 +4,11 @@ module Orbacle
       @logger = logger
     end
 
+    attr_reader :stats_recorder
+
     def index(project_root)
       service = Indexer.new(logger)
-      @tree, @typing_result, @graph = service.(project_root: project_root)
+      @tree, @typing_result, @graph, @stats_recorder = service.(project_root: project_root)
     end
 
     def get_type_information(filepath, line, character)

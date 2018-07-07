@@ -308,7 +308,8 @@ module Orbacle
       tree = GlobalTree.new
       DefineBuiltins.new(graph, tree).()
       result = Builder.new(graph, worklist, tree).process_file(Parser::CurrentRuby.parse(snippet), nil)
-      typing_result = TypingService.new(Logger.new(nil)).(graph, worklist, tree)
+      stats_recorder = Indexer::StatsRecorder.new
+      typing_result = TypingService.new(Logger.new(nil), stats_recorder).(graph, worklist, tree)
       typing_result[result.node]
     end
 
