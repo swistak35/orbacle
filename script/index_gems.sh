@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -x
-
 start_gem_number=$1
 how_many=$2
 
@@ -22,12 +20,13 @@ do
   ./script/index_gem.sh $i $results_path
 done
 
+wget -q "https://github.com/dropbox/dbxcli/releases/download/v2.1.1/dbxcli-linux-amd64"
+chmod +x dbxcli-linux-amd64
 mkdir -p ~/.config/dbxcli/
-echo "{\"\":{\"personal\":\"$DROPBOX_KEY\"}}" > ~/.config/dbxcli/auth.json
+echo -n "{\"\":{\"personal\":\"$DROPBOX_KEY\"}}" > ~/.config/dbxcli/auth.json
 echo $(cat ~/.config/dbxcli/auth.json | sha1sum)
 
 cd tmp
-wget "https://github.com/dropbox/dbxcli/releases/download/v2.1.1/dbxcli-linux-amd64"
 for file in results/$current_sha/*
 do
   ./dbxcli-linux-amd64 put $file "orbacle/$file"
