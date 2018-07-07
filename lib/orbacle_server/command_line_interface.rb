@@ -31,7 +31,7 @@ module OrbacleServer
 
       engine = Orbacle::Engine.new(logger)
       engine.index(project_root)
-
+    ensure
       stats_filepath = options.fetch(:stats_file, Pathname.new(Dir.pwd).join("stats.json"))
       File.open(stats_filepath, "w") {|f| f.write(engine.stats_recorder.all_stats.to_json) }
     end

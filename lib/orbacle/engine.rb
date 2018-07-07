@@ -7,8 +7,9 @@ module Orbacle
     attr_reader :stats_recorder
 
     def index(project_root)
-      service = Indexer.new(logger)
-      @tree, @typing_result, @graph, @stats_recorder = service.(project_root: project_root)
+      @stats_recorder = Indexer::StatsRecorder.new
+      service = Indexer.new(logger, stats_recorder)
+      @tree, @typing_result, @graph = service.(project_root: project_root)
     end
 
     def get_type_information(filepath, line, character)

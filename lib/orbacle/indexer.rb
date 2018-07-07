@@ -13,12 +13,15 @@ module Orbacle
       end
 
       def measure(timer)
-        process_result = nil
-        benchmark_result = Benchmark.measure do
-          process_result = yield
-        end
-        @timers[timer] += benchmark_result.real
+        started_at = Time.now.to_f
+        process_result = yield
+        finished_at = Time.now.to_f
         process_result
+      rescue Exception => e
+        finished_at ||= Time.now.to_f
+        raise
+      ensure
+        @timers[timer] += finished_at - started_at
       end
 
       def all_stats
@@ -76,15 +79,15 @@ module Orbacle
       end
     end
 
-    def initialize(logger)
+    def initialize(logger, stats)
       @logger = logger
+      @stats = stats
     end
 
     def call(project_root:)
       project_root_path = Pathname.new(project_root)
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
-      stats_recorder = StatsRecorder.new
       worklist = Worklist.new
       tree = GlobalTree.new
       graph = Graph.new
@@ -95,17 +98,17 @@ module Orbacle
 
       logger.info "Parsing..."
       parsing_process = ParsingProcess.new(logger, queue, files)
-      stats_recorder.measure(:parsing) { parsing_process.call() }
+      @stats.measure(:parsing) { parsing_process.call() }
 
       logger.info "Building graph..."
       building_process = BuildingProcess.new(queue, @parser)
-      stats_recorder.measure(:building) { building_process.call() }
+      @stats.measure(:building) { building_process.call() }
 
       logger.info "Typing..."
-      typing_service = TypingService.new(logger, stats_recorder)
-      typing_result = stats_recorder.measure(:typing) { typing_service.(graph, worklist, tree) }
+      typing_service = TypingService.new(logger, @stats)
+      typing_result = @stats.measure(:typing) { typing_service.(graph, worklist, tree) }
 
-      return tree, typing_result, graph, stats_recorder
+      return tree, typing_result, graph
     end
 
     private
