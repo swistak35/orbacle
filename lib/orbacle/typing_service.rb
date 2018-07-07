@@ -527,21 +527,26 @@ module Orbacle
       connect_yields_to_block_lambda(@graph.get_metod_nodes(found_method.id).yields, message_send.block)
     end
 
+    def lambda_ids_of_block(block)
+      case block
+      when Worklist::BlockLambda
+        [block.lambda_id]
+      when Worklist::BlockNode
+        @result[block.node].enum_for(:each_possible_type).map do |possible_type|
+          if possible_type.instance_of?(ProcType)
+            possible_type.lambda_id
+          elsif possible_type == NominalType.new("Symbol")
+          end
+        end.compact
+      when NilClass
+        []
+      else raise
+      end
+    end
+
     def connect_yields_to_block_lambda(yields_nodes, block_node)
       yields_nodes.each do |yield_nodes|
-        lambda_ids = if Worklist::BlockLambda === block_node
-          [block_node.lambda_id]
-        elsif Worklist::BlockNode === block_node
-          @result[block_node.node].enum_for(:each_possible_type).map do |possible_type|
-            if possible_type.instance_of?(ProcType)
-              possible_type.lambda_id
-            elsif possible_type == NominalType.new("Symbol")
-            end
-          end.compact
-        else
-          []
-        end
-
+        lambda_ids = lambda_ids_of_block(block_node)
         lambda_ids.each do |lambda_id|
           block_lambda = @tree.get_lambda(lambda_id)
           block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
@@ -733,24 +738,25 @@ module Orbacle
     end
 
     def send_primitive_array_map(_class_name, message_send)
-      return unless Worklist::BlockLambda === message_send.block
-
       unwrapping_node = Node.new(:unwrap_array, {}, nil)
       @graph.add_vertex(unwrapping_node)
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
 
-      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
-      arg_node = block_lambda_nodes.args.values.first
-      @graph.add_edge(unwrapping_node, arg_node)
-      @worklist.enqueue_node(arg_node)
-
       wrapping_node = Node.new(:wrap_array, {}, nil)
       @graph.add_vertex(wrapping_node)
-      @graph.add_edge(block_lambda_nodes.result, wrapping_node)
-      @worklist.enqueue_node(wrapping_node)
       @graph.add_edge(wrapping_node, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
+
+      lambda_ids_of_block(message_send.block).each do |lambda_id|
+        block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
+        arg_node = block_lambda_nodes.args.values.first
+        @graph.add_edge(unwrapping_node, arg_node)
+        @worklist.enqueue_node(arg_node)
+
+        @graph.add_edge(block_lambda_nodes.result, wrapping_node)
+        @worklist.enqueue_node(wrapping_node)
+      end
     end
 
     def send_primitive_array_each(_class_name, message_send)

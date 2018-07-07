@@ -572,7 +572,7 @@ module Orbacle
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
 
-      specify "MISBEHAVIOUR - Array#map - passing block by blockarg" do
+      specify "Array#map - passing block by blockarg" do
         snippet = <<-END
         x = [1,2]
         y = ->(y) { y.to_s }
@@ -581,7 +581,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(bottom)
+        expect(result).to eq(generic("Array", [nominal("String")]))
       end
 
       specify "Array#each without a block" do
