@@ -648,6 +648,7 @@ module Orbacle
     end
 
     def handle_super_send(super_send)
+      return if super_send.method_id.nil?
       super_method = @tree.find_super_method(super_send.method_id)
       return if super_method.nil?
 

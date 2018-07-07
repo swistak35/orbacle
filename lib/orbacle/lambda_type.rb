@@ -26,6 +26,10 @@ module Orbacle
     def bottom?
       false
     end
+
+    def name
+      "Proc"
+    end
   end
 end
 

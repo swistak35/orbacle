@@ -1736,6 +1736,29 @@ module Orbacle
 
         expect(result).to eq(nominal("String"))
       end
+
+      specify "super not in the method" do
+        snippet = <<-END
+        super(42)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
+      specify "super in a method which is not in a class" do
+        snippet = <<-END
+        def foo
+          $res = super(42)
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
     end
 
     describe "loop operators" do
