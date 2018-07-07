@@ -449,17 +449,6 @@ module Orbacle
         expect(message_send.block).to eq(Worklist::BlockNode.new(node(:lvar, { var_name: "x" })))
       end
 
-      specify "passing block" do
-        snippet = <<-END
-        foo(&:x)
-        END
-
-        result = generate_cfg(snippet)
-
-        message_send = result.message_sends.last
-        expect(message_send.block).to eq(Worklist::BlockNode.new(node(:sym, { value: :x })))
-      end
-
       specify "on self" do
         snippet = <<-END
         class Foo
@@ -501,6 +490,18 @@ module Orbacle
 
         message_send = result.message_sends.last
         expect(message_send.send_result).to eq(node(:call_result, { csend: true }))
+      end
+
+      specify "method definition with block symbol shorthand" do
+        snippet = <<-END
+        foo(42, &:bar)
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_edge(
+          node(:formal_arg, { var_name: "__orbacle__x" }),
+          node(:lvar, { var_name: "__orbacle__x" }))
       end
     end
 

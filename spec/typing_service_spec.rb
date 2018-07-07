@@ -1518,7 +1518,7 @@ module Orbacle
         expect(result).to eq(bottom)
       end
 
-      xspecify "block shorthand notation" do
+      specify "block shorthand notation" do
         snippet = <<-END
         class Bar
           def foo

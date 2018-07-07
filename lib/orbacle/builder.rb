@@ -498,10 +498,31 @@ module Orbacle
       return Result.new(node, context)
     end
 
+    def transform_symbol_shorthand(obj_expr, message_name, arg_exprs, csend, context)
+      block_message_block_pass = arg_exprs.last
+      block_message_name = block_message_block_pass.children.last.children.last
+      normal_arg_exprs = arg_exprs[0..-2]
+      send_ast_type = csend ? :csend : :send
+      send_ast = Parser::AST::Node.new(send_ast_type, [obj_expr, message_name.to_sym, *normal_arg_exprs])
+      arg_ast = Parser::AST::Node.new(:args, [Parser::AST::Node.new(:arg, [:__orbacle__x])])
+      block_body_ast = Parser::AST::Node.new(:send, [Parser::AST::Node.new(:lvar, [:__orbacle__x]), block_message_name])
+      block_ast = Parser::AST::Node.new(:block, [send_ast, arg_ast, block_body_ast])
+      handle_block(block_ast, context)
+    end
+
+    def transform_symbol_shorthand_applies?(arg_exprs)
+      arg_exprs.last &&
+        arg_exprs.last.type == :block_pass &&
+        arg_exprs.last.children.last &&
+        arg_exprs.last.children.last.type == :sym
+    end
+
     def handle_send(ast, context, csend)
       obj_expr = ast.children[0]
       message_name = ast.children[1].to_s
       arg_exprs = ast.children[2..-1]
+
+      return transform_symbol_shorthand(obj_expr, message_name, arg_exprs, csend, context) if transform_symbol_shorthand_applies?(arg_exprs)
 
       if obj_expr.nil?
         obj_node = add_vertex(Node.new(:self, { selfie: context.selfie }))
