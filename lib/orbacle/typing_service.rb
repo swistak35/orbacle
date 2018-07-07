@@ -249,7 +249,7 @@ module Orbacle
     end
 
     def handle_just_symbol(node, sources)
-      SymbolType.new(node.params[:value])
+      NominalType.new("Symbol")
     end
 
     def handle_bottom(node, sources)
