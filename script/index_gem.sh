@@ -1,10 +1,9 @@
 #!/bin/sh
 
 gem_number=$1
-current_sha=$(git rev-parse HEAD)
-results_path="tmp/results/$current_sha"
+results_path=$2
 
-gem_info_json=$(cat script/most_popular_gems.json | head -n $(expr gem_number + 1) | tail -n 1)
+gem_info_json=$(cat script/most_popular_gems.json | head -n $(expr $gem_number + 1) | tail -n 1)
 gem_name=$(echo $gem_info_json | jq -r ".gem_name")
 gem_version=$(echo $gem_info_json | jq -r ".gem_version")
 gem_full_name=$(echo $gem_info_json | jq -r ".gem_full_name")
