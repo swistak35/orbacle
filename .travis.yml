@@ -1,7 +1,10 @@
 language: ruby
 rvm:
-  - 2.5.1
+- 2.5.1
 script:
-  - make build
-  - make install
-  - ./script/index_gems.sh 0 10
+- make build
+- make install
+- "./script/index_gems.sh 0 10"
+env:
+  global:
+    secure: J7kbeauGW51uT8pl0WJsHz9RHFMk05VDi0jJK8FBFH+Eu93o/Dv8izqOx+sICIdxrhuuqYPnoIbN5mNyAEmdBy9uXcIxOO1xH6pitirapPqmuQAMotaW4tNMt4hju43ItrLm2cMLLCj0mEGa8olb4jZ+TGk/I+lSt+faLrAHRZ+YvnnZ8vHJ90u4A6aDHyU8dMvXASmI+Dy/xuPVf57W2IK1RhP9r72pqWFCr//fdQCRGMNOydBwKIFuvuDInCsvXtIBF5/qBZIlMhCya7GXz3ICUEmmibvlPwq6DeGEjJujpiTFO8AdaX9AH2SRXlX/Vt6KquayE7d7ZMe6cV0jaPsuW0JjDckGolfcYZDinsBsyTiawEEUaihQaJTtYHwY+MiPuqEYbcPtfGq0/aWnCCZapdg64PCBJz2GmKwTgCV6BoQIsx6VZCbXPK06PP/AzZFSRVDgSbozHSdlnqxJgWZdMoXicquaT2umJ2HRZHlHQewgTMead5X1LW3Pj9yA0IfJZ6vieeNSLDdL+TiIhUWfz7DJBBW8F1oelzf4WT6WWwXdmKRrVnv0HFbMNJcCMM8h1lqG6tJMs7lCbOALXmV51lidnN406SoAAp35VrxMMZpRu4y4QuIjlQWbA9zkxjrI7XjOLbC2a/mnCxk7++tcXqafIkGTbGg9Gan6ptI=

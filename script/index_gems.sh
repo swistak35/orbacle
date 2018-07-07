@@ -22,6 +22,10 @@ do
   ./script/index_gem.sh $i $results_path
 done
 
+mkdir -p ~/.config/dbxcli/
+echo "{\"\":{\"personal\":\"$DROPBOX_KEY\"}}" > ~/.config/dbxcli/auth.json
+echo $(cat ~/.config/dbxcli/auth.json | sha1sum)
+
 cd tmp
 wget "https://github.com/dropbox/dbxcli/releases/download/v2.1.1/dbxcli-linux-amd64"
 for file in results/$current_sha/*
