@@ -12,6 +12,8 @@ orbacle_log_path="$results_path/$gem_number.$gem_full_name.orbacle.log"
 stats_path="$results_path/$gem_number.$gem_full_name.stats.json"
 status_path="$results_path/$gem_number.$gem_full_name.status"
 
+echo -en "travis_fold:start:${gem_full_name}\\r"
+echo "Processing $gem_full_name"
 
 gem_path="tmp/gems$gem_number"
 rm -rf $gem_path
@@ -20,3 +22,4 @@ orbaclerun -d $gem_path/gems index 2> $error_log_path | tee $orbacle_log_path
 echo $? > $status_path
 mv stats.json $stats_path
 
+echo -en "travis_fold:end:${gem_full_name}\\r"

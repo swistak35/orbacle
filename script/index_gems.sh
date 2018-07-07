@@ -9,6 +9,7 @@ current_sha=$(git show $current_commit --date=short --pretty='format:%ad.%H' | h
 results_path="tmp/results/$current_sha"
 
 echo -en "travis_fold:start:gem_build\\r"
+echo "Building & Installing orbacle"
 
 make build
 make install
@@ -20,16 +21,14 @@ mkdir -p $results_path
 
 for i in $(seq $start_gem_number $(expr $start_gem_number + $how_many))
 do
-  echo -en "travis_fold:start:${gem_full_name}\\r"
-  echo "Processing $i"
   ./script/index_gem.sh $i $results_path
-  echo -en "travis_fold:end:${gem_full_name}\\r"
 done
 
 
 ### Upload results
 
 echo -en "travis_fold:start:upload\\r"
+echo "Uploading results"
 
 cd tmp
 wget -q "https://github.com/dropbox/dbxcli/releases/download/v2.1.1/dbxcli-linux-amd64"
