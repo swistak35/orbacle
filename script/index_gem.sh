@@ -15,6 +15,6 @@ status_path="$results_path/$gem_number.$gem_full_name.status"
 gem_path="tmp/gems$gem_number"
 rm -rf $gem_path
 gem install --no-document --ignore-dependencies --install-dir $gem_path $gem_name -v $gem_version
-orbaclerun -d $gem_path/gems index 2> $error_log_path > $orbacle_log_path
+orbaclerun -d $gem_path/gems index 2> $error_log_path | tee $orbacle_log_path
 echo $? > $status_path
 mv stats.json $stats_path
