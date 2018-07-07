@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 start_gem_number=$1
 how_many=$2
@@ -8,11 +8,15 @@ current_commit="${TRAVIS_COMMIT:-$head_sha}"
 current_sha=$(git show $current_commit --date=short --pretty='format:%ad.%H' | head -n1)
 results_path="tmp/results/$current_sha"
 
-rm -rf $results_path
-mkdir -p $results_path
+echo -en "travis_fold:start:gem_build\\r"
 
 make build
 make install
+
+echo -en "travis_fold:end:gem_build\\r"
+
+rm -rf $results_path
+mkdir -p $results_path
 
 for i in $(seq $start_gem_number $(expr $start_gem_number + $how_many))
 do

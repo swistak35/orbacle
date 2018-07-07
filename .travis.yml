@@ -2,8 +2,6 @@ language: ruby
 rvm:
 - 2.5.1
 script:
-- make build
-- make install
 - "./script/index_gems.sh 0 5"
 env:
   global:
