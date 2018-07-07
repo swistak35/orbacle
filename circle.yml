@@ -71,7 +71,7 @@ jobs:
           paths:
             - ~/vendor/bundle
       - run: make mutant
-  mutant:
+  index-gems:
     docker:
       - image: circleci/ruby:2.5.1
         environment:
