@@ -82,12 +82,12 @@ module Orbacle
     describe "symbols" do
       specify "symbol literal" do
         snippet = <<-END
-        :foobar
+        :sym
         END
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(nominal("Symbol"))
+        expect(result).to eq(symbol(:sym))
       end
 
       specify "symbol with interpolation" do
@@ -98,7 +98,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(nominal("Symbol"))
+        expect(result).to eq(symbol(nil))
       end
     end
 
@@ -183,27 +183,27 @@ module Orbacle
         snippet = <<-END
         {
           "foo" => 42,
-          bar: "nananana",
+          sym: "nananana",
         }
         END
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Hash", [union([nominal("String"), nominal("Symbol")]), union([nominal("Integer"), nominal("String")])]))
+        expect(result).to eq(generic("Hash", [union([nominal("String"), symbol(:sym)]), union([nominal("Integer"), nominal("String")])]))
       end
 
       specify "hash with kwsplat" do
         snippet = <<-END
         x = { "foo" => 42 }
         {
-          bar: "nananana",
+          sym: "nananana",
           **x,
         }
         END
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Hash", [union([nominal("Symbol"), nominal("String")]), union([nominal("String"), nominal("Integer")])]))
+        expect(result).to eq(generic("Hash", [union([symbol(:sym), nominal("String")]), union([nominal("String"), nominal("Integer")])]))
       end
     end
 
@@ -1051,7 +1051,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(generic("Hash", [nominal("Symbol"), union([nominal("Integer"), nominal("String")])]))
+        expect(result).to eq(generic("Hash", [union([symbol(:x), symbol(:y)]), union([nominal("Integer"), nominal("String")])]))
       end
 
       specify "unnamed keyword splat defined, one named arg passed" do
@@ -1393,7 +1393,7 @@ module Orbacle
         snippet = <<-END
         class Foo
           def bar
-            arr = ["foo", :bar]
+            arr = ["foo", :sym]
             yield 42, *arr
           end
         end
@@ -1405,14 +1405,14 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+        expect(result).to eq(union([nominal("String"), symbol(:sym)]))
       end
 
       specify "yield one arg one splat, block three args pt2" do
         snippet = <<-END
         class Foo
           def bar
-            arr = ["foo", :bar]
+            arr = ["foo", :sym]
             yield 42, *arr
           end
         end
@@ -1424,7 +1424,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+        expect(result).to eq(union([nominal("String"), symbol(:sym)]))
       end
 
       specify "yield one arg, block one arg one opt arg" do
@@ -1488,9 +1488,9 @@ module Orbacle
           end
         end
         y = if random
-          ->(y) { "foo" }
+          ->(y) { "str" }
         else
-          ->(y) { :foo }
+          ->(y) { :sym }
         end
         Bar.new.foo(&y)
         $res
@@ -1498,7 +1498,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+        expect(result).to eq(union([nominal("String"), symbol(:sym)]))
       end
 
       specify "call method with stupid blockarg" do
@@ -1797,12 +1797,12 @@ module Orbacle
         rescue
           "foo"
         else
-          :bar
+          :sym
         end
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+        expect(result).to eq(union([nominal("String"), symbol(:sym)]))
       end
 
       specify "ensure" do
@@ -1812,14 +1812,14 @@ module Orbacle
         rescue
           "foo"
         else
-          :bar
+          :sym
         ensure
           42.0
         end
         END
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+        expect(result).to eq(union([nominal("String"), symbol(:sym)]))
       end
 
       specify "retry" do
@@ -2111,6 +2111,10 @@ module Orbacle
 
     def bottom
       BottomType.new
+    end
+
+    def symbol(*args)
+      SymbolType.new(*args)
     end
 
     def find_by_node(result, node_type, node_params = {})
