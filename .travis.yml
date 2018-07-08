@@ -2,7 +2,7 @@ language: ruby
 rvm:
 - 2.5.1
 script:
-- "./script/index_gems.sh 0 5"
+- "./script/index_gems.sh $STARTING_POINT 50"
 env:
   matrix:
     - STARTING_POINT=0
