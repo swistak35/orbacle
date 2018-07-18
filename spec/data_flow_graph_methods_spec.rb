@@ -658,6 +658,58 @@ module Orbacle
       expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
+    specify "using sclass in class definition but not self - MISBEHAVIOUR" do
+      file = <<-END
+      class Foo
+      end
+      class << Foo
+        def bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      # foo_class = find_class(result, "Foo")
+      # foo_eigenclass = find_eigenclass(result, foo_class)
+      # expect(find_method2(result, foo_class.id, "bar")).to be_nil
+      # expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
+    end
+
+    specify "using sclass in module definition but not self - MISBEHAVIOUR" do
+      file = <<-END
+      module Foo
+      end
+      class << Foo
+        def bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      # foo_class = find_class(result, "Foo")
+      # foo_eigenclass = find_eigenclass(result, foo_class)
+      # expect(find_method2(result, foo_class.id, "bar")).to be_nil
+      # expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
+    end
+
+    specify "using sclass in some definition but not self - MISBEHAVIOUR" do
+      file = <<-END
+      class << Foo
+        def bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      # foo_class = find_class(result, "Foo")
+      # foo_eigenclass = find_eigenclass(result, foo_class)
+      # expect(find_method2(result, foo_class.id, "bar")).to be_nil
+      # expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
+    end
+
     specify "def self.func in module definition" do
       file = <<-END
       module Foo
