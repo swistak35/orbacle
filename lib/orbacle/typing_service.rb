@@ -788,7 +788,12 @@ module Orbacle
     end
 
     def handle_constructor(node, sources)
-      NominalType.new(node.params.fetch(:name))
+      name = node.params.fetch(:name)
+      if ["Array", "Hash", "Range"].include?(name)
+        GenericType.new(name, [])
+      else
+        NominalType.new(name)
+      end
     end
 
     def handle_definition_by_id(node, sources)

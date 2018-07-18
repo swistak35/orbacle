@@ -166,6 +166,16 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [union([nominal("Integer"), nominal("String")])]))
       end
+
+      specify "not literal Array" do
+        snippet = <<-END
+        Array.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", []))
+      end
     end
 
     describe "hashes" do
@@ -205,6 +215,16 @@ module Orbacle
 
         expect(result).to eq(generic("Hash", [union([nominal("Symbol"), nominal("String")]), union([nominal("String"), nominal("Integer")])]))
       end
+
+      specify "not literal Hash" do
+        snippet = <<-END
+        Hash.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Hash", []))
+      end
     end
 
     describe "ranges" do
@@ -216,6 +236,16 @@ module Orbacle
         result = type_snippet(snippet)
 
         expect(result).to eq(generic("Range", [nominal("Integer")]))
+      end
+
+      specify "not literal Hash" do
+        snippet = <<-END
+        Range.new
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Range", []))
       end
     end
 
