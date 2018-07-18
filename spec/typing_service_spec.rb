@@ -1829,6 +1829,18 @@ module Orbacle
       end
     end
 
+    specify "for loop" do
+      snippet = <<-END
+      for a in [1,2,3]
+        42
+      end
+      END
+
+      result = type_snippet(snippet)
+
+      expect(result).to eq(generic("Array", [nominal("Integer")]))
+    end
+
     describe "exceptions" do
       specify "rescue" do
         snippet = <<-END

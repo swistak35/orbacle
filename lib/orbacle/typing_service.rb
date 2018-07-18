@@ -169,6 +169,8 @@ module Orbacle
 
       when :case_result then handle_group(node, sources)
 
+      when :for then handle_pass1(node, sources)
+
       # not really tested
       when :dynamic_const then handle_bottom(node, sources)
       when :unwrap_hash_values then handle_unwrap_hash_values(node, sources)
