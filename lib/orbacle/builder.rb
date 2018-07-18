@@ -834,14 +834,15 @@ module Orbacle
       self_name = ast.children[0]
       sklass_body = ast.children[1]
 
-      if self_name == Parser::AST::Node.new(:self)
+      new_context = if self_name == Parser::AST::Node.new(:self) && context.analyzed_klass_id
         eigenclass_of_analyzed_definition = @tree.get_eigenclass_of_definition(context.analyzed_klass_id)
         context
           .with_nesting(context.nesting.increase_nesting_self)
-          .with_analyzed_klass(eigenclass_of_analyzed_definition.id).tap do |context2|
-            process(sklass_body, context2)
-          end
+          .with_analyzed_klass(eigenclass_of_analyzed_definition.id)
+      else
+        context
       end
+      process(sklass_body, new_context)
 
       return Result.new(Node.new(:nil, {}), context)
     end

@@ -640,7 +640,18 @@ module Orbacle
       expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
-    specify "using sclass in class definition" do
+    specify "def self.func outside class definition" do
+      file = <<-END
+      def self.bar
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(find_kernel_method(result, "bar")).not_to be_nil
+    end
+
+    specify "using sclass in class definition - MISBEHAVIOUR" do
       file = <<-END
       class Foo
         class << self
@@ -658,6 +669,19 @@ module Orbacle
       expect(find_method2(result, foo_eigenclass.id, "bar")).not_to be_nil
     end
 
+    specify "using sclass outside class definition" do
+      file = <<-END
+      class << self
+        def bar
+        end
+      end
+      END
+
+      result = compute_graph(file)
+
+      expect(find_kernel_method(result, "bar")).not_to be_nil
+    end
+
     specify "using sclass in class definition but not self - MISBEHAVIOUR" do
       file = <<-END
       class Foo
@@ -670,6 +694,7 @@ module Orbacle
 
       result = compute_graph(file)
 
+      expect(find_kernel_method(result, "bar")).not_to be_nil
       # foo_class = find_class(result, "Foo")
       # foo_eigenclass = find_eigenclass(result, foo_class)
       # expect(find_method2(result, foo_class.id, "bar")).to be_nil
@@ -688,6 +713,7 @@ module Orbacle
 
       result = compute_graph(file)
 
+      expect(find_kernel_method(result, "bar")).not_to be_nil
       # foo_class = find_class(result, "Foo")
       # foo_eigenclass = find_eigenclass(result, foo_class)
       # expect(find_method2(result, foo_class.id, "bar")).to be_nil
@@ -704,6 +730,7 @@ module Orbacle
 
       result = compute_graph(file)
 
+      expect(find_kernel_method(result, "bar")).not_to be_nil
       # foo_class = find_class(result, "Foo")
       # foo_eigenclass = find_eigenclass(result, foo_class)
       # expect(find_method2(result, foo_class.id, "bar")).to be_nil
