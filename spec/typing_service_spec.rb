@@ -384,6 +384,17 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
+
+      specify "usage of instance variable outside any class" do
+        snippet = <<-END
+        @baz = 42
+        @baz
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
     end
 
     describe "class variables" do
@@ -428,6 +439,17 @@ module Orbacle
           end
         end
         $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "usage of class variable outside any class" do
+        snippet = <<-END
+        @@baz = 42
+        @@baz
         END
 
         result = type_snippet(snippet)
