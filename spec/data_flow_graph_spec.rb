@@ -1170,6 +1170,17 @@ module Orbacle
           node(:casgn, { const_ref: const_ref }),
           node(:const_definition))
       end
+
+      specify "dynamic assignment to constant" do
+        snippet = <<-END
+        x = 42
+        x::Foo = 78
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:int, { value: 78 }))
+      end
     end
 
     specify "calling constructor" do

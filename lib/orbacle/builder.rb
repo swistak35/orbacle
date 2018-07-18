@@ -889,6 +889,8 @@ module Orbacle
 
     def handle_casgn(ast, context)
       const_prename, const_name, expr = ast.children
+      return handle_dynamic_casgn(ast, context) if !simple_const_prename?(const_prename)
+
       const_name_ref = ConstRef.from_full_name(AstUtils.const_prename_and_name_to_string(const_prename, const_name), context.nesting)
 
       if expr_is_class_definition?(expr)
@@ -923,6 +925,17 @@ module Orbacle
 
         return Result.new(final_node, expr_result.context)
       end
+    end
+
+    def handle_dynamic_casgn(ast, context)
+      _const_prename, _const_name, expr = ast.children
+      return process(expr, context)
+    end
+
+    def simple_const_prename?(const_prename)
+      const_prename.nil? ||
+        const_prename.type == :const ||
+        const_prename.type == :cbase
     end
 
     def handle_const(ast, context)
@@ -1387,10 +1400,7 @@ module Orbacle
     end
 
     def simple_constant?(c)
-      c.type == :const &&
-        (c.children[0].nil? ||
-         c.children[0].type == :cbase ||
-         c.children[0].type == :const)
+      c.type == :const && simple_const_prename?(c.children[0])
     end
 
     def lambda_ast?(send_expr)
