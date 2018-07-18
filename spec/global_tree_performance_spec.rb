@@ -27,7 +27,7 @@ module Orbacle
           expect(result).to eq(klass)
         end
 
-        expect(benchmark_result.real).to be < 3.0
+        expect(benchmark_result.real).to be < 5.0
       end
     end
   end
