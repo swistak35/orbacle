@@ -156,6 +156,7 @@ module Orbacle
       when :until then handle_while(ast, context)
       when :while_post then handle_while(ast, context)
       when :until_post then handle_while(ast, context)
+      when :for then handle_for(ast, context)
       when :break then handle_loop_operator(ast, context)
       when :next then handle_loop_operator(ast, context)
       when :redo then handle_loop_operator(ast, context)
@@ -1087,6 +1088,20 @@ module Orbacle
       final_context = process(expr_body, new_context).context
 
       node = add_vertex(Node.new(:nil, {}))
+
+      return Result.new(node, final_context)
+    end
+
+    def handle_for(ast, context)
+      expr_asgn = ast.children[0]
+      expr_collection = ast.children[1]
+      expr_body = ast.children[2]
+
+      collection_result = process(expr_collection, context)
+      final_context = process(expr_body, collection_result.context).context
+
+      node = add_vertex(Node.new(:for, {}))
+      add_edges(collection_result.node, node)
 
       return Result.new(node, final_context)
     end

@@ -1782,6 +1782,22 @@ module Orbacle
         expect(result.final_node).to eq(node(:nil))
       end
 
+      specify "for loop" do
+        snippet = <<-END
+        for a in [1,2] do
+          42
+        end
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.final_node).to eq(node(:for))
+        expect(result.graph).to include_node(node(:int, { value: 42 }))
+        expect(result.graph).to include_edge(
+          node(:array),
+          node(:for))
+      end
+
       specify "break" do
         snippet = <<-END
         while true
