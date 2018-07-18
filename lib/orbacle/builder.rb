@@ -937,7 +937,7 @@ module Orbacle
 
     def simple_const_prename?(const_prename)
       const_prename.nil? ||
-        const_prename.type == :const ||
+        (const_prename.type == :const && simple_const_prename?(const_prename.children[0])) ||
         const_prename.type == :cbase
     end
 
