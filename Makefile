@@ -6,8 +6,13 @@ mutant:
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_bool"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::DefineBuiltins"
 
-test:
-	bundle exec rspec spec
+test: test-unit test-performance
+
+test-unit:
+	bundle exec rspec --tag "~performance" spec
+
+test-performance:
+	bundle exec rspec --tag performance spec
 
 refresh-stats:
 	bundle exec ruby script/fetch_most_popular_rubygems_list.rb
