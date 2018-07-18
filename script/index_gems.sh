@@ -19,7 +19,7 @@ echo -en "travis_fold:end:gem_build\\r"
 rm -rf $results_path
 mkdir -p $results_path
 
-for i in $(seq $start_gem_number $(expr $start_gem_number + $how_many))
+for i in $(seq $start_gem_number $(expr $start_gem_number + $how_many - 1))
 do
   ./script/index_gem.sh $i $results_path
 done
