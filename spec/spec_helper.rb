@@ -6,7 +6,7 @@ require 'pp'
 require 'timeout'
 
 RSpec.configure do |config|
-  config.around(:each) do |example|
+  config.around(:each, performance: false) do |example|
     timeout = example.metadata[:timeout] || 5
     Timeout.timeout(timeout, &example)
   end
