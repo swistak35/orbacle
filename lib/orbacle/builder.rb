@@ -1002,7 +1002,7 @@ module Orbacle
       @graph.add_edge(node_iftrue, node_if_result)
       @graph.add_edge(node_iffalse, node_if_result)
 
-      return Result.new(node_if_result, merge_contexts(context_after_iftrue, context_after_iffalse))
+      return Result.new(node_if_result, expr_cond_result.context.with_merged_lenvs(context_after_iftrue.lenv, context_after_iffalse.lenv))
     end
 
     def handle_return(ast, context)
@@ -1227,7 +1227,7 @@ module Orbacle
         node_else = elsebody_result.node
         context_after_else = elsebody_result.context
         @graph.add_edge(node_else, node)
-        return Result.new(node, merge_contexts(context_after_resbody, context_after_else))
+        return Result.new(node, context_after_try.with_merged_lenvs(context_after_resbody.lenv, context_after_else.lenv))
       else
         @graph.add_edge(node_try, node)
         return Result.new(node, context_after_resbody)
@@ -1356,18 +1356,6 @@ module Orbacle
 
     def handle_flipflop(ast, context)
       Result.new(add_vertex(Node.new(:bool, {})), context)
-    end
-
-    def merge_contexts(context1, context2)
-      raise if !context1.almost_equal?(context2)
-      final_lenv = {}
-
-      var_names = (context1.lenv.keys + context2.lenv.keys).uniq
-      var_names.each do |var_name|
-        final_lenv[var_name] = (context1.lenv.fetch(var_name, []) + context2.lenv.fetch(var_name, [])).uniq
-      end
-
-      context1.with_lenv(final_lenv)
     end
 
     def fold_context(exprs, context)

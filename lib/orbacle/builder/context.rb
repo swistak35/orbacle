@@ -50,16 +50,19 @@ module Orbacle
         self.class.new(filepath, selfie, nesting, analyzed_klass, analyzed_method, new_lenv)
       end
 
-      def almost_equal?(other)
-        filepath == other.filepath &&
-          selfie == other.selfie &&
-          nesting == other.nesting &&
-          analyzed_klass == other.analyzed_klass &&
-          analyzed_method == other.analyzed_method
-      end
-
       def analyzed_klass_id
         analyzed_klass.klass_id
+      end
+
+      def with_merged_lenvs(lenv1, lenv2)
+        final_lenv = {}
+
+        var_names = (lenv1.keys + lenv2.keys).uniq
+        var_names.each do |var_name|
+          final_lenv[var_name] = (lenv1.fetch(var_name, []) + lenv2.fetch(var_name, [])).uniq
+        end
+
+        with_lenv(final_lenv)
       end
     end
   end
