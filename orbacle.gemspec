@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'hash_diff', '~> 0.6.2'
   spec.add_development_dependency 'nokogiri', '>= 1.8.4'
   spec.add_development_dependency 'mutant-rspec'
+  spec.add_development_dependency 'ruby-prof'
 end
