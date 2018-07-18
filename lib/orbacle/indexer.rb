@@ -3,6 +3,21 @@ require 'thread'
 require 'benchmark'
 
 module Orbacle
+  class RubyParser
+    Error = Class.new(StandardError)
+    SyntaxError = Class.new(Error)
+    EncodingError = Class.new(Error)
+
+    def parse(content)
+      ::Parser::CurrentRuby.parse(content)
+    rescue ::Parser::SyntaxError
+      raise SyntaxError
+    # Example code: "\xC0\xC0"
+    rescue ::EncodingError
+      raise EncodingError
+    end
+  end
+
   class Indexer
     QueueElement = Struct.new(:ast, :file_path)
     class StatsRecorder
@@ -49,13 +64,14 @@ module Orbacle
       end
 
       def call
+        parser = RubyParser.new
         @files.each do |file_path|
           begin
             file_content = File.read(file_path)
-            ast = Parser::CurrentRuby.parse(file_content)
+            ast = parser.parse(file_content)
             @queue.push(QueueElement.new(ast, file_path))
-          rescue Parser::SyntaxError
-            logger.warn "Warning: Skipped #{file_path} because of syntax error"
+          rescue RubyParser::Error => e
+            logger.warn "Warning: Skipped #{file_path} because of #{e}"
           end
         end
         @queue.close

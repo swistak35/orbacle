@@ -2171,10 +2171,12 @@ module Orbacle
       worklist = Worklist.new
       graph = Graph.new
       tree = GlobalTree.new
+      logger = Logger.new(nil)
+      parser = RubyParser.new()
       DefineBuiltins.new(graph, tree).()
-      result = Builder.new(graph, worklist, tree).process_file(Parser::CurrentRuby.parse(snippet), nil)
+      result = Builder.new(graph, worklist, tree).process_file(parser.parse(snippet), nil)
       stats_recorder = Indexer::StatsRecorder.new
-      typing_result = TypingService.new(Logger.new(nil), stats_recorder).(graph, worklist, tree)
+      typing_result = TypingService.new(logger, stats_recorder).(graph, worklist, tree)
       typing_result[result.node]
     end
 

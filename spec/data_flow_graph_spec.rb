@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'ostruct'
 require 'support/graph_matchers'
+require 'logger'
 
 module Orbacle
   RSpec.describe "DataFlowGraph" do
@@ -2673,8 +2674,10 @@ module Orbacle
       worklist = Worklist.new
       graph = Graph.new
       tree = GlobalTree.new
+      logger = Logger.new(nil)
       service = Builder.new(graph, worklist, tree)
-      result = service.process_file(Parser::CurrentRuby.parse(snippet), "")
+      parser = RubyParser.new()
+      result = service.process_file(parser.parse(snippet), "")
       OpenStruct.new(
         graph: graph,
         final_lenv: result.context.lenv,
