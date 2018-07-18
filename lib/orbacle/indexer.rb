@@ -3,21 +3,6 @@ require 'thread'
 require 'benchmark'
 
 module Orbacle
-  class RubyParser
-    Error = Class.new(StandardError)
-    SyntaxError = Class.new(Error)
-    EncodingError = Class.new(Error)
-
-    def parse(content)
-      ::Parser::CurrentRuby.parse(content)
-    rescue ::Parser::SyntaxError
-      raise SyntaxError
-    # Example code: "\xC0\xC0"
-    rescue ::EncodingError
-      raise EncodingError
-    end
-  end
-
   class Indexer
     QueueElement = Struct.new(:ast, :file_path)
     class StatsRecorder

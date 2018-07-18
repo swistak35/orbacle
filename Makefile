@@ -5,6 +5,7 @@ mutant:
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_complex"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Builder#handle_bool"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::DefineBuiltins"
+	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::RubyParser"
 
 test: test-unit test-performance
 
