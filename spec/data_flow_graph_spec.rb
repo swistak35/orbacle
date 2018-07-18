@@ -239,6 +239,28 @@ module Orbacle
       end
     end
 
+    describe "preexe / postexe" do
+      specify "preexe" do
+        snippet = <<-END
+        BEGIN { true }
+        END
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool))
+        expect(result.final_node).to eq(node(:nil))
+      end
+
+      specify "postexe" do
+        snippet = "END { true }"
+
+        result = generate_cfg(snippet)
+
+        expect(result.graph).to include_node(node(:bool))
+        expect(result.final_node).to eq(node(:nil))
+      end
+    end
+
     describe "local variables" do
       specify "local variable assignment" do
         snippet = <<-END

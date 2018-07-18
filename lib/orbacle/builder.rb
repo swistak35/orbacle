@@ -175,6 +175,9 @@ module Orbacle
       when :iflipflop then handle_flipflop(ast, context)
       when :eflipflop then handle_flipflop(ast, context)
 
+      when :preexe then handle_preexe(ast, context)
+      when :postexe then handle_preexe(ast, context)
+
       else raise ArgumentError.new(ast.type)
       end
 
@@ -1356,6 +1359,12 @@ module Orbacle
 
     def handle_flipflop(ast, context)
       Result.new(add_vertex(Node.new(:bool, {})), context)
+    end
+
+    def handle_preexe(ast, context)
+      body = ast.children[0]
+      body_result = process(body, context)
+      Result.new(add_vertex(Node.new(:nil, {})), body_result.context)
     end
 
     def fold_context(exprs, context)
