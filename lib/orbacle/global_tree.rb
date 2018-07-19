@@ -54,7 +54,7 @@ module Orbacle
           child_level.constants.each do |constant|
             return constant if constant.definition_id == definition_id
           end
-          definition_in_child_level = get_by_definition(child_level.children)
+          definition_in_child_level = get_by_definition(definition_id, child_level.children)
           return definition_in_child_level if definition_in_child_level
         end
         nil
