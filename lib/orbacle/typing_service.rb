@@ -750,9 +750,11 @@ module Orbacle
 
       lambda_ids_of_block(message_send.block).each do |lambda_id|
         block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
-        arg_node = block_lambda_nodes.args.values.first
-        @graph.add_edge(unwrapping_node, arg_node)
-        @worklist.enqueue_node(arg_node)
+        if !block_lambda_nodes.args.values.empty?
+          arg_node = block_lambda_nodes.args.values.first
+          @graph.add_edge(unwrapping_node, arg_node)
+          @worklist.enqueue_node(arg_node)
+        end
 
         @graph.add_edge(block_lambda_nodes.result, wrapping_node)
         @worklist.enqueue_node(wrapping_node)
@@ -767,9 +769,11 @@ module Orbacle
       @graph.add_edge(message_send.send_obj, unwrapping_node)
       @worklist.enqueue_node(unwrapping_node)
       block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
-      arg_node = block_lambda_nodes.args.values.first
-      @graph.add_edge(unwrapping_node, arg_node)
-      @worklist.enqueue_node(arg_node)
+      if !block_lambda_nodes.args.values.empty?
+        arg_node = block_lambda_nodes.args.values.first
+        @graph.add_edge(unwrapping_node, arg_node)
+        @worklist.enqueue_node(arg_node)
+      end
 
       @graph.add_edge(message_send.send_obj, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)

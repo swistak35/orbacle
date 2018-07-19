@@ -677,6 +677,17 @@ module Orbacle
         expect(result).to eq(generic("Array", [nominal("String")]))
       end
 
+      specify "Array#map - block without arg" do
+        snippet = <<-END
+        x = [1,2]
+        x.map { 42.0 }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Float")]))
+      end
+
       specify "Array#each without a block" do
         snippet = <<-END
         x = [1,2]
@@ -692,6 +703,17 @@ module Orbacle
         snippet = <<-END
         x = [1,2]
         x.each {|y| y.to_s }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "Array#each - block without arg" do
+        snippet = <<-END
+        x = [1,2]
+        x.each { 42.0 }
         END
 
         result = type_snippet(snippet)
