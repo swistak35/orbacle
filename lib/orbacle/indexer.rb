@@ -41,7 +41,7 @@ module Orbacle
       end
     end
 
-    class ParsingProcess
+    class ReadingProcess
       def initialize(logger, queue, files)
         @logger = logger
         @queue = queue
@@ -49,17 +49,36 @@ module Orbacle
       end
 
       def call
-        parser = RubyParser.new
         @files.each do |file_path|
-          begin
-            file_content = File.read(file_path)
-            ast = parser.parse(file_content)
-            @queue.push(QueueElement.new(ast, file_path))
-          rescue RubyParser::Error => e
-            logger.warn "Warning: Skipped #{file_path} because of #{e}"
-          end
+          file_content = File.read(file_path)
+          @queue.push(QueueElement.new(file_content, file_path))
         end
         @queue.close
+      end
+
+      private
+      attr_reader :logger
+    end
+
+    class ParsingProcess
+      def initialize(logger, queue_contents, queue_asts)
+        @logger = logger
+        @queue_contents = queue_contents
+        @queue_asts = queue_asts
+      end
+
+      def call
+        parser = RubyParser.new
+        while !@queue_contents.closed? || !@queue_contents.empty?
+          element = @queue_contents.shift
+          begin
+            ast = parser.parse(element.ast)
+            @queue_asts.push(QueueElement.new(ast, element.file_path))
+          rescue RubyParser::Error => e
+            logger.warn "Warning: Skipped #{element.file_path} because of #{e}"
+          end
+        end
+        @queue_asts.close
       end
 
       private
@@ -95,14 +114,19 @@ module Orbacle
       DefineBuiltins.new(graph, tree).()
       @parser = Builder.new(graph, worklist, tree)
 
-      queue = Queue.new
+      queue_contents = Queue.new
+      queue_asts = Queue.new
+
+      logger.info "Reading..."
+      reading_process = ReadingProcess.new(logger, queue_contents, files)
+      @stats.measure(:reading) { reading_process.call() }
 
       logger.info "Parsing..."
-      parsing_process = ParsingProcess.new(logger, queue, files)
+      parsing_process = ParsingProcess.new(logger, queue_contents, queue_asts)
       @stats.measure(:parsing) { parsing_process.call() }
 
       logger.info "Building graph..."
-      building_process = BuildingProcess.new(queue, @parser)
+      building_process = BuildingProcess.new(queue_asts, @parser)
       @stats.measure(:building) { building_process.call() }
 
       logger.info "Typing..."
