@@ -92,14 +92,16 @@ module Orbacle
       @constants = ConstantsTree.new
       @classes = []
       @modules = []
-      @metods = []
+      @metods = Hash.new {|h,k| h[k] = Hash.new {|h2, k2| h2[k2] = [] } }
+      @metods_by_id = {}
       @lambdas = []
     end
 
     attr_reader :metods
 
     def add_method(metod)
-      @metods << metod
+      @metods[metod.place_of_definition_id][metod.name] << metod
+      @metods_by_id[metod.id] = metod
       return metod
     end
 
@@ -176,30 +178,22 @@ module Orbacle
     end
 
     def find_instance_method2(class_id, method_name)
-      @metods.find {|m| m.place_of_definition_id == class_id && m.name == method_name }
+      @metods[class_id][method_name].first
     end
 
     def find_class_method(class_name, method_name)
       klass = find_class_by_name(class_name)
       return nil if klass.nil?
       eigenclass = get_eigenclass_of_definition(klass.id)
-      @metods.find {|m| m.place_of_definition_id == eigenclass.id && m.name == method_name }
-    end
-
-    def find_any_methods(method_name)
-      @metods.select {|m| m.name == method_name }
+      @metods[eigenclass.id][method_name].first
     end
 
     def find_super_method(method_id)
-      analyzed_method = get_method(method_id)
+      analyzed_method = @metods_by_id[method_id]
       klass_of_this_method = get_class(analyzed_method.place_of_definition_id)
       return nil if klass_of_this_method.nil?
       parent_klass = solve_reference(klass_of_this_method.parent_ref) if klass_of_this_method.parent_ref
       find_instance_method(parent_klass.full_name, analyzed_method.name) if parent_klass
-    end
-
-    def get_method(method_id)
-      @metods.find {|m| m.id == method_id }
     end
 
     def find_class_by_name(full_name)
@@ -225,7 +219,7 @@ module Orbacle
     end
 
     def change_metod_visibility(klass_id, name, new_visibility)
-      @metods.each do |m|
+      @metods_by_id.each do |_id, m|
         if m.place_of_definition_id == klass_id && m.name == name
           m.visibility = new_visibility
         end

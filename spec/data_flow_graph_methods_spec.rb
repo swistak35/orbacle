@@ -114,7 +114,7 @@ module Orbacle
 
         result = compute_graph(file)
 
-        last_method = result.tree.metods.last
+        last_method = find_kernel_method(result, "bar")
         expect(result.graph.get_metod_nodes(last_method.id).yields.size).to eq(1)
       end
 
@@ -129,7 +129,7 @@ module Orbacle
 
         result = compute_graph(file)
 
-        last_method = result.tree.metods.last
+        last_method = find_kernel_method(result, "bar")
         expect(result.graph.get_metod_nodes(last_method.id).yields.size).to eq(3)
       end
     end
