@@ -3,8 +3,8 @@ require 'benchmark'
 
 module Orbacle
   RSpec.describe GlobalTree, performance: true do
-    describe "#solve_reference" do
-      specify "performance 1" do
+    describe "performance" do
+      specify "#solve_reference 1" do
         tree = GlobalTree.new
 
         klass = nil
