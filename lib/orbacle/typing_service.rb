@@ -79,11 +79,6 @@ module Orbacle
         end
       end
 
-      stats.set_value(:typed_nodes_all, @result.size)
-      stats.set_value(:typed_nodes_not_bottom, @result.count {|k,v| !v.bottom? })
-      stats.set_value(:typed_nodes_call_result, @result.count {|k,v| k.type == :call_result })
-      stats.set_value(:typed_nodes_call_result_not_bottom, @result.count {|k,v| k.type == :call_result && !v.bottom? })
-
       return @result
     end
 
