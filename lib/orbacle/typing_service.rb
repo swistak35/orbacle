@@ -461,7 +461,7 @@ module Orbacle
         if parent_name
           handle_instance_send(parent_name, message_send)
         else
-          logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
+          # logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
         end
       else
         handle_custom_message_send(found_method, message_send)
@@ -476,7 +476,7 @@ module Orbacle
         if parent_name
           handle_class_send(parent_name, message_send)
         else
-          logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
+          # logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
         end
       else
         handle_custom_message_send(found_method, message_send)
