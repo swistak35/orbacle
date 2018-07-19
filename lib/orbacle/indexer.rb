@@ -109,6 +109,11 @@ module Orbacle
       typing_service = TypingService.new(logger, @stats)
       typing_result = @stats.measure(:typing) { typing_service.(graph, worklist, tree) }
 
+      @stats.set_value(:typed_nodes_all, typing_result.size)
+      @stats.set_value(:typed_nodes_not_bottom, typing_result.count {|k,v| !v.bottom? })
+      @stats.set_value(:typed_nodes_call_result, typing_result.count {|k,v| k.type == :call_result })
+      @stats.set_value(:typed_nodes_call_result_not_bottom, typing_result.count {|k,v| k.type == :call_result && !v.bottom? })
+
       return tree, typing_result, graph
     end
 
