@@ -39,12 +39,7 @@ module Orbacle
     end
 
     def absolute_str
-      klasslike_name = elems.join("::")
-      if eigenclass?
-        "Metaklass(#{klasslike_name})"
-      else
-        klasslike_name
-      end
+      elems.join("::")
     end
 
     def eigenclass?

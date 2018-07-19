@@ -2,6 +2,65 @@ require 'securerandom'
 
 module Orbacle
   class GlobalTree
+    class ConstantsTree
+      ScopeLevel = Struct.new(:constants, :children) do
+        def self.empty
+          new([], build_empty_hash)
+        end
+
+        def self.build_empty_hash
+          Hash.new {|h, k| h[k] = ScopeLevel.empty }
+        end
+      end
+
+      def initialize
+        @tree = ScopeLevel.build_empty_hash
+      end
+
+      def add_constant(constant)
+        current_children = @tree
+        constant.scope.elems.each do |scope_level|
+          current_children = current_children[scope_level].children
+        end
+        current_children[constant.name].constants << constant
+        return constant
+      end
+
+      def children_of_scope(scope)
+        scope.elems.reduce(@tree) do |current_scope_level, scope_elem|
+          current_scope_level[scope_elem].children
+        end
+      end
+
+      def get_by_const_name(const_name)
+        scope_children = children_of_scope(const_name.scope)
+        scope_children[const_name.name].constants
+      end
+
+      def solve_reference(const_ref)
+        nesting = const_ref.nesting
+        while !nesting.empty?
+          scope = nesting.to_scope
+          scope_level = children_of_scope(scope.increase_by_ref(const_ref).decrease)[const_ref.name]
+          return scope_level.constants[0] if scope_level && !scope_level.constants.empty?
+          nesting = nesting.decrease_nesting
+        end
+        scope_level = children_of_scope(Scope.empty.increase_by_ref(const_ref).decrease)[const_ref.name]
+        return scope_level.constants[0] if scope_level && !scope_level.constants.empty?
+      end
+
+      def get_by_definition(definition_id, children = @tree)
+        children.each do |child_name, child_level|
+          child_level.constants.each do |constant|
+            return constant if constant.definition_id == definition_id
+          end
+          definition_in_child_level = get_by_definition(child_level.children)
+          return definition_in_child_level if definition_in_child_level
+        end
+        nil
+      end
+    end
+
     class ArgumentsTree < Struct.new(:args, :kwargs, :blockarg)
       Regular = Struct.new(:name)
       Optional = Struct.new(:name)
@@ -89,7 +148,7 @@ module Orbacle
     end
 
     def initialize
-      @constants = []
+      @constants = ConstantsTree.new
       @classes = []
       @modules = []
       @metods = []
@@ -114,7 +173,7 @@ module Orbacle
     end
 
     def add_constant(constant)
-      @constants << constant
+      @constants.add_constant(constant)
       return constant
     end
 
@@ -148,17 +207,7 @@ module Orbacle
     end
 
     def solve_reference(const_ref)
-      nesting = const_ref.nesting
-      while !nesting.empty?
-        scope = nesting.to_scope
-        @constants.each do |constant|
-          return constant if scope.increase_by_ref(const_ref).to_const_name == ConstName.from_string(constant.full_name)
-        end
-        nesting = nesting.decrease_nesting
-      end
-      @constants.find do |constant|
-        const_ref.const_name == ConstName.from_string(constant.full_name)
-      end
+      @constants.solve_reference(const_ref)
     end
 
     def get_parent_of(class_name)
@@ -225,13 +274,11 @@ module Orbacle
     end
 
     def find_constant_by_name(full_name)
-      @constants.find do |constant|
-        constant.full_name == full_name
-      end
+      @constants.get_by_const_name(ConstName.from_string(full_name)).first
     end
 
     def find_constant_for_definition(definition_id)
-      @constants.find {|c| c.definition_id == definition_id }
+      @constants.get_by_definition(definition_id)
     end
 
     def change_metod_visibility(klass_id, name, new_visibility)
