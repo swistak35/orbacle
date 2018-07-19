@@ -143,7 +143,7 @@ module Orbacle
       when :formal_restarg then handle_wrap_array(node, sources)
       when :formal_kwarg then handle_group(node, sources)
       when :formal_kwoptarg then handle_group(node, sources)
-      when :formal_kwrestarg then handle_pass_lte1(node, sources)
+      when :formal_kwrestarg then handle_group(node, sources)
       when :formal_blockarg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
 

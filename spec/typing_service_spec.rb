@@ -1169,6 +1169,22 @@ module Orbacle
         expect(result).to eq(generic("Hash", [nominal("Symbol"), union([nominal("Integer"), nominal("String")])]))
       end
 
+      specify "keyword splat defined, two named args passed twice" do
+        snippet = <<-END
+        class Foo
+          def bar(**kwargs)
+            kwargs
+          end
+        end
+        Foo.new.bar(x: 42)
+        Foo.new.bar(x: "foo")
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([generic("Hash", [nominal("Symbol"), nominal("Integer")]), generic("Hash", [nominal("Symbol"), nominal("String")])]))
+      end
+
       specify "unnamed keyword splat defined, one named arg passed" do
         snippet = <<-END
         class Foo
