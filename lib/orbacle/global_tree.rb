@@ -157,7 +157,7 @@ module Orbacle
         nesting = nesting.decrease_nesting
       end
       @constants.find do |constant|
-        !constant.full_name.eql?("") && const_ref.const_name == ConstName.from_string(constant.full_name)
+        const_ref.const_name == ConstName.from_string(constant.full_name)
       end
     end
 
