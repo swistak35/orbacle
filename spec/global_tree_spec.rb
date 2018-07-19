@@ -15,6 +15,8 @@ module Orbacle
       specify "simple reference" do
         tree = GlobalTree.new
         klass = tree.add_constant(
+          GlobalTree::Constant.new("Bar", Scope.empty, nil))
+        klass = tree.add_constant(
           GlobalTree::Constant.new("Foo", Scope.empty, nil))
 
         const_ref = ConstRef.from_full_name("Foo", Nesting.empty)
