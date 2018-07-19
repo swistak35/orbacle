@@ -296,11 +296,19 @@ module Orbacle
       if selfie.klass?
         ClassType.new(selfie.scope.absolute_str)
       elsif selfie.instance?
-        NominalType.new(selfie.scope.absolute_str)
+        type_from_class_name(selfie.scope.absolute_str)
       elsif selfie.main?
         MainType.new
       else
         raise
+      end
+    end
+
+    def type_from_class_name(name)
+      if ["Array", "Hash", "Range"].include?(name)
+        GenericType.new(name, [])
+      else
+        NominalType.new(name)
       end
     end
 
@@ -791,11 +799,7 @@ module Orbacle
 
     def handle_constructor(node, sources)
       name = node.params.fetch(:name)
-      if ["Array", "Hash", "Range"].include?(name)
-        GenericType.new(name, [])
-      else
-        NominalType.new(name)
-      end
+      type_from_class_name(name)
     end
 
     def handle_definition_by_id(node, sources)

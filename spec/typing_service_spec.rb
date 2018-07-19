@@ -576,6 +576,21 @@ module Orbacle
 
         expect(result).to eq(nominal("Foo"))
       end
+
+      specify "self inside generic class" do
+        snippet = <<-END
+        class Array
+          def bar
+            $res = self
+          end
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", []))
+      end
     end
 
     describe "and/or" do
