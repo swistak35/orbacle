@@ -2,19 +2,19 @@ require 'spec_helper'
 require 'benchmark'
 
 module Orbacle
-  RSpec.describe GlobalTree, performance: true do
+  RSpec.describe ConstantsTree, performance: true do
     describe "performance" do
-      specify "#solve_reference 1" do
-        tree = GlobalTree.new
+      specify "#find_by_const_ref 1" do
+        tree = ConstantsTree.new
 
-        klass = nil
+        const = nil
         1000.times do |i|
           1000.times do |j|
-            klass = tree.add_constant(
-              GlobalTree::Constant.new(
-                "Bar#{j}",
-                Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo#{i}", Nesting.empty)),
-                nil))
+            const = Object.new
+            tree.add_element(
+              Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo#{i}", Nesting.empty)),
+              "Bar#{j}",
+              const)
           end
         end
 
@@ -23,8 +23,8 @@ module Orbacle
         const_ref = ConstRef.from_full_name("Bar999", nesting)
 
         benchmark_result = Benchmark.measure do
-          result = tree.solve_reference(const_ref)
-          expect(result).to eq(klass)
+          result = tree.find_by_const_ref(const_ref)
+          expect(result).to eq(const)
         end
 
         expect(benchmark_result.real).to be < 0.01
