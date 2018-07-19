@@ -90,11 +90,11 @@ module Orbacle
 
     def initialize
       @constants = ConstantsTree.new
-      @classes = []
-      @modules = []
+      @classes_by_id = {}
+      @modules_by_id = {}
       @metods = Hash.new {|h,k| h[k] = Hash.new {|h2, k2| h2[k2] = [] } }
       @metods_by_id = {}
-      @lambdas = []
+      @lambdas_by_id = {}
     end
 
     attr_reader :metods
@@ -106,12 +106,12 @@ module Orbacle
     end
 
     def add_klass(klass)
-      @classes << klass
+      @classes_by_id[klass.id] = klass
       return klass
     end
 
     def add_mod(mod)
-      @modules << mod
+      @modules_by_id[mod.id] = mod
       return mod
     end
 
@@ -122,16 +122,16 @@ module Orbacle
 
     def add_lambda(args)
       lamba = Lambda.new(SecureRandom.uuid, args)
-      @lambdas << lamba
+      @lambdas_by_id[lamba.id] = lamba
       return lamba
     end
 
     def get_class(class_id)
-      @classes.find {|c| c.id == class_id }
+      @classes_by_id[class_id]
     end
 
     def get_module(module_id)
-      @modules.find {|m| m.id == module_id }
+      @modules_by_id[module_id]
     end
 
     def get_definition(definition_id)
@@ -227,7 +227,7 @@ module Orbacle
     end
 
     def get_lambda(lambda_id)
-      @lambdas.find {|l| l.id == lambda_id }
+      @lambdas_by_id[lambda_id]
     end
   end
 end
