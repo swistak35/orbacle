@@ -39,11 +39,28 @@ module Orbacle
 
       specify "reference of a nested class from inside class" do
         tree = GlobalTree.new
+        tree.add_constant(
+          GlobalTree::Constant.new(
+            "Baz",
+            Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
+            nil))
         klass = tree.add_constant(
           GlobalTree::Constant.new(
             "Bar",
             Scope.empty.increase_by_ref(ConstRef.from_full_name("Foo", Nesting.empty)),
             nil))
+
+        nesting = Nesting.empty
+          .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        const_ref = ConstRef.from_full_name("Bar", nesting)
+
+        expect(tree.solve_reference(const_ref)).to eq(klass)
+      end
+
+      specify "reference of a not nested class from inside class" do
+        tree = GlobalTree.new
+        klass = tree.add_constant(
+          GlobalTree::Constant.new("Bar", Scope.empty, nil))
 
         nesting = Nesting.empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
