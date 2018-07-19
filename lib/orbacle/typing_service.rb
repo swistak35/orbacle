@@ -289,9 +289,17 @@ module Orbacle
     def handle_self(node, sources)
       selfie = node.params.fetch(:selfie)
       if selfie.klass?
-        ClassType.new(selfie.scope.absolute_str)
+        if selfie.scope.empty?
+          BottomType.new
+        else
+          ClassType.new(selfie.scope.absolute_str)
+        end
       elsif selfie.instance?
-        type_from_class_name(selfie.scope.absolute_str)
+        if selfie.scope.empty?
+          BottomType.new
+        else
+          type_from_class_name(selfie.scope.absolute_str)
+        end
       elsif selfie.main?
         MainType.new
       else
@@ -368,7 +376,7 @@ module Orbacle
       elsif ref_result
         ClassType.new(ref_result.full_name)
       else
-        ClassType.new(const_ref.full_name)
+        ClassType.new(const_ref.relative_name)
       end
     end
 

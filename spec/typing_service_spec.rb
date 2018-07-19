@@ -547,6 +547,32 @@ module Orbacle
         expect(result).to eq(main)
       end
 
+      specify "self inside method outside class" do
+        snippet = <<-END
+        def foo
+          $res = self
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
+      specify "self inside selfed method outside class" do
+        snippet = <<-END
+        def self.foo
+          $res = self
+        end
+        $res
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
       specify "self inside class" do
         snippet = <<-END
         class Foo
@@ -1644,6 +1670,16 @@ module Orbacle
         class Foo
         end
         Foo.bar
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(bottom)
+      end
+
+      specify "call to missing class method with cbase" do
+        snippet = <<-END
+        ::Foo.bar
         END
 
         result = type_snippet(snippet)
