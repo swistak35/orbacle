@@ -35,6 +35,14 @@ module Orbacle
       end
     end
 
+    def on_module(ast)
+      module_name_ast, _ = ast.children
+      module_name_ref = ConstRef.from_ast(module_name_ast, @current_nesting)
+      with_new_nesting(@current_nesting.increase_nesting_const(module_name_ref)) do
+        super
+      end
+    end
+
     def with_new_nesting(new_nesting)
       previous_nesting = @current_nesting
       @current_nesting = new_nesting
