@@ -5,7 +5,7 @@ require 'orbacle'
 require 'lsp'
 require 'json'
 
-module OrbacleServer
+module Orbacle
   class CommandLineInterface
     def call(command, options)
       case ARGV[0]
@@ -29,7 +29,7 @@ module OrbacleServer
       logger = Logger.new(STDOUT)
       project_root = options.fetch(:dir, Dir.pwd)
 
-      engine = Orbacle::Engine.new(logger)
+      engine = Engine.new(logger)
       engine.index(project_root)
     ensure
       stats_filepath = options.fetch(:stats_file, Pathname.new(Dir.pwd).join("stats.json"))
@@ -50,12 +50,12 @@ module OrbacleServer
 
       require 'base64'
       project_root = options.fetch(:dir, Dir.pwd)
-      engine = Orbacle::Engine.new(logger)
+      engine = Engine.new(logger)
       tree, typing_result, graph = engine.index(project_root)
 
       nodes = graph.vertices
       filepaths = nodes.map {|n| n.location&.uri }.compact.uniq
-      type_pretty_printer = Orbacle::TypePrettyPrinter.new
+      type_pretty_printer = TypePrettyPrinter.new
 
       File.open("data.js", "w") do |f|
         f.puts "window.orbacleFiles = ["
@@ -80,4 +80,3 @@ module OrbacleServer
     end
   end
 end
-

@@ -1,8 +1,6 @@
 require 'spec_helper'
-require 'orbacle'
-require 'orbacle_server'
 
-module OrbacleServer
+module Orbacle
   RSpec.describe FindDefinitionUnderPosition do
     specify do
       file = <<-END
@@ -54,8 +52,8 @@ module OrbacleServer
     end
 
     def find_definition_under_position(file, line, column)
-      parser = Parser::CurrentRuby
-      service = OrbacleServer::FindDefinitionUnderPosition.new(parser)
+      parser = RubyParser.new
+      service = FindDefinitionUnderPosition.new(parser)
       service.process_file(file, line, column)
     end
   end

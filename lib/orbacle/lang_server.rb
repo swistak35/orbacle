@@ -1,7 +1,7 @@
 require 'lsp'
 require 'uri'
 
-module OrbacleServer
+module Orbacle
   class FindDefinitionUnderPosition < Parser::AST::Processor
     ConstantResult = Struct.new(:const_ref)
 

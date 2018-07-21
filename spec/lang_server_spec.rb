@@ -1,6 +1,6 @@
-require 'orbacle_server'
+require 'spec_helper'
 
-module OrbacleServer
+module Orbacle
   RSpec.describe LangServer do
     let(:logger) { Logger.new(nil) }
 
