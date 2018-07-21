@@ -11,11 +11,11 @@ module Orbacle
       end
       END
 
-      expected_nesting = Orbacle::Nesting
+      expected_nesting = Nesting
         .empty
-        .increase_nesting_const(Orbacle::ConstRef.from_full_name("Foo", Orbacle::Nesting.empty))
+        .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
       constant_result = FindDefinitionUnderPosition::ConstantResult.new(
-        Orbacle::ConstRef.from_full_name("Baz", expected_nesting))
+        ConstRef.from_full_name("Baz", expected_nesting))
       expect(find_definition_under_position(file, 2, 9)).to be_nil
       expect(find_definition_under_position(file, 2, 10)).to eq(constant_result)
       expect(find_definition_under_position(file, 2, 11)).to eq(constant_result)
@@ -32,11 +32,11 @@ module Orbacle
       end
       END
 
-      expected_nesting = Orbacle::Nesting
+      expected_nesting = Nesting
         .empty
-        .increase_nesting_const(Orbacle::ConstRef.from_full_name("Foo", Orbacle::Nesting.empty))
+        .increase_nesting_const(Orbacle::ConstRef.from_full_name("Foo", Nesting.empty))
       constant_result = FindDefinitionUnderPosition::ConstantResult.new(
-        Orbacle::ConstRef.from_full_name("::Bar::Baz", expected_nesting))
+        ConstRef.from_full_name("::Bar::Baz", expected_nesting))
       expect(find_definition_under_position(file, 2, 9)).to be_nil
       expect(find_definition_under_position(file, 2, 10)).to eq(constant_result)
       expect(find_definition_under_position(file, 2, 11)).to eq(constant_result)
