@@ -1,3 +1,4 @@
+require 'optparse'
 require 'pathname'
 require 'logger'
 require 'fileutils'
@@ -7,9 +8,37 @@ require 'json'
 
 module Orbacle
   class CommandLineInterface
-    def call(command, options)
-      case ARGV[0]
-      when 'init' then init(options)
+    class Options
+      def initialize
+        @dir = Dir.pwd
+        @stats_file = Pathname.new(Dir.pwd).join("stats.json")
+      end
+      attr_reader :dir, :stats_file
+
+      def define_options(parser)
+        parser.banner = 'Usage: ./orbacle [options]'
+
+        parser.on('-d DIR', '--dir', 'Directory in which project resides') do |dir|
+          @dir = dir
+        end
+
+        parser.on("-h", "--help", "Prints this help") do
+          puts parser
+          exit
+        end
+      end
+    end
+
+    def call(args)
+      options = Options.new
+      OptionParser.new do |parser|
+        options.define_options(parser)
+      end.parse!(args)
+      call_command(args[0], options)
+    end
+
+    def call_command(command, options)
+      case command
       when 'index' then index(options)
       when 'file-server' then file_server(options)
       when 'generate-datajs' then generate_datajs(options)
@@ -19,21 +48,14 @@ module Orbacle
 
     private
 
-    def init(options)
-      project_root = Pathname.new(options.fetch(:dir, Dir.pwd))
-      FileUtils.touch(project_root.join(".orbaclerc"))
-      puts "Orbacle config initialized at #{project_root}"
-    end
-
     def index(options)
       logger = Logger.new(STDOUT)
-      project_root = options.fetch(:dir, Dir.pwd)
+      project_root = options.dir
 
       engine = Engine.new(logger)
       engine.index(project_root)
     ensure
-      stats_filepath = options.fetch(:stats_file, Pathname.new(Dir.pwd).join("stats.json"))
-      File.open(stats_filepath, "w") {|f| f.write(engine.stats_recorder.all_stats.to_json) }
+      File.open(options.stats_file, "w") {|f| f.write(engine.stats_recorder.all_stats.to_json) }
     end
 
     def file_server(options)
@@ -49,7 +71,7 @@ module Orbacle
       logger = Logger.new(STDOUT)
 
       require 'base64'
-      project_root = options.fetch(:dir, Dir.pwd)
+      project_root = options.dir
       engine = Engine.new(logger)
       tree, typing_result, graph = engine.index(project_root)
 

@@ -1,22 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
 require 'orbacle'
 
-options = {}
-
-OptionParser.new do |opts|
-  opts.banner = 'Usage: ./orbacle [options]'
-
-  opts.on('-d DIR', '--dir', 'Directory in which project resides') do |dir|
-    options[:dir] = dir
-  end
-
-  opts.on("-h", "--help", "Prints this help") do
-    puts opts
-    exit
-  end
-end.parse!
-
 cli = Orbacle::CommandLineInterface.new
-cli.(ARGV[0], options)
+cli.(ARGV)
