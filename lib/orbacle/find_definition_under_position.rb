@@ -8,11 +8,11 @@ module Orbacle
       @parser = parser
     end
 
-    def process_file(file_content, searched_line, searched_character)
+    def process_file(file_content, searched_position)
       ast = parser.parse(file_content)
 
       @current_nesting = Nesting.empty
-      @searched_position = Position.new(searched_line, searched_character)
+      @searched_position = searched_position
 
       process(ast)
 

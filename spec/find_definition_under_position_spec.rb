@@ -77,7 +77,7 @@ module Orbacle
     def find_definition_under_position(file, line, column)
       parser = RubyParser.new
       service = FindDefinitionUnderPosition.new(parser)
-      service.process_file(file, line, column)
+      service.process_file(file, Position.new(line, column))
     end
   end
 end

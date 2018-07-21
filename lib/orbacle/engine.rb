@@ -27,7 +27,7 @@ module Orbacle
     end
 
     def find_definition_under_position(content, line, character)
-      FindDefinitionUnderPosition.new.(content, line, character)
+      FindDefinitionUnderPosition.new.(content, Position.new(line, character))
     end
 
     private
