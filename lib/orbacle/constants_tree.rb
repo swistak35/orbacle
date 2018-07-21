@@ -27,14 +27,18 @@ module Orbacle
       scope_children[const_name.name].elements.first
     end
 
-    def find_by_const_ref(const_ref)
+    def select_by_const_ref(const_ref)
       nesting = const_ref.nesting
       while !nesting.empty?
-        result = find_by_scope_and_name(nesting.to_scope.increase_by_ref(const_ref).decrease, const_ref.name)
-        return result if result
+        result = select_by_scope_and_name(nesting.to_scope.increase_by_ref(const_ref).decrease, const_ref.name)
+        return result if !result.empty?
         nesting = nesting.decrease_nesting
       end
-      find_by_scope_and_name(Scope.empty.increase_by_ref(const_ref).decrease, const_ref.name)
+      select_by_scope_and_name(Scope.empty.increase_by_ref(const_ref).decrease, const_ref.name)
+    end
+
+    def find_by_const_ref(const_ref)
+      select_by_const_ref(const_ref).first
     end
 
     def find(&block)
@@ -42,9 +46,9 @@ module Orbacle
     end
 
     private
-    def find_by_scope_and_name(scope, name)
+    def select_by_scope_and_name(scope, name)
       scope_level = children_of_scope(scope)[name]
-      scope_level.elements.first
+      scope_level.elements
     end
 
     def children_of_scope(scope)
