@@ -34,7 +34,7 @@ module Orbacle
       file_content = File.read(request.text_document.uri.path)
       result = engine.find_definition_under_position(file_content, request.position.line, request.position.character)
       if result
-        constants = engine.get_constant_definitions(result.const_ref)
+        constants = engine.get_constants_definitions(result.const_ref)
         constants_locations = constants.map do |constant|
           location_to_lsp_location(constant.location)
         end
@@ -42,6 +42,9 @@ module Orbacle
       else
         Lsp::ResponseMessage.successful(nil)
       end
+    rescue => e
+      logger.error(e)
+      raise
     end
 
     def location_to_lsp_location(location)

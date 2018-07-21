@@ -38,7 +38,7 @@ module Orbacle
       end
 
       specify "constant result" do
-        engine = double
+        engine = instance_double(Engine)
         server = LangServer.new(logger, engine)
 
         file_content = double
@@ -50,7 +50,7 @@ module Orbacle
           .and_return(FindDefinitionUnderPosition::ConstantResult.new(const_ref))
 
         location = Location.new("/bar.rb", PositionRange.new(Position.new(1, 2), Position.new(3, 4)), 5)
-        expect(engine).to receive(:get_constant_definitions)
+        expect(engine).to receive(:get_constants_definitions)
           .with(const_ref)
           .and_return([OpenStruct.new(location: location)])
 

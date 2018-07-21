@@ -13,7 +13,6 @@ module Orbacle
     end
 
     def get_type_information(filepath, line, character)
-      logger.info("Asked about #{filepath.inspect} #{line.inspect} #{character.inspect}")
       relevant_nodes = @graph
         .vertices
         .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(line, character) }
@@ -27,7 +26,7 @@ module Orbacle
     end
 
     def find_definition_under_position(content, line, character)
-      FindDefinitionUnderPosition.new.(content, Position.new(line, character))
+      FindDefinitionUnderPosition.new(RubyParser.new).process_file(content, Position.new(line, character))
     end
 
     private
