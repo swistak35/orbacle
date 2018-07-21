@@ -23,6 +23,29 @@ module Orbacle
       expect(find_definition_under_position(file, 2, 13)).to be_nil
     end
 
+    specify "changing nesting" do
+      file = <<-END
+      class Foo
+      end
+      class Bar
+        def bar
+          Baz.new
+        end
+      end
+      END
+
+      expected_nesting = Nesting
+        .empty
+        .increase_nesting_const(ConstRef.from_full_name("Bar", Nesting.empty))
+      constant_result = FindDefinitionUnderPosition::ConstantResult.new(
+        ConstRef.from_full_name("Baz", expected_nesting))
+      expect(find_definition_under_position(file, 4, 9)).to be_nil
+      expect(find_definition_under_position(file, 4, 10)).to eq(constant_result)
+      expect(find_definition_under_position(file, 4, 11)).to eq(constant_result)
+      expect(find_definition_under_position(file, 4, 12)).to eq(constant_result)
+      expect(find_definition_under_position(file, 4, 13)).to be_nil
+    end
+
     specify do
       file = <<-END
       class Foo
