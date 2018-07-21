@@ -22,6 +22,14 @@ module Orbacle
       type_pretty_printer.(@typing_result[relevant_nodes[0]])
     end
 
+    def get_constants_definitions(const_ref)
+      @tree.solve_reference2(const_ref)
+    end
+
+    def find_definition_under_position(content, line, character)
+      FindDefinitionUnderPosition.new.(content, line, character)
+    end
+
     private
     attr_reader :logger
 

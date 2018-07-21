@@ -8,6 +8,7 @@ mutant:
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::RubyParser"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::ConstantsTree"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::FindDefinitionUnderPosition"
+	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::LangServer#handle_text_document_definition"
 
 test: test-unit test-performance
 

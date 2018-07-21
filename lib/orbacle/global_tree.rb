@@ -153,6 +153,10 @@ module Orbacle
       @constants.find_by_const_ref(const_ref)
     end
 
+    def solve_reference2(const_ref)
+      @constants.select_by_const_ref(const_ref)
+    end
+
     def get_parent_of(class_name)
       return nil if class_name == "Object"
 
