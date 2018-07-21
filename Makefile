@@ -7,6 +7,7 @@ mutant:
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::DefineBuiltins"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::RubyParser"
 	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::ConstantsTree"
+	@bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::FindDefinitionUnderPosition"
 
 test: test-unit test-performance
 

@@ -1,5 +1,6 @@
 module Orbacle
   class Builder
+    include AstUtils
     BuilderError = Class.new(StandardError)
     class Result
       def initialize(node, context, data = {})
@@ -1381,9 +1382,7 @@ module Orbacle
       if ast.loc
         Location.new(
           context.filepath,
-          PositionRange.new(
-            Position.new(ast.loc.expression.begin.line - 1, ast.loc.expression.begin.column),
-            Position.new(ast.loc.expression.end.line - 1, ast.loc.expression.end.column - 1)),
+          build_position_range_from_ast(ast),
           ast.loc.expression.length)
       end
     end
