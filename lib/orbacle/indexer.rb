@@ -108,7 +108,7 @@ module Orbacle
       project_root_path = Pathname.new(project_root)
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
-      id_generator = UuidIdGenerator.new
+      id_generator = IntegerIdGenerator.new
       worklist = Worklist.new
       tree = GlobalTree.new(id_generator)
       graph = Graph.new
