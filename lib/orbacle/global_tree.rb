@@ -111,6 +111,10 @@ module Orbacle
       return klass
     end
 
+    def add_klass2(parent_ref)
+      add_klass(Klass.new(id: id_generator.call, parent_ref: parent_ref))
+    end
+
     def add_mod(mod)
       @modules_by_id[mod.id] = mod
       return mod

@@ -17,7 +17,7 @@ module Orbacle
     attr_reader :id_generator
 
     def add_object_klass
-      klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: nil))
+      klass = @tree.add_klass2(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Object", Scope.empty, nil, klass.id))
 
@@ -50,7 +50,7 @@ module Orbacle
     end
 
     def add_integer_klass
-      klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: nil))
+      klass = @tree.add_klass2(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Integer", Scope.empty, nil, klass.id))
 
@@ -61,7 +61,7 @@ module Orbacle
     end
 
     def add_dir_klass
-      klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: nil))
+      klass = @tree.add_klass2(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Dir", Scope.empty, nil, klass.id))
       eigenclass = @tree.get_eigenclass_of_definition(klass.id)
@@ -70,7 +70,7 @@ module Orbacle
     end
 
     def add_file_klass
-      klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: nil))
+      klass = @tree.add_klass2(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("File", Scope.empty, nil, klass.id))
       eigenclass = @tree.get_eigenclass_of_definition(klass.id)
@@ -120,7 +120,7 @@ module Orbacle
 
     def template_args(klass, name)
       metod = @tree.add_method(GlobalTree::Method.new(
-        id: id_generator.call,
+        id: generate_id,
         place_of_definition_id: klass.id,
         name: name,
         location: nil,
@@ -128,6 +128,10 @@ module Orbacle
         visibility: :public))
       @graph.store_metod_nodes(metod.id, {})
       metod
+    end
+
+    def generate_id
+      id_generator.call
     end
   end
 end
