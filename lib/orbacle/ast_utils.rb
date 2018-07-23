@@ -21,9 +21,13 @@ module Orbacle
     end
 
     def build_position_range_from_ast(ast)
+      build_position_range_from_parser_range(ast.loc.expression)
+    end
+
+    def build_position_range_from_parser_range(parser_range)
       PositionRange.new(
-        Position.new(ast.loc.expression.begin.line - 1, ast.loc.expression.begin.column),
-        Position.new(ast.loc.expression.end.line - 1, ast.loc.expression.end.column - 1))
+        Position.new(parser_range.begin.line - 1, parser_range.begin.column),
+        Position.new(parser_range.end.line - 1, parser_range.end.column - 1))
     end
   end
 end

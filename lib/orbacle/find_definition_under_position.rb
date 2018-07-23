@@ -3,6 +3,7 @@ module Orbacle
     include AstUtils
 
     ConstantResult = Struct.new(:const_ref)
+    MessageResult = Struct.new(:name, :position_range)
 
     def initialize(parser)
       @parser = parser
@@ -39,6 +40,16 @@ module Orbacle
       module_name_ast, _ = ast.children
       module_name_ref = ConstRef.from_ast(module_name_ast, @current_nesting)
       with_new_nesting(@current_nesting.increase_nesting_const(module_name_ref)) do
+        super
+      end
+    end
+
+    def on_send(ast)
+      if build_position_range_from_parser_range(ast.loc.selector).include_position?(@searched_position)
+        message_name = ast.children.last
+        message_position_range = build_position_range_from_parser_range(ast.loc.expression)
+        @result = MessageResult.new(message_name, message_position_range)
+      else
         super
       end
     end

@@ -95,6 +95,23 @@ module Orbacle
       expect(find_definition_under_position(file, 2, 20)).to be_nil
     end
 
+    describe "definition of message send"  do
+      specify do
+        file = <<-END
+        foo.bar
+        END
+
+        message_result = FindDefinitionUnderPosition::MessageResult.new(
+          :bar,
+          PositionRange.new(Position.new(0, 8), Position.new(0, 14)))
+        expect(find_definition_under_position(file, 0, 11)).to eq(nil)
+        expect(find_definition_under_position(file, 0, 12)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 13)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 14)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 15)).to eq(nil)
+      end
+    end
+
     def find_definition_under_position(file, line, column)
       parser = RubyParser.new
       service = FindDefinitionUnderPosition.new(parser)
