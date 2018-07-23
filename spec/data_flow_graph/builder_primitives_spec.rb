@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'support/graph_matchers'
 require 'support/builder_helper'

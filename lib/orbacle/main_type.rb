@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class MainType
     def each_possible_type

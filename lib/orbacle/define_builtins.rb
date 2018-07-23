@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class DefineBuiltins
     def initialize(graph, tree, id_generator)

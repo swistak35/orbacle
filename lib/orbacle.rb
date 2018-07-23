@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   Position = Struct.new(:line, :character)
   PositionRange = Struct.new(:start, :end) do

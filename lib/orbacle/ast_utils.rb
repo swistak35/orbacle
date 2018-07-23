@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   module AstUtils
     def self.const_to_string(const_ast)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class ConstRef
     def self.from_ast(ast, nesting)

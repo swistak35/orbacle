@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class TypingService
     TypingError = Class.new(StandardError)

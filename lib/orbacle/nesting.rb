@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class Nesting
     class ConstLevel < Struct.new(:const_ref)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class GenericType
     def initialize(name, parameters)

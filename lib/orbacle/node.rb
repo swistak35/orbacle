@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class Node
     def initialize(type, params, location = nil)

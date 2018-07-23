@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class ConstName
     def self.from_string(str)

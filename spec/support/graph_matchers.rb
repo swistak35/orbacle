@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'hash_diff'
 
 RSpec::Matchers.define :include_edge do |expected_source, expected_target|

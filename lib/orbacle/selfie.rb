@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class Selfie
     def self.klass_from_scope(scope)

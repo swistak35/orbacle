@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class ConstantsTree
     ScopeLevel = Struct.new(:elements, :children) do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orbacle
   class ProcType
     def initialize(lambda_id)

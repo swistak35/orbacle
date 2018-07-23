@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BuilderHelper
   def build_graph(file)
     worklist = Orbacle::Worklist.new
