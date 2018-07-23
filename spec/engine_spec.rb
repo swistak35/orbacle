@@ -34,5 +34,20 @@ END
         expect(engine.get_type_information(proj.path_of("file3.rb"), 1, 1)).to eq("unknown")
       end
     end
+
+    describe "#get_type_of_caller_from_message_send" do
+      specify do
+        file1 = <<-END
+        foo = Foo.new
+        foo.bar
+        END
+        proj = TestProject.new.add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+        result = engine.get_type_of_caller_from_message_send(proj.path_of("file1.rb"), PositionRange.new(Position.new(1, 12), Position.new(1, 14)))
+        expect(result).to eq(NominalType.new("Foo"))
+      end
+    end
   end
 end

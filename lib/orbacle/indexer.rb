@@ -138,7 +138,7 @@ module Orbacle
       @stats.set_value(:typed_nodes_call_result, typing_result.count {|k,v| k.type == :call_result })
       @stats.set_value(:typed_nodes_call_result_not_bottom, typing_result.count {|k,v| k.type == :call_result && !v.bottom? })
 
-      return tree, typing_result, graph
+      return tree, typing_result, graph, worklist
     end
 
     private

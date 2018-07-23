@@ -98,12 +98,12 @@ module Orbacle
     describe "definition of message send"  do
       specify do
         file = <<-END
-        foo.bar
+        foo.bar(42, "foo")
         END
 
         message_result = FindDefinitionUnderPosition::MessageResult.new(
-          :bar,
-          PositionRange.new(Position.new(0, 8), Position.new(0, 14)))
+          "bar",
+          PositionRange.new(Position.new(0, 12), Position.new(0, 14)))
         expect(find_definition_under_position(file, 0, 11)).to eq(nil)
         expect(find_definition_under_position(file, 0, 12)).to eq(message_result)
         expect(find_definition_under_position(file, 0, 13)).to eq(message_result)

@@ -9,7 +9,7 @@ module Orbacle
     def index(project_root)
       @stats_recorder = Indexer::StatsRecorder.new
       service = Indexer.new(logger, stats_recorder)
-      @tree, @typing_result, @graph = service.(project_root: project_root)
+      @tree, @typing_result, @graph, @worklist = service.(project_root: project_root)
     end
 
     def get_type_information(filepath, line, character)
@@ -28,6 +28,26 @@ module Orbacle
 
     def find_definition_under_position(content, line, character)
       FindDefinitionUnderPosition.new(RubyParser.new).process_file(content, Position.new(line, character))
+    end
+
+    def get_type_of_caller_from_message_send(file_path, position_range)
+      message_send = @worklist
+        .message_sends
+        .find {|ms| ms.location && ms.location.uri == file_path && ms.location.position_range.include_position?(position_range.start) }
+      @typing_result[message_send.send_obj]
+    end
+
+    def get_methods_definitions_for_type(type, method_name)
+      case type
+      when NominalType
+        @tree.get_instance_methods_for_class(type.name, method_name)
+      when ClassType
+        @tree.get_class_methods_for_class(type.name, method_name)
+      when UnionType
+        type.types_set.flat_map {|t| get_methods_definitions_for_type(t, method_name) }.uniq
+      else
+        []
+      end
     end
 
     private

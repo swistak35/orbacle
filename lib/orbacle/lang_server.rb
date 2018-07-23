@@ -31,14 +31,23 @@ module Orbacle
     end
 
     def handle_text_document_definition(request)
-      file_content = File.read(request.text_document.uri.path)
+      file_path = request.text_document.uri.path
+      file_content = File.read(file_path)
       result = engine.find_definition_under_position(file_content, request.position.line, request.position.character)
-      if result
+      if result.instance_of?(FindDefinitionUnderPosition::ConstantResult)
         constants = engine.get_constants_definitions(result.const_ref)
         constants_locations = constants.map do |constant|
           location_to_lsp_location(constant.location)
         end
         Lsp::ResponseMessage.successful(constants_locations)
+      elsif result.instance_of?(FindDefinitionUnderPosition::MessageResult)
+        logger.info("MessageResult: #{result.inspect}")
+        caller_type = engine.get_type_of_caller_from_message_send(file_path, result.position_range)
+        logger.info("Caller type: #{caller_type.inspect}")
+        methods_definitions = engine.get_methods_definitions_for_type(caller_type, result.name)
+        logger.info("Message definitions: #{methods_definitions}")
+        methods_locations = methods_definitions.map(&:location).compact.map(&method(:location_to_lsp_location))
+        Lsp::ResponseMessage.successful(methods_locations)
       else
         Lsp::ResponseMessage.successful(nil)
       end
