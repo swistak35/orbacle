@@ -2281,11 +2281,12 @@ module Orbacle
     def type_snippet(snippet)
       worklist = Worklist.new
       graph = Graph.new
-      tree = GlobalTree.new
+      id_generator = UuidIdGenerator.new
+      tree = GlobalTree.new(id_generator)
       logger = Logger.new(nil)
       parser = RubyParser.new()
-      DefineBuiltins.new(graph, tree).()
-      result = Builder.new(graph, worklist, tree).process_file(parser.parse(snippet), nil)
+      DefineBuiltins.new(graph, tree, id_generator).()
+      result = Builder.new(graph, worklist, tree, id_generator).process_file(parser.parse(snippet), nil)
       stats_recorder = Indexer::StatsRecorder.new
       typing_result = TypingService.new(logger, stats_recorder).(graph, worklist, tree)
       typing_result[result.node]

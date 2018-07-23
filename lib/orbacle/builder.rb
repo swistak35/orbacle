@@ -11,10 +11,11 @@ module Orbacle
       attr_reader :node, :context, :data
     end
 
-    def initialize(graph, worklist, tree)
+    def initialize(graph, worklist, tree, id_generator)
       @graph = graph
       @worklist = worklist
       @tree = tree
+      @id_generator = id_generator
     end
 
     def process_file(ast, filepath)
@@ -24,6 +25,7 @@ module Orbacle
     end
 
     private
+    attr_reader :id_generator
 
     def process(ast, context)
       return Result.new(nil, context) if ast.nil?
@@ -638,6 +640,7 @@ module Orbacle
 
       metod = @tree.add_method(
         GlobalTree::Method.new(
+          id: id_generator.call,
           place_of_definition_id: context.analyzed_klass_id,
           name: ivar_name,
           location: location,
@@ -654,6 +657,7 @@ module Orbacle
       arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
       metod = @tree.add_method(
         GlobalTree::Method.new(
+          id: id_generator.call,
           place_of_definition_id: context.analyzed_klass_id,
           name: "#{ivar_name}=",
           location: location,
@@ -724,6 +728,7 @@ module Orbacle
 
       metod = @tree.add_method(
         GlobalTree::Method.new(
+          id: id_generator.call,
           place_of_definition_id: context.analyzed_klass_id,
           name: method_name.to_s,
           location: build_location_from_ast(context, ast),
@@ -795,7 +800,7 @@ module Orbacle
         ConstRef.from_ast(parent_klass_name_ast, context.nesting)
       end
 
-      klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: parent_name_ref))
+      klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: parent_name_ref))
       klass_constant = @tree.add_constant(
         GlobalTree::Constant.new(klass_name_ref.name, context.scope.increase_by_ref(klass_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
 
@@ -818,7 +823,7 @@ module Orbacle
 
       module_name_ref = ConstRef.from_ast(module_name_ast, context.nesting)
 
-      mod = @tree.add_mod(GlobalTree::Mod.new)
+      mod = @tree.add_mod(GlobalTree::Mod.new(id_generator.call))
       @tree.add_constant(
         GlobalTree::Constant.new(
           module_name_ref.name, context.scope.increase_by_ref(module_name_ref).decrease, build_location_from_ast(context, ast), mod.id))
@@ -867,6 +872,7 @@ module Orbacle
       end
       metod = @tree.add_method(
         GlobalTree::Method.new(
+          id: id_generator.call,
           place_of_definition_id: place_of_definition_id,
           name: method_name.to_s,
           location: build_location_from_ast(context, ast),
@@ -900,14 +906,14 @@ module Orbacle
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
         parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, context.nesting)
-        klass = @tree.add_klass(GlobalTree::Klass.new(parent_ref: parent_name_ref))
+        klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: parent_name_ref))
         @tree.add_constant(
           GlobalTree::Constant.new(
             const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
 
         return Result.new(Node.new(:nil, {}), context)
       elsif expr_is_module_definition?(expr)
-        mod = @tree.add_mod(GlobalTree::Mod.new)
+        mod = @tree.add_mod(GlobalTree::Mod.new(id_generator.call))
         @tree.add_constant(
           GlobalTree::Constant.new(
             const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast), mod.id))

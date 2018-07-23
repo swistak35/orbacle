@@ -99,12 +99,13 @@ module Orbacle
       expect(meth.location.end).to eq(pos(1, 25))
     end
 
-    def generate_cfg(snippet)
+    def generate_cfg(file)
       worklist = Worklist.new
       graph = Graph.new
-      tree = GlobalTree.new
-      service = Builder.new(graph, worklist, tree)
-      result = service.process_file(Parser::CurrentRuby.parse(snippet), "")
+      id_generator = UuidIdGenerator.new
+      tree = GlobalTree.new(id_generator)
+      service = Builder.new(graph, worklist, tree, id_generator)
+      result = service.process_file(Parser::CurrentRuby.parse(file), nil)
       OpenStruct.new(
         final_node: result.node,
         tree: tree)

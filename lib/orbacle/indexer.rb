@@ -108,11 +108,12 @@ module Orbacle
       project_root_path = Pathname.new(project_root)
 
       files = Dir.glob("#{project_root_path}/**/*.rb")
+      id_generator = UuidIdGenerator.new
       worklist = Worklist.new
-      tree = GlobalTree.new
+      tree = GlobalTree.new(id_generator)
       graph = Graph.new
-      DefineBuiltins.new(graph, tree).()
-      @parser = Builder.new(graph, worklist, tree)
+      DefineBuiltins.new(graph, tree, id_generator).()
+      @parser = Builder.new(graph, worklist, tree, id_generator)
 
       queue_contents = Queue.new
       queue_asts = Queue.new

@@ -7,7 +7,7 @@ module Orbacle
     attr_reader :types_set
 
     def types
-      @types_set.to_a
+      @types_set
     end
 
     def ==(other)

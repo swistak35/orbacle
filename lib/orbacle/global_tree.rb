@@ -10,7 +10,7 @@ module Orbacle
     end
 
     class Method
-      def initialize(id: SecureRandom.uuid, place_of_definition_id:, name:, location:, visibility:, args:)
+      def initialize(id:, place_of_definition_id:, name:, location:, visibility:, args:)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @id = id
@@ -35,7 +35,7 @@ module Orbacle
     end
 
     class Klass
-      def initialize(id: SecureRandom.uuid, parent_ref:, eigenclass_id: nil)
+      def initialize(id:, parent_ref:, eigenclass_id: nil)
         @id = id
         @parent_ref = parent_ref
         @eigenclass_id = eigenclass_id
@@ -52,7 +52,7 @@ module Orbacle
     end
 
     class Mod
-      def initialize(id = SecureRandom.uuid, eigenclass_id = nil)
+      def initialize(id, eigenclass_id = nil)
         @id = id
         @eigenclass_id = eigenclass_id
       end
@@ -88,7 +88,8 @@ module Orbacle
       end
     end
 
-    def initialize
+    def initialize(id_generator)
+      @id_generator = id_generator
       @constants = ConstantsTree.new
       @classes_by_id = {}
       @modules_by_id = {}
@@ -121,7 +122,7 @@ module Orbacle
     end
 
     def add_lambda(args)
-      lamba = Lambda.new(SecureRandom.uuid, args)
+      lamba = Lambda.new(id_generator.call, args)
       @lambdas_by_id[lamba.id] = lamba
       return lamba
     end
@@ -143,7 +144,7 @@ module Orbacle
       if definition.eigenclass_id
         return get_class(definition.eigenclass_id)
       else
-        eigenclass = add_klass(Klass.new(parent_ref: nil))
+        eigenclass = add_klass(Klass.new(id: id_generator.call, parent_ref: nil))
         definition.eigenclass_id = eigenclass.id
         return eigenclass
       end
@@ -242,5 +243,8 @@ module Orbacle
     def get_lambda(lambda_id)
       @lambdas_by_id[lambda_id]
     end
+
+    private
+    attr_reader :id_generator
   end
 end

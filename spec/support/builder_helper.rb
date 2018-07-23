@@ -1,9 +1,11 @@
 module BuilderHelper
-  def build_graph(snippet)
+  def build_graph(file)
     worklist = Orbacle::Worklist.new
     graph = Orbacle::Graph.new
-    service = Orbacle::Builder.new(graph, worklist, Orbacle::GlobalTree.new)
-    result = service.process_file(Parser::CurrentRuby.parse(snippet), "")
+    id_generator = Orbacle::UuidIdGenerator.new
+    tree = Orbacle::GlobalTree.new(id_generator)
+    service = Orbacle::Builder.new(graph, worklist, tree, id_generator)
+    result = service.process_file(Parser::CurrentRuby.parse(file), nil)
     OpenStruct.new(
       graph: graph,
       final_lenv: result.context.lenv,

@@ -881,8 +881,9 @@ module Orbacle
     def compute_graph(file)
       worklist = Worklist.new
       graph = Graph.new
-      tree = GlobalTree.new
-      service = Builder.new(graph, worklist, tree)
+      id_generator = UuidIdGenerator.new
+      tree = GlobalTree.new(id_generator)
+      service = Builder.new(graph, worklist, tree, id_generator)
       result = service.process_file(Parser::CurrentRuby.parse(file), nil)
       OpenStruct.new(
         graph: graph,

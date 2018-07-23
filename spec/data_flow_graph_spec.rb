@@ -2673,9 +2673,10 @@ module Orbacle
     def generate_cfg(snippet)
       worklist = Worklist.new
       graph = Graph.new
-      tree = GlobalTree.new
+      id_generator = UuidIdGenerator.new
+      tree = GlobalTree.new(id_generator)
       logger = Logger.new(nil)
-      service = Builder.new(graph, worklist, tree)
+      service = Builder.new(graph, worklist, tree, id_generator)
       parser = RubyParser.new()
       result = service.process_file(parser.parse(snippet), "")
       OpenStruct.new(
