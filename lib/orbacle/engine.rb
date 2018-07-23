@@ -13,9 +13,10 @@ module Orbacle
     end
 
     def get_type_information(filepath, line, character)
+      searched_position = Position.new(line, character)
       relevant_nodes = @graph
         .vertices
-        .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(line, character) }
+        .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(searched_position) }
         .sort_by {|n| n.location.span }
 
       type_pretty_printer.(@typing_result[relevant_nodes[0]])

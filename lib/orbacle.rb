@@ -1,15 +1,15 @@
 module Orbacle
   Position = Struct.new(:line, :character)
   PositionRange = Struct.new(:start, :end) do
-    def include_position?(line, character)
-      if (start_line+1..end_line-1).include?(line)
+    def include_position?(position)
+      if (start_line+1..end_line-1).include?(position.line)
         true
-      elsif start_line == line && end_line == line
-        (start_character <= character) && (character <= end_character)
-      elsif start_line == line
-        start_character <= character
-      elsif end_line == line
-        end_character >= character
+      elsif start_line == position.line && end_line == position.line
+        (start_character <= position.character) && (position.character <= end_character)
+      elsif start_line == position.line
+        start_character <= position.character
+      elsif end_line == position.line
+        end_character >= position.character
       end
     end
 

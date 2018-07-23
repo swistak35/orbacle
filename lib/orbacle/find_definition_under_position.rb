@@ -22,7 +22,7 @@ module Orbacle
     attr_reader :parser
 
     def on_const(ast)
-      if build_position_range_from_ast(ast).include_position?(@searched_position.line, @searched_position.character)
+      if build_position_range_from_ast(ast).include_position?(@searched_position)
         @result = ConstantResult.new(ConstRef.from_ast(ast, @current_nesting))
       end
     end
