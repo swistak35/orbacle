@@ -27,8 +27,8 @@ module Orbacle
         file_content = double
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
-        expect(engine).to receive(:find_definition_under_position)
-          .with(file_content, 2, 10)
+        expect(engine).to receive(:locations_for_definition_under_position)
+          .with(file_content, Position.new(2, 10))
           .and_return(nil)
 
         response = server.handle_text_document_definition(
@@ -46,15 +46,10 @@ module Orbacle
         file_content = double
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
-        const_ref = double
-        expect(engine).to receive(:find_definition_under_position)
-          .with(file_content, 2, 10)
-          .and_return(FindDefinitionUnderPosition::ConstantResult.new(const_ref))
-
         location = Location.new("/bar.rb", PositionRange.new(Position.new(1, 2), Position.new(3, 4)), 5)
-        expect(engine).to receive(:get_constants_definitions)
-          .with(const_ref)
-          .and_return([OpenStruct.new(location: location)])
+        expect(engine).to receive(:locations_for_definition_under_position)
+          .with(file_content, Position.new(2, 10))
+          .and_return([location])
 
         response = server.handle_text_document_definition(
           Lsp::TextDocumentPositionParams.new(
@@ -75,8 +70,8 @@ module Orbacle
         file_content = double
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
-        expect(engine).to receive(:find_definition_under_position)
-          .with(file_content, 2, 10)
+        expect(engine).to receive(:locations_for_definition_under_position)
+          .with(file_content, Position.new(2, 10))
           .and_raise(StandardError)
 
         expect(logger).to receive(:error).with(StandardError)
@@ -95,20 +90,10 @@ module Orbacle
         file_content = double
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
-        some_position_range = double
-        expect(engine).to receive(:find_definition_under_position)
-          .with(file_content, 2, 10)
-          .and_return(FindDefinitionUnderPosition::MessageResult.new("foo", some_position_range))
-
-        some_type = double
-        expect(engine).to receive(:get_type_of_caller_from_message_send)
-          .with("/foo.rb", some_position_range)
-          .and_return(some_type)
-
         location = Location.new("/bar.rb", PositionRange.new(Position.new(1, 2), Position.new(3, 4)), 5)
-        expect(engine).to receive(:get_methods_definitions_for_type)
-          .with(some_type, "foo")
-          .and_return([OpenStruct.new(location: location), OpenStruct.new(location: nil)])
+        expect(engine).to receive(:locations_for_definition_under_position)
+          .with(file_content, Position.new(2, 10))
+          .and_return([location])
 
         response = server.handle_text_document_definition(
           Lsp::TextDocumentPositionParams.new(

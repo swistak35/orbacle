@@ -32,6 +32,21 @@ module Orbacle
       FindDefinitionUnderPosition.new(RubyParser.new).process_file(content, Position.new(line, character))
     end
 
+    def locations_for_definition_under_position(file_content, position)
+      result = find_definition_under_position(file_content, request.position.line, request.position.character)
+      case result
+      when FindDefinitionUnderPosition::ConstantResult
+        constants = get_constants_definitions(result.const_ref)
+        constants.map(&:location)
+      when FindDefinitionUnderPosition::MessageResult
+        caller_type = get_type_of_caller_from_message_send(file_path, result.position_range)
+        methods_definitions = get_methods_definitions_for_type(caller_type, result.name)
+        methods_definitions.map(&:location).compact
+      else
+        nil
+      end
+    end
+
     def get_type_of_caller_from_message_send(file_path, position_range)
       message_send = @worklist
         .message_sends
