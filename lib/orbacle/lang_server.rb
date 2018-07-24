@@ -22,28 +22,35 @@ module Orbacle
     end
 
     def handle_text_document_hover(request)
-      filepath = URI(request.text_document.uri).path
-      pretty_type = engine.get_type_information(filepath, request.position.line, request.position.character)
-      Lsp::ResponseMessage.successful(
-        Lsp::TextDocumentHoverResult.new(
-          "Type of that expression: #{pretty_type}"))
-    rescue => e
-      logger.error(e)
-      raise
+      log_errors do
+        filepath = URI(request.text_document.uri).path
+        pretty_type = engine.get_type_information(filepath, request.position.line, request.position.character)
+        Lsp::ResponseMessage.successful(
+          Lsp::TextDocumentHoverResult.new(
+            "Type of that expression: #{pretty_type}"))
+      end
     end
 
     def handle_text_document_definition(request)
-      file_path = request.text_document.uri.path
-      file_content = File.read(file_path)
-      locations = engine.locations_for_definition_under_position(file_content, Position.new(request.position.line, request.position.character))
-      if locations
-        Lsp::ResponseMessage.successful(locations.map(&method(:location_to_lsp_location)))
-      else
-        Lsp::ResponseMessage.successful(nil)
+      log_errors do
+        file_path = request.text_document.uri.path
+        file_content = File.read(file_path)
+        locations = engine.locations_for_definition_under_position(file_content, Position.new(request.position.line, request.position.character))
+        if locations
+          Lsp::ResponseMessage.successful(locations.map(&method(:location_to_lsp_location)))
+        else
+          Lsp::ResponseMessage.successful(nil)
+        end
       end
-    rescue => e
-      logger.error(e)
-      raise
+    end
+
+    def log_errors
+      begin
+        yield
+      rescue => e
+        logger.error(e)
+        raise
+      end
     end
 
     def location_to_lsp_location(location)

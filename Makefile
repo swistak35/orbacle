@@ -9,6 +9,7 @@ mutant:
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::ConstantsTree"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::FindDefinitionUnderPosition"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::LangServer#handle_text_document_definition"
+	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::LangServer#handle_text_document_hover"
 
 test: test-unit test-performance
 

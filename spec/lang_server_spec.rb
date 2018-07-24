@@ -6,22 +6,43 @@ module Orbacle
   RSpec.describe LangServer do
     let(:logger) { Logger.new(nil) }
 
-    specify do
-      engine = double
-      server = LangServer.new(logger, engine)
+    describe "#handle_text_document_hover" do
+      specify "happy path" do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
 
-      expect(engine).to receive(:get_type_information).with("/foo.rb", 2, 10)
-        .and_return("Array<String>")
+        expect(engine).to receive(:get_type_information).with("/foo.rb", 2, 10)
+          .and_return("Array<String>")
 
-      server.handle_text_document_hover(
-        Lsp::TextDocumentPositionParams.new(
-          Lsp::TextDocumentIdentifier.new("file:///foo.rb"),
-          Lsp::Position.new(2, 10)))
+        response = server.handle_text_document_hover(
+          Lsp::TextDocumentPositionParams.new(
+            Lsp::TextDocumentIdentifier.new("file:///foo.rb"),
+            Lsp::Position.new(2, 10)))
+
+        expect(response.result).to eq(
+          Lsp::TextDocumentHoverResult.new("Type of that expression: Array<String>"))
+      end
+
+      specify "error raised" do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
+
+        expect(engine).to receive(:get_type_information).with("/foo.rb", 2, 10)
+          .and_raise(StandardError)
+
+        expect(logger).to receive(:error).with(StandardError)
+        expect do
+          server.handle_text_document_hover(
+            Lsp::TextDocumentPositionParams.new(
+              Lsp::TextDocumentIdentifier.new("file:///foo.rb"),
+              Lsp::Position.new(2, 10)))
+        end.to raise_error(StandardError)
+      end
     end
 
     describe "#handle_text_document_definition" do
       specify "no result" do
-        engine = double
+        engine = instance_double(Engine)
         server = LangServer.new(logger, engine)
 
         file_content = double
@@ -64,7 +85,7 @@ module Orbacle
       end
 
       specify "error raised" do
-        engine = double
+        engine = instance_double(Engine)
         server = LangServer.new(logger, engine)
 
         file_content = double
