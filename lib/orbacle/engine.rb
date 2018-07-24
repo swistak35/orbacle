@@ -14,8 +14,7 @@ module Orbacle
       @tree, @typing_result, @graph, @worklist = service.(project_root: project_root)
     end
 
-    def get_type_information(filepath, line, character)
-      searched_position = Position.new(line, character)
+    def get_type_information(filepath, searched_position)
       relevant_nodes = @graph
         .vertices
         .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(searched_position) }

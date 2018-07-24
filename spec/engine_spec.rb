@@ -18,7 +18,7 @@ END
 
         engine = Engine.new(logger)
         engine.index(proj.root)
-        result = engine.get_type_information(proj.path_of("file1.rb"), 2, 2)
+        result = engine.get_type_information(proj.path_of("file1.rb"), Position.new(2, 2))
 
         expect(result).to eq("Integer")
       end
@@ -31,9 +31,9 @@ END
 
         engine = Engine.new(logger)
         engine.index(proj.root)
-        expect(engine.get_type_information(proj.path_of("file1.rb"), 0, 0)).to eq("Integer")
-        expect(engine.get_type_information(proj.path_of("file2.rb"), 1, 1)).to eq("unknown")
-        expect(engine.get_type_information(proj.path_of("file3.rb"), 1, 1)).to eq("unknown")
+        expect(engine.get_type_information(proj.path_of("file1.rb"), Position.new(0, 0))).to eq("Integer")
+        expect(engine.get_type_information(proj.path_of("file2.rb"), Position.new(1, 1))).to eq("unknown")
+        expect(engine.get_type_information(proj.path_of("file3.rb"), Position.new(1, 1))).to eq("unknown")
       end
     end
 

@@ -26,7 +26,7 @@ module Orbacle
         engine = instance_double(Engine)
         server = LangServer.new(logger, engine)
 
-        expect(engine).to receive(:get_type_information).with("/foo.rb", 2, 10)
+        expect(engine).to receive(:get_type_information).with("/foo.rb", Position.new(2, 10))
           .and_return("Array<String>")
 
         response = server.handle_text_document_hover(
@@ -42,7 +42,7 @@ module Orbacle
         engine = instance_double(Engine)
         server = LangServer.new(logger, engine)
 
-        expect(engine).to receive(:get_type_information).with("/foo.rb", 2, 10)
+        expect(engine).to receive(:get_type_information).with("/foo.rb", Position.new(2, 10))
           .and_raise(StandardError)
 
         expect(logger).to receive(:error).with(StandardError)
