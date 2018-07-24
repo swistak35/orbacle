@@ -15,7 +15,7 @@ module Orbacle
     attr_reader :logger, :engine
 
     def handle_initialize(request)
-      root_path = URI(request.root_uri).path
+      root_path = request.root_uri.path
       logger.info("Initializing at #{root_path.inspect}")
       engine.index(root_path)
       Lsp::ResponseMessage.successful(nil)
@@ -23,7 +23,7 @@ module Orbacle
 
     def handle_text_document_hover(request)
       log_errors do
-        filepath = URI(request.text_document.uri).path
+        filepath = request.text_document.uri.path
         pretty_type = engine.get_type_information(filepath, Position.new(request.position.line, request.position.character))
         Lsp::ResponseMessage.successful(
           Lsp::TextDocumentHoverResult.new(

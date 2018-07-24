@@ -15,7 +15,7 @@ module Orbacle
         expect(engine).to receive(:index).with("/foo/bar")
 
         response = server.handle_initialize(
-          Lsp::InitializeRequest.new("file:///foo/bar"))
+          Lsp::InitializeRequest.new(URI("file:///foo/bar")))
 
         expect(response.result).to eq(nil)
       end
@@ -31,7 +31,7 @@ module Orbacle
 
         response = server.handle_text_document_hover(
           Lsp::TextDocumentPositionParams.new(
-            Lsp::TextDocumentIdentifier.new("file:///foo.rb"),
+            Lsp::TextDocumentIdentifier.new(URI("file:///foo.rb")),
             Lsp::Position.new(2, 10)))
 
         expect(response.result).to eq(
@@ -49,7 +49,7 @@ module Orbacle
         expect do
           server.handle_text_document_hover(
             Lsp::TextDocumentPositionParams.new(
-              Lsp::TextDocumentIdentifier.new("file:///foo.rb"),
+              Lsp::TextDocumentIdentifier.new(URI("file:///foo.rb")),
               Lsp::Position.new(2, 10)))
         end.to raise_error(StandardError)
       end
