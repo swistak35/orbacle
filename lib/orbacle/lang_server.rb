@@ -7,7 +7,7 @@ module Orbacle
   class LangServer
     include Lsp::LanguageServer
 
-    def initialize(logger, engine = Orbacle::Engine.new(logger))
+    def initialize(logger, engine)
       @logger = logger
       @engine = engine
     end
@@ -18,7 +18,7 @@ module Orbacle
       root_path = URI(request.root_uri).path
       logger.info("Initializing at #{root_path.inspect}")
       engine.index(root_path)
-      Lsp::ResponseMessage.new(nil, nil)
+      Lsp::ResponseMessage.successful(nil)
     end
 
     def handle_text_document_hover(request)

@@ -64,7 +64,8 @@ module Orbacle
       logger = Logger.new('/tmp/orbacle.log', 'monthly')
       logger.level = Logger::INFO
 
-      lang_server = LangServer.new(logger)
+      engine = Engine.new(logger)
+      lang_server = LangServer.new(logger, engine)
       server = Lsp::FileLanguageServer.new(lang_server, logger: logger)
       server.start
     end

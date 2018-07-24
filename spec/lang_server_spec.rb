@@ -6,6 +6,21 @@ module Orbacle
   RSpec.describe LangServer do
     let(:logger) { Logger.new(nil) }
 
+    describe "#handle_initialize" do
+      specify do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
+
+        expect(logger).to receive(:info).with('Initializing at "/foo/bar"')
+        expect(engine).to receive(:index).with("/foo/bar")
+
+        response = server.handle_initialize(
+          Lsp::InitializeRequest.new("file:///foo/bar"))
+
+        expect(response.result).to eq(nil)
+      end
+    end
+
     describe "#handle_text_document_hover" do
       specify "happy path" do
         engine = instance_double(Engine)
