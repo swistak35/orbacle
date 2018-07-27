@@ -472,7 +472,7 @@ module Orbacle
     end
 
     def handle_class_nonprimitive_send(class_name, message_send)
-      found_method = @tree.find_class_method(class_name, message_send.message_send)
+      found_method = @tree.find_class_method_from_class_name(class_name, message_send.message_send)
       if found_method.nil?
         parent_name = @tree.get_parent_of(class_name)
         if parent_name
