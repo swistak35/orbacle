@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'securerandom'
-
 module Orbacle
   class GlobalTree
     class ArgumentsTree < Struct.new(:args, :kwargs, :blockarg)
