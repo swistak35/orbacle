@@ -641,13 +641,12 @@ module Orbacle
       ivar_definition_node = @graph.get_ivar_definition_node(context.scope, "@#{ivar_name}")
 
       metod = @tree.add_method(
-        GlobalTree::Method.new(
-          id_generator.call,
-          context.analyzed_klass_id,
-          ivar_name,
-          location,
-          context.analyzed_klass.method_visibility,
-          GlobalTree::ArgumentsTree.new([], [], nil)))
+        id_generator.call,
+        context.analyzed_klass_id,
+        ivar_name,
+        location,
+        context.analyzed_klass.method_visibility,
+        GlobalTree::ArgumentsTree.new([], [], nil))
       @graph.store_metod_nodes(metod.id, {})
       @graph.add_edge(ivar_definition_node, @graph.get_metod_nodes(metod.id).result)
     end
@@ -658,13 +657,12 @@ module Orbacle
       arg_name = "_attr_writer"
       arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
       metod = @tree.add_method(
-        GlobalTree::Method.new(
-          id_generator.call,
-          context.analyzed_klass_id,
-          "#{ivar_name}=",
-          location,
-          context.analyzed_klass.method_visibility,
-          GlobalTree::ArgumentsTree.new([GlobalTree::ArgumentsTree::Regular.new(arg_name)], [], nil)))
+        id_generator.call,
+        context.analyzed_klass_id,
+        "#{ivar_name}=",
+        location,
+        context.analyzed_klass.method_visibility,
+        GlobalTree::ArgumentsTree.new([GlobalTree::ArgumentsTree::Regular.new(arg_name)], [], nil))
       @graph.store_metod_nodes(metod.id, { arg_name => arg_node })
       @graph.add_edge(arg_node, ivar_definition_node)
       @graph.add_edge(ivar_definition_node, @graph.get_metod_nodes(metod.id).result)
@@ -729,13 +727,12 @@ module Orbacle
       arguments_tree, arguments_context, arguments_nodes = build_def_arguments(formal_arguments.children, context)
 
       metod = @tree.add_method(
-        GlobalTree::Method.new(
-          id_generator.call,
-          context.analyzed_klass_id,
-          method_name.to_s,
-          build_location_from_ast(context, ast),
-          context.analyzed_klass.method_visibility,
-          arguments_tree))
+        id_generator.call,
+        context.analyzed_klass_id,
+        method_name.to_s,
+        build_location_from_ast(context, ast),
+        context.analyzed_klass.method_visibility,
+        arguments_tree)
       @graph.store_metod_nodes(metod.id, arguments_nodes)
 
       context.with_analyzed_method(metod.id).tap do |context2|
@@ -873,13 +870,12 @@ module Orbacle
         place_of_definition_id = nil
       end
       metod = @tree.add_method(
-        GlobalTree::Method.new(
-          id_generator.call,
-          place_of_definition_id,
-          method_name.to_s,
-          build_location_from_ast(context, ast),
-          context.analyzed_klass.method_visibility,
-          arguments_tree))
+        id_generator.call,
+        place_of_definition_id,
+        method_name.to_s,
+        build_location_from_ast(context, ast),
+        context.analyzed_klass.method_visibility,
+        arguments_tree)
       @graph.store_metod_nodes(metod.id, arguments_nodes)
 
       context.with_analyzed_method(metod.id).tap do |context2|

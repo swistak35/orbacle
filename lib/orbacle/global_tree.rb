@@ -102,7 +102,8 @@ module Orbacle
 
     ### Methods
 
-    def add_method(metod)
+    def add_method(id, place_of_definition_id, name, location, visibility, args)
+      metod = Method.new(id, place_of_definition_id, name, location, visibility, args)
       @metods[metod.place_of_definition_id][metod.name] << metod
       @metods_by_id[metod.id] = metod
       return metod
