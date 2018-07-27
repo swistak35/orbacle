@@ -43,5 +43,24 @@ module Orbacle
         expect(state.get_lambda(42)).to eq(nil)
       end
     end
+
+    describe "#get_instance_methods_from_class_id" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.get_instance_methods_from_class_id(78, "some_method")
+
+        expect(result).to eq([])
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        metod = state.add_method(42, 78, "some_method", nil, :public, nil)
+
+        result = state.get_instance_methods_from_class_id(78, "some_method")
+
+        expect(result).to match_array([metod])
+      end
+    end
   end
 end

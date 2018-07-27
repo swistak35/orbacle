@@ -98,8 +98,6 @@ module Orbacle
       @lambdas_by_id = {}
     end
 
-    attr_reader :metods
-
     ### Methods
 
     def add_method(id, place_of_definition_id, name, location, visibility, args)
