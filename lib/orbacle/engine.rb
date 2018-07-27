@@ -20,22 +20,14 @@ module Orbacle
         .select {|n| n.location && n.location.uri == filepath && n.location.position_range.include_position?(searched_position) }
         .sort_by {|n| n.location.span }
 
-      type_pretty_printer.(@typing_result[relevant_nodes[0]])
-    end
-
-    def get_constants_definitions(const_ref)
-      @tree.solve_reference2(const_ref)
-    end
-
-    def find_definition_under_position(content, line, character)
-      FindDefinitionUnderPosition.new(RubyParser.new).process_file(content, Position.new(line, character))
+      pretty_print_type(@typing_result[relevant_nodes[0]])
     end
 
     def locations_for_definition_under_position(file_content, position)
       result = find_definition_under_position(file_content, request.position.line, request.position.character)
       case result
       when FindDefinitionUnderPosition::ConstantResult
-        constants = get_constants_definitions(result.const_ref)
+        constants = @tree.solve_reference2(result.const_ref)
         constants.map(&:location)
       when FindDefinitionUnderPosition::MessageResult
         caller_type = get_type_of_caller_from_message_send(file_path, result.position_range)
@@ -69,12 +61,12 @@ module Orbacle
     private
     attr_reader :logger
 
-    def pretty_print_type(type)
-      type_pretty_printer.(type)
+    def find_definition_under_position(content, line, character)
+      FindDefinitionUnderPosition.new(RubyParser.new).process_file(content, Position.new(line, character))
     end
 
-    def type_pretty_printer
-      @type_pretty_printer ||= TypePrettyPrinter.new
+    def pretty_print_type(type)
+      TypePrettyPrinter.new.(type)
     end
   end
 end

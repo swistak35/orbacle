@@ -10,7 +10,7 @@ module Orbacle
     end
 
     class Method
-      def initialize(id:, place_of_definition_id:, name:, location:, visibility:, args:)
+      def initialize(id, place_of_definition_id, name, location, visibility, args)
         raise ArgumentError.new(visibility) if ![:public, :private, :protected].include?(visibility)
 
         @id = id

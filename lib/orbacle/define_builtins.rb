@@ -122,12 +122,12 @@ module Orbacle
 
     def template_args(klass, name)
       metod = @tree.add_method(GlobalTree::Method.new(
-        id: generate_id,
-        place_of_definition_id: klass.id,
-        name: name,
-        location: nil,
-        args: GlobalTree::ArgumentsTree.new([], []),
-        visibility: :public))
+        generate_id,
+        klass.id,
+        name,
+        nil,
+        :public,
+        GlobalTree::ArgumentsTree.new([], [])))
       @graph.store_metod_nodes(metod.id, {})
       metod
     end
