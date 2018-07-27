@@ -207,12 +207,14 @@ module Orbacle
     def add_lambda(args)
       lamba = Lambda.new(id_generator.call, args)
       @lambdas_by_id[lamba.id] = lamba
-      return lamba
+      lamba
     end
 
     def get_lambda(lambda_id)
-      @lambdas_by_id[lambda_id]
+      @lambdas_by_id.fetch(lambda_id)
     end
+
+    ### Other
 
     def get_parent_of(class_name)
       return nil if class_name == "Object"
