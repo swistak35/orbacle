@@ -145,7 +145,7 @@ module Orbacle
       find_instance_method_from_class_name(parent_klass.full_name, analyzed_method.name)
     end
 
-    def change_metod_visibility(klass_id, name, new_visibility)
+    def change_method_visibility(klass_id, name, new_visibility)
       @metods_by_id.each do |_id, m|
         if m.place_of_definition_id == klass_id && m.name == name
           m.visibility = new_visibility

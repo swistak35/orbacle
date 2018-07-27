@@ -595,7 +595,7 @@ module Orbacle
           [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
         end.compact
         methods_to_change_visibility.each do |name|
-          @tree.change_metod_visibility(context.analyzed_klass_id, name, new_visibility)
+          @tree.change_method_visibility(context.analyzed_klass_id, name, new_visibility)
         end
 
         final_node = add_vertex(Node.new(:definition_by_id, { id: context.analyzed_klass_id }))
