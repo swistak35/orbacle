@@ -35,7 +35,7 @@ module Orbacle
     end
 
     class Klass
-      def initialize(id:, parent_ref:, eigenclass_id: nil)
+      def initialize(id, parent_ref, eigenclass_id = nil)
         @id = id
         @parent_ref = parent_ref
         @eigenclass_id = eigenclass_id
@@ -107,7 +107,7 @@ module Orbacle
     end
 
     def add_klass(parent_ref)
-      klass = Klass.new(id: id_generator.call, parent_ref: parent_ref)
+      klass = Klass.new(id_generator.call, parent_ref)
       @classes_by_id[klass.id] = klass
       return klass
     end
