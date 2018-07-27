@@ -19,7 +19,7 @@ module Orbacle
     attr_reader :id_generator
 
     def add_object_klass
-      klass = @tree.add_klass2(nil)
+      klass = @tree.add_klass(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Object", Scope.empty, nil, klass.id))
 
@@ -52,7 +52,7 @@ module Orbacle
     end
 
     def add_integer_klass
-      klass = @tree.add_klass2(nil)
+      klass = @tree.add_klass(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Integer", Scope.empty, nil, klass.id))
 
@@ -63,7 +63,7 @@ module Orbacle
     end
 
     def add_dir_klass
-      klass = @tree.add_klass2(nil)
+      klass = @tree.add_klass(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Dir", Scope.empty, nil, klass.id))
       eigenclass = @tree.get_eigenclass_of_definition(klass.id)
@@ -72,7 +72,7 @@ module Orbacle
     end
 
     def add_file_klass
-      klass = @tree.add_klass2(nil)
+      klass = @tree.add_klass(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("File", Scope.empty, nil, klass.id))
       eigenclass = @tree.get_eigenclass_of_definition(klass.id)

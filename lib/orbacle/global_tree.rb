@@ -106,13 +106,10 @@ module Orbacle
       return metod
     end
 
-    def add_klass(klass)
+    def add_klass(parent_ref)
+      klass = Klass.new(id: id_generator.call, parent_ref: parent_ref)
       @classes_by_id[klass.id] = klass
       return klass
-    end
-
-    def add_klass2(parent_ref)
-      add_klass(Klass.new(id: id_generator.call, parent_ref: parent_ref))
     end
 
     def add_mod(mod)
@@ -148,7 +145,7 @@ module Orbacle
       if definition.eigenclass_id
         return get_class(definition.eigenclass_id)
       else
-        eigenclass = add_klass(Klass.new(id: id_generator.call, parent_ref: nil))
+        eigenclass = add_klass(nil)
         definition.eigenclass_id = eigenclass.id
         return eigenclass
       end

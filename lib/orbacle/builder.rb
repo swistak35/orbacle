@@ -802,7 +802,7 @@ module Orbacle
         ConstRef.from_ast(parent_klass_name_ast, context.nesting)
       end
 
-      klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: parent_name_ref))
+      klass = @tree.add_klass(parent_name_ref)
       klass_constant = @tree.add_constant(
         GlobalTree::Constant.new(klass_name_ref.name, context.scope.increase_by_ref(klass_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
 
@@ -908,7 +908,7 @@ module Orbacle
       if expr_is_class_definition?(expr)
         parent_klass_name_ast = expr.children[2]
         parent_name_ref = parent_klass_name_ast.nil? ? nil : ConstRef.from_ast(parent_klass_name_ast, context.nesting)
-        klass = @tree.add_klass(GlobalTree::Klass.new(id: id_generator.call, parent_ref: parent_name_ref))
+        klass = @tree.add_klass(parent_name_ref)
         @tree.add_constant(
           GlobalTree::Constant.new(
             const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
