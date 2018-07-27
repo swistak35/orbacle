@@ -62,5 +62,34 @@ module Orbacle
         expect(result).to match_array([metod])
       end
     end
+
+    describe "#find_instance_method_from_class_id" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.find_instance_method_from_class_id(78, "some_method")
+
+        expect(result).to eq(nil)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        metod = state.add_method(42, 78, "some_method", nil, :public, nil)
+
+        result = state.find_instance_method_from_class_id(78, "some_method")
+
+        expect(result).to eq(metod)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        metod1 = state.add_method(42, 78, "some_method", nil, :public, nil)
+        _metod2 = state.add_method(43, 78, "some_method", nil, :public, nil)
+
+        result = state.find_instance_method_from_class_id(78, "some_method")
+
+        expect(result).to eq(metod1)
+      end
+    end
   end
 end
