@@ -137,11 +137,12 @@ module Orbacle
     end
 
     def find_super_method(method_id)
-      analyzed_method = @metods_by_id[method_id]
+      analyzed_method = @metods_by_id.fetch(method_id)
       klass_of_this_method = get_class(analyzed_method.place_of_definition_id)
-      return nil if klass_of_this_method.nil?
-      parent_klass = solve_reference(klass_of_this_method.parent_ref) if klass_of_this_method.parent_ref
-      find_instance_method_from_class_name(parent_klass.full_name, analyzed_method.name) if parent_klass
+      return nil if klass_of_this_method.nil? || klass_of_this_method.parent_ref.nil?
+      parent_klass = solve_reference(klass_of_this_method.parent_ref)
+      return nil if parent_klass.nil?
+      find_instance_method_from_class_name(parent_klass.full_name, analyzed_method.name)
     end
 
     def change_metod_visibility(klass_id, name, new_visibility)

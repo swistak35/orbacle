@@ -190,5 +190,49 @@ module Orbacle
         expect(result).to eq(metod1)
       end
     end
+
+    describe "#find_super_method" do
+      specify do
+        state = GlobalTree.new(id_generator)
+        parent_class = state.add_klass(nil)
+        parent_constant = state.add_constant(GlobalTree::Constant.new("ParentClass", Scope.empty, nil, parent_class.id))
+        some_class = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        parent_method = state.add_method(42, parent_class.id, "some_method", nil, :public, nil)
+        some_method = state.add_method(43, some_class.id, "some_method", nil, :public, nil)
+
+        result = state.find_super_method(43)
+
+        expect(result).to eq(parent_method)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        state.add_method(43, 78, "some_method", nil, :public, nil)
+
+        result = state.find_super_method(43)
+
+        expect(result).to eq(nil)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        some_class = state.add_klass(nil)
+        some_method = state.add_method(43, some_class.id, "some_method", nil, :public, nil)
+
+        result = state.find_super_method(43)
+
+        expect(result).to eq(nil)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        some_class = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        some_method = state.add_method(43, some_class.id, "some_method", nil, :public, nil)
+
+        result = state.find_super_method(43)
+
+        expect(result).to eq(nil)
+      end
+    end
   end
 end

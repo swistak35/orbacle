@@ -24,14 +24,6 @@ module Orbacle
 
     attr_reader :const_name, :is_absolute, :nesting
 
-    def full_name
-      if absolute?
-        "::#{const_name.to_string}"
-      else
-        const_name.to_string
-      end
-    end
-
     def to_full_const_name
       if absolute?
         const_name
