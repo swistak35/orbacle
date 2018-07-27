@@ -115,12 +115,16 @@ module Orbacle
     end
 
     def find_instance_method_from_class_id(class_id, method_name)
-      @metods[class_id][method_name].first
+      get_instance_methods_from_class_id(class_id, method_name).first
+    end
+
+    def get_instance_methods_from_class_id(class_id, method_name)
+      @metods[class_id][method_name]
     end
 
     def get_instance_methods_for_class(class_name, method_name)
       klass = find_class_by_name(class_name)
-      @metods[klass.id][method_name]
+      get_instance_methods_from_class_id(klass.id, method_name)
     end
 
     def get_class_methods_for_class(class_name, method_name)
