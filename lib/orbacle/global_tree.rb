@@ -109,9 +109,7 @@ module Orbacle
     end
 
     def find_instance_method_from_class_name(class_name, method_name)
-      klass = find_class_by_name(class_name)
-      return nil if klass.nil?
-      find_instance_method_from_class_id(klass.id, method_name)
+      get_instance_methods_from_class_name(class_name, method_name).first
     end
 
     def find_instance_method_from_class_id(class_id, method_name)
@@ -122,8 +120,9 @@ module Orbacle
       @metods[class_id][method_name]
     end
 
-    def get_instance_methods_for_class(class_name, method_name)
+    def get_instance_methods_from_class_name(class_name, method_name)
       klass = find_class_by_name(class_name)
+      return [] if klass.nil?
       get_instance_methods_from_class_id(klass.id, method_name)
     end
 
