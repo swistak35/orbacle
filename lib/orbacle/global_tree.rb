@@ -126,15 +126,15 @@ module Orbacle
       get_instance_methods_from_class_id(klass.id, method_name)
     end
 
-    def get_class_methods_for_class(class_name, method_name)
+    def get_class_methods_from_class_name(class_name, method_name)
       klass = find_class_by_name(class_name)
       return [] if klass.nil?
       eigenclass = get_eigenclass_of_definition(klass.id)
-      @metods[eigenclass.id][method_name]
+      get_instance_methods_from_class_id(eigenclass.id, method_name)
     end
 
     def find_class_method(class_name, method_name)
-      get_class_methods_for_class(class_name, method_name).first
+      get_class_methods_from_class_name(class_name, method_name).first
     end
 
     def find_super_method(method_id)
