@@ -100,82 +100,12 @@ module Orbacle
 
     attr_reader :metods
 
+    ### Methods
+
     def add_method(metod)
       @metods[metod.place_of_definition_id][metod.name] << metod
       @metods_by_id[metod.id] = metod
       return metod
-    end
-
-    def add_klass(parent_ref)
-      klass = Klass.new(id_generator.call, parent_ref)
-      @classes_by_id[klass.id] = klass
-      return klass
-    end
-
-    def add_mod
-      mod = Mod.new(id_generator.call)
-      @modules_by_id[mod.id] = mod
-      return mod
-    end
-
-    def add_constant(constant)
-      @constants.add_element(constant.scope, constant.name, constant)
-      return constant
-    end
-
-    def add_lambda(args)
-      lamba = Lambda.new(id_generator.call, args)
-      @lambdas_by_id[lamba.id] = lamba
-      return lamba
-    end
-
-    def get_class(class_id)
-      @classes_by_id[class_id]
-    end
-
-    def get_module(module_id)
-      @modules_by_id[module_id]
-    end
-
-    def get_definition(definition_id)
-      get_class(definition_id) || get_module(definition_id)
-    end
-
-    def get_eigenclass_of_definition(definition_id)
-      definition = get_definition(definition_id)
-      if definition.eigenclass_id
-        return get_class(definition.eigenclass_id)
-      else
-        eigenclass = add_klass(nil)
-        definition.eigenclass_id = eigenclass.id
-        return eigenclass
-      end
-    end
-
-    def solve_reference(const_ref)
-      @constants.find_by_const_ref(const_ref)
-    end
-
-    def solve_reference2(const_ref)
-      @constants.select_by_const_ref(const_ref)
-    end
-
-    def get_parent_of(class_name)
-      return nil if class_name == "Object"
-
-      const = find_constant_by_name(class_name)
-      return "Object" if const.nil?
-
-      klass = get_class(const.definition_id)
-      return "Object" if klass.nil?
-
-      return "Object" if klass.parent_ref.nil?
-      parent_const = solve_reference(klass.parent_ref)
-      if parent_const
-        parent_const.full_name
-      else
-        klass.parent_ref.relative_name
-      end
     end
 
     def find_instance_method(class_name, method_name)
@@ -212,6 +142,96 @@ module Orbacle
       find_instance_method(parent_klass.full_name, analyzed_method.name) if parent_klass
     end
 
+    def change_metod_visibility(klass_id, name, new_visibility)
+      @metods_by_id.each do |_id, m|
+        if m.place_of_definition_id == klass_id && m.name == name
+          m.visibility = new_visibility
+        end
+      end
+    end
+
+    ### Definitions
+
+    def add_klass(parent_ref)
+      klass = Klass.new(id_generator.call, parent_ref)
+      @classes_by_id[klass.id] = klass
+      return klass
+    end
+
+    def add_mod
+      mod = Mod.new(id_generator.call)
+      @modules_by_id[mod.id] = mod
+      return mod
+    end
+
+    def get_class(class_id)
+      @classes_by_id[class_id]
+    end
+
+    def get_module(module_id)
+      @modules_by_id[module_id]
+    end
+
+    def get_definition(definition_id)
+      get_class(definition_id) || get_module(definition_id)
+    end
+
+    def get_eigenclass_of_definition(definition_id)
+      definition = get_definition(definition_id)
+      if definition.eigenclass_id
+        return get_class(definition.eigenclass_id)
+      else
+        eigenclass = add_klass(nil)
+        definition.eigenclass_id = eigenclass.id
+        return eigenclass
+      end
+    end
+
+    ### Constants
+
+    def add_constant(constant)
+      @constants.add_element(constant.scope, constant.name, constant)
+      return constant
+    end
+
+    def solve_reference(const_ref)
+      @constants.find_by_const_ref(const_ref)
+    end
+
+    def solve_reference2(const_ref)
+      @constants.select_by_const_ref(const_ref)
+    end
+
+    ### Lambdas
+
+    def add_lambda(args)
+      lamba = Lambda.new(id_generator.call, args)
+      @lambdas_by_id[lamba.id] = lamba
+      return lamba
+    end
+
+    def get_lambda(lambda_id)
+      @lambdas_by_id[lambda_id]
+    end
+
+    def get_parent_of(class_name)
+      return nil if class_name == "Object"
+
+      const = find_constant_by_name(class_name)
+      return "Object" if const.nil?
+
+      klass = get_class(const.definition_id)
+      return "Object" if klass.nil?
+
+      return "Object" if klass.parent_ref.nil?
+      parent_const = solve_reference(klass.parent_ref)
+      if parent_const
+        parent_const.full_name
+      else
+        klass.parent_ref.relative_name
+      end
+    end
+
     def find_class_by_name(full_name)
       const = find_constant_by_name(full_name)
       return nil if const.nil?
@@ -232,18 +252,6 @@ module Orbacle
       @constants.find do |constant|
         constant.definition_id == definition_id
       end
-    end
-
-    def change_metod_visibility(klass_id, name, new_visibility)
-      @metods_by_id.each do |_id, m|
-        if m.place_of_definition_id == klass_id && m.name == name
-          m.visibility = new_visibility
-        end
-      end
-    end
-
-    def get_lambda(lambda_id)
-      @lambdas_by_id[lambda_id]
     end
 
     private
