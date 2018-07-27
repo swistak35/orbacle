@@ -2706,7 +2706,7 @@ module Orbacle
     end
 
     def find_kernel_method(result, name)
-      result.tree.find_instance_method2(nil, name)
+      result.tree.find_instance_method_from_class_id(nil, name)
     end
   end
 end

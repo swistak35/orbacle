@@ -36,6 +36,12 @@ module Orbacle
 
         expect(state.get_lambda(result.id)).to eq(result)
       end
+
+      specify "returns nil if no lambda" do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.get_lambda(42)).to eq(nil)
+      end
     end
   end
 end

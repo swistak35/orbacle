@@ -64,7 +64,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      meth = result.tree.find_instance_method("Foo", "bar")
+      meth = result.tree.find_instance_method_from_class_name("Foo", "bar")
       expect(meth.location.start).to eq(pos(1, 8))
       expect(meth.location.end).to eq(pos(1, 23))
     end
@@ -78,7 +78,7 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      meth = result.tree.find_instance_method("Foo", "bar=")
+      meth = result.tree.find_instance_method_from_class_name("Foo", "bar=")
       expect(meth.location.start).to eq(pos(1, 8))
       expect(meth.location.end).to eq(pos(1, 23))
     end
@@ -92,11 +92,11 @@ module Orbacle
 
       result = generate_cfg(snippet)
 
-      meth = result.tree.find_instance_method("Foo", "bar")
+      meth = result.tree.find_instance_method_from_class_name("Foo", "bar")
       expect(meth.location.start).to eq(pos(1, 8))
       expect(meth.location.end).to eq(pos(1, 25))
 
-      meth = result.tree.find_instance_method("Foo", "bar=")
+      meth = result.tree.find_instance_method_from_class_name("Foo", "bar=")
       expect(meth.location.start).to eq(pos(1, 8))
       expect(meth.location.end).to eq(pos(1, 25))
     end

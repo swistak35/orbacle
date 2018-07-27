@@ -893,11 +893,11 @@ module Orbacle
     end
 
     def find_method(result, scope, name)
-      result.tree.find_instance_method(scope, name)
+      result.tree.find_instance_method_from_class_name(scope, name)
     end
 
     def find_method2(result, klass_id, name)
-      result.tree.find_instance_method2(klass_id, name)
+      result.tree.find_instance_method_from_class_id(klass_id, name)
     end
 
     def find_kernel_method(result, name)

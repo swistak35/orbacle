@@ -435,7 +435,7 @@ module Orbacle
     end
 
     def handle_constructor_send(original_class_name, class_name, message_send)
-      found_method = @tree.find_instance_method(class_name, "initialize")
+      found_method = @tree.find_instance_method_from_class_name(class_name, "initialize")
       if found_method.nil?
         parent_name = @tree.get_parent_of(class_name)
         if parent_name
@@ -457,7 +457,7 @@ module Orbacle
     end
 
     def handle_instance_nonprimitive_send(class_name, message_send)
-      found_method = @tree.find_instance_method(class_name, message_send.message_send)
+      found_method = @tree.find_instance_method_from_class_name(class_name, message_send.message_send)
       if found_method.nil?
         parent_name = @tree.get_parent_of(class_name)
         if parent_name

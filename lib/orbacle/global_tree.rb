@@ -108,13 +108,13 @@ module Orbacle
       return metod
     end
 
-    def find_instance_method(class_name, method_name)
+    def find_instance_method_from_class_name(class_name, method_name)
       klass = find_class_by_name(class_name)
       return nil if klass.nil?
-      find_instance_method2(klass.id, method_name)
+      find_instance_method_from_class_id(klass.id, method_name)
     end
 
-    def find_instance_method2(class_id, method_name)
+    def find_instance_method_from_class_id(class_id, method_name)
       @metods[class_id][method_name].first
     end
 
@@ -139,7 +139,7 @@ module Orbacle
       klass_of_this_method = get_class(analyzed_method.place_of_definition_id)
       return nil if klass_of_this_method.nil?
       parent_klass = solve_reference(klass_of_this_method.parent_ref) if klass_of_this_method.parent_ref
-      find_instance_method(parent_klass.full_name, analyzed_method.name) if parent_klass
+      find_instance_method_from_class_name(parent_klass.full_name, analyzed_method.name) if parent_klass
     end
 
     def change_metod_visibility(klass_id, name, new_visibility)
@@ -211,7 +211,7 @@ module Orbacle
     end
 
     def get_lambda(lambda_id)
-      @lambdas_by_id.fetch(lambda_id)
+      @lambdas_by_id[lambda_id]
     end
 
     ### Other
