@@ -404,7 +404,7 @@ module Orbacle
     end
 
     def handle_ivar(ast, context)
-      ivar_name = ast.children.first.to_s
+      ivar_name = ast.children.first
 
       ivar_definition_node = if context.selfie.klass?
         @graph.get_class_level_ivar_definition_node(context.scope, ivar_name)
@@ -423,7 +423,7 @@ module Orbacle
     end
 
     def handle_ivasgn(ast, context)
-      ivar_name = ast.children[0].to_s
+      ivar_name = ast.children[0]
       expr = ast.children[1]
 
       node_ivasgn = add_vertex(Node.new(:ivasgn, { var_name: ivar_name }, build_location_from_ast(context, ast)))
@@ -638,7 +638,7 @@ module Orbacle
     end
 
     def define_attr_reader_method(context, ivar_name, location)
-      ivar_definition_node = @graph.get_ivar_definition_node(context.scope, "@#{ivar_name}")
+      ivar_definition_node = @graph.get_ivar_definition_node(context.scope, :"@#{ivar_name}")
 
       metod = @tree.add_method(
         id_generator.call,
@@ -652,7 +652,7 @@ module Orbacle
     end
 
     def define_attr_writer_method(context, ivar_name, location)
-      ivar_definition_node = @graph.get_ivar_definition_node(context.scope, "@#{ivar_name}")
+      ivar_definition_node = @graph.get_ivar_definition_node(context.scope, :"@#{ivar_name}")
 
       arg_name = "_attr_writer"
       arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
