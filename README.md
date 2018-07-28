@@ -1,5 +1,3 @@
-[![CircleCI](https://circleci.com/gh/swistak35/orbacle/tree/master.svg?style=svg)](https://circleci.com/gh/swistak35/orbacle/tree/master)
-
 # Orbacle
 
 <img src="http://swistak35.com/img/orbacle-logo.png" alt="Orbacle logo" width="100px" align="left" />
@@ -50,6 +48,11 @@ Currently I do not accept contributions, as this is part of MSc thesis. However 
 ## Support
 
 If you have found a bug, feel free to create an issue. However, because of the fact that I'm focusing now more on the features required to MSc, support for other developers are lower priority for me.
+
+## Code status
+
+[![CircleCI](https://circleci.com/gh/swistak35/orbacle/tree/master.svg?style=svg)](https://circleci.com/gh/swistak35/orbacle/tree/master)
+[![Gem Version](https://badge.fury.io/rb/orbacle.svg)](https://badge.fury.io/rb/orbacle)
 
 ## Bibliography
 
