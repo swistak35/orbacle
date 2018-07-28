@@ -94,7 +94,7 @@ module Orbacle
       @classes_by_id = {}
       @modules_by_id = {}
       @metods = Hash.new {|h,k| h[k] = Hash.new {|h2, k2| h2[k2] = [] } }
-      @metods_by_id = {}
+      @methods_by_id = {}
       @lambdas_by_id = {}
       @type_mapping = Hash.new(BottomType.new)
     end
@@ -104,7 +104,7 @@ module Orbacle
     def add_method(id, place_of_definition_id, name, location, visibility, args)
       metod = Method.new(id, place_of_definition_id, name, location, visibility, args)
       @metods[metod.place_of_definition_id][metod.name] << metod
-      @metods_by_id[metod.id] = metod
+      @methods_by_id[metod.id] = metod
       return metod
     end
 
@@ -138,13 +138,13 @@ module Orbacle
     end
 
     def get_methods(method_name)
-      @metods_by_id.values.select do |m|
+      @methods_by_id.values.select do |m|
         m.name.eql?(method_name)
       end
     end
 
     def find_super_method(method_id)
-      analyzed_method = @metods_by_id.fetch(method_id)
+      analyzed_method = @methods_by_id.fetch(method_id)
       klass_of_this_method = get_class(analyzed_method.place_of_definition_id)
       return nil if klass_of_this_method.nil? || klass_of_this_method.parent_ref.nil?
       parent_klass = solve_reference(klass_of_this_method.parent_ref)
@@ -153,7 +153,7 @@ module Orbacle
     end
 
     def change_method_visibility(klass_id, name, new_visibility)
-      @metods_by_id.each do |_id, m|
+      @methods_by_id.each do |_id, m|
         if m.place_of_definition_id.eql?(klass_id) && m.name.eql?(name)
           m.visibility = new_visibility
         end
