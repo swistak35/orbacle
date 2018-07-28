@@ -8,16 +8,18 @@ module Orbacle
     SyntaxError = Class.new(Error)
     EncodingError = Class.new(Error)
 
-    class MyParser < Parser::Ruby25
-      def self.default_parser
-        my_parser = super
-        my_parser.diagnostics.consumer = nil
-        my_parser
+    def initialize
+      @my_parser = Class.new(Parser::Ruby25) do
+        def self.default_parser
+          my_parser = super()
+          my_parser.diagnostics.consumer = nil
+          my_parser
+        end
       end
     end
 
     def parse(content)
-      MyParser.parse(content)
+      @my_parser.parse(content)
     rescue Parser::SyntaxError
       raise SyntaxError
     rescue ::EncodingError

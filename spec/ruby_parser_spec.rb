@@ -18,6 +18,17 @@ module Orbacle
       end.to raise_error(RubyParser::SyntaxError)
     end
 
+    specify "syntax error don't end up in stderr" do
+      snippet = "do"
+
+      expect($stderr).not_to receive(:puts)
+
+      begin
+        parse(snippet)
+      rescue RubyParser::SyntaxError
+      end
+    end
+
     specify "raise encoding error" do
       snippet = <<-END
       "\xC0\xC0"
