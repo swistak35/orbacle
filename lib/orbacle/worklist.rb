@@ -14,6 +14,7 @@ module Orbacle
       @nodes = FastContainers::PriorityQueue.new(:max)
       @handled_message_sends = Set.new
       @nodes_counter = {}
+      @nodes_mapping = {}
     end
 
     attr_reader :message_sends, :nodes, :handled_message_sends
@@ -24,11 +25,16 @@ module Orbacle
     end
 
     def enqueue_node(v)
-      @nodes.push(v, 1)
+      if !@nodes_mapping[v]
+        @nodes.push(v, 1)
+        @nodes_mapping[v] = true
+      end
     end
 
     def pop_node
-      @nodes.pop
+      e = @nodes.pop
+      @nodes_mapping[e] = false
+      e
     end
 
     def count_node(node)
