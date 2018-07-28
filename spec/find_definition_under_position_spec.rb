@@ -124,6 +124,15 @@ module Orbacle
       end
     end
 
+    specify "check that error would be raised if wrong ast returned" do
+      finder = FindDefinitionUnderPosition.new(RubyParser.new)
+      expect(finder).to receive(:on_const).and_return(Parser::AST::Node.new(:const, [:something, :else]))
+
+      expect do
+        finder.process_file("Foo", Position.new(0, 0))
+      end.to raise_error(RuntimeError)
+    end
+
     def find_definition_under_position(file, line, column)
       parser = RubyParser.new
       service = FindDefinitionUnderPosition.new(parser)

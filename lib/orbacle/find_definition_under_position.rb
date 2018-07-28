@@ -24,11 +24,17 @@ module Orbacle
 
     attr_reader :parser
 
+    def process(ast)
+      new_ast = super
+      raise unless ast.equal?(new_ast)
+      new_ast
+    end
+
     def on_const(ast)
       if build_position_range_from_ast(ast).include_position?(@searched_position)
         @result = ConstantResult.new(ConstRef.from_ast(ast, @current_nesting))
       end
-      return ast
+      nil
     end
 
     def on_class(ast)
@@ -37,7 +43,7 @@ module Orbacle
       with_new_nesting(@current_nesting.increase_nesting_const(klass_name_ref)) do
         super
       end
-      return ast
+      nil
     end
 
     def on_module(ast)
@@ -46,7 +52,7 @@ module Orbacle
       with_new_nesting(@current_nesting.increase_nesting_const(module_name_ref)) do
         super
       end
-      return ast
+      nil
     end
 
     def on_send(ast)
@@ -57,7 +63,7 @@ module Orbacle
       else
         super
       end
-      return ast
+      nil
     end
 
     def with_new_nesting(new_nesting)
