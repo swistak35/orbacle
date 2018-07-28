@@ -153,10 +153,8 @@ module Orbacle
     end
 
     def change_method_visibility(klass_id, name, new_visibility)
-      @methods_by_id.each do |_id, m|
-        if m.place_of_definition_id.eql?(klass_id) && m.name.eql?(name)
-          m.visibility = new_visibility
-        end
+      @methods_by_class_id[klass_id][name].each do |m|
+        m.visibility = new_visibility
       end
     end
 
