@@ -482,7 +482,7 @@ module Orbacle
     end
 
     def handle_gvasgn(ast, context)
-      gvar_name = ast.children[0].to_s
+      gvar_name = ast.children[0]
       expr = ast.children[1]
 
       node_gvasgn = add_vertex(Node.new(:gvasgn, { var_name: gvar_name }, build_location_from_ast(context, ast)))
@@ -497,7 +497,7 @@ module Orbacle
     end
 
     def handle_gvar(ast, context)
-      gvar_name = ast.children.first.to_s
+      gvar_name = ast.children.first
 
       gvar_definition_node = @graph.get_gvar_definition_node(gvar_name)
 

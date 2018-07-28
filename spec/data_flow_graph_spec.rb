@@ -1110,10 +1110,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:gvar, { var_name: "$baz" }))
+        expect(result.final_node).to eq(node(:gvar, { var_name: :$baz }))
         expect(result.graph).to include_edge(
           node(:gvar_definition),
-          node(:gvar, { var_name: "$baz" }))
+          node(:gvar, { var_name: :$baz }))
       end
 
       specify "regexp-specific global variables" do
@@ -1144,12 +1144,12 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:gvasgn, { var_name: "$baz" }))
+        expect(result.final_node).to eq(node(:gvasgn, { var_name: :$baz }))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
-          node(:gvasgn, { var_name: "$baz" }))
+          node(:gvasgn, { var_name: :$baz }))
         expect(result.graph).to include_edge(
-          node(:gvasgn, { var_name: "$baz" }),
+          node(:gvasgn, { var_name: :$baz }),
           node(:gvar_definition))
       end
 
@@ -1172,7 +1172,7 @@ module Orbacle
         int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
         gvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
         global_baz = result.graph.adjacent_vertices(gvasgn_to_42).first
-        expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar, { var_name: "$baz" })])
+        expect(result.graph.adjacent_vertices(global_baz)).to match_array([node(:gvar, { var_name: :$baz })])
       end
     end
 
@@ -1845,7 +1845,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:loop_operator),
-          node(:gvasgn, { var_name: "$x" }))
+          node(:gvasgn, { var_name: :$x }))
       end
 
       specify "next" do
@@ -1859,7 +1859,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:loop_operator),
-          node(:gvasgn, { var_name: "$x" }))
+          node(:gvasgn, { var_name: :$x }))
       end
 
       specify "redo" do
@@ -1873,7 +1873,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:loop_operator),
-          node(:gvasgn, { var_name: "$x" }))
+          node(:gvasgn, { var_name: :$x }))
       end
     end
 
@@ -2256,10 +2256,10 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq(:+)
-        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:gvar, { var_name: "$a" })])
+        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:gvar, { var_name: :$a })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:gvasgn, { var_name: "$a" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:gvasgn, { var_name: :$a })])
       end
 
       specify "for lvar, usage of ||=" do
@@ -2376,14 +2376,14 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:gvar, { var_name: "$a" }),
+          node(:gvar, { var_name: :$a }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:or),
-          node(:gvasgn, { var_name: "$a" }))
+          node(:gvasgn, { var_name: :$a }))
       end
 
       specify "for lvar, usage of &&=" do
@@ -2500,14 +2500,14 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:gvar, { var_name: "$a" }),
+          node(:gvar, { var_name: :$a }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:and),
-          node(:gvasgn, { var_name: "$a" }))
+          node(:gvasgn, { var_name: :$a }))
       end
     end
 
