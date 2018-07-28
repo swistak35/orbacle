@@ -396,5 +396,31 @@ module Orbacle
         expect(state.get_parent_of("SomeClass")).to eq("Object")
       end
     end
+
+    describe "#set_type_of" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        state.set_type_of("foo", NominalType.new("Foo"))
+
+        expect(state.type_of("foo")).to eq(NominalType.new("Foo"))
+      end
+    end
+
+    describe "#type_of" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        state.set_type_of("foo", NominalType.new("Foo"))
+
+        expect(state.type_of("foo")).to eq(NominalType.new("Foo"))
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.type_of("foo")).to eq(BottomType.new)
+      end
+    end
   end
 end

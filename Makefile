@@ -25,6 +25,8 @@ mutant:
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_module"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_definition"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_parent_of"
+	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#set_type_of"
+	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#type_of"
 
 test: test-unit test-performance
 
