@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'orbacle'
-  spec.version       = '0.0.1'
+  spec.version       = '0.1.0'
   spec.licenses      = ['MIT']
   spec.authors       = ['Rafał Łasocha']
   spec.email         = 'orbacle@swistak35.com'
