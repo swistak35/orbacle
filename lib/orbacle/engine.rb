@@ -32,6 +32,7 @@ module Orbacle
       when FindDefinitionUnderPosition::MessageResult
         caller_type = get_type_of_caller_from_message_send(file_path, result.position_range)
         methods_definitions = get_methods_definitions_for_type(caller_type, result.name)
+        methods_definitions = @state.get_methods(result.name) if methods_definitions.empty?
         methods_definitions.map(&:location).compact
       else
         []

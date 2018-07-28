@@ -137,6 +137,12 @@ module Orbacle
       get_class_methods_from_class_name(class_name, method_name).first
     end
 
+    def get_methods(method_name)
+      @metods_by_id.values.select do |m|
+        m.name.eql?(method_name)
+      end
+    end
+
     def find_super_method(method_id)
       analyzed_method = @metods_by_id.fetch(method_id)
       klass_of_this_method = get_class(analyzed_method.place_of_definition_id)

@@ -189,6 +189,18 @@ module Orbacle
       end
     end
 
+    describe "#get_methods" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        method1 = state.add_method(42, 78, "foo", nil, :public, nil)
+        method2 = state.add_method(43, 78, "bar", nil, :public, nil)
+        result = state.get_methods("foo")
+
+        expect(result).to match_array([method1])
+      end
+    end
+
     describe "#find_super_method" do
       specify do
         state = GlobalTree.new(id_generator)

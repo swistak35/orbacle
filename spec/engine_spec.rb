@@ -63,10 +63,10 @@ module Orbacle
 
       specify "method result" do
         file1 = <<-END
-        42
-        42
-        42
-        42
+        class Baz
+          def bar
+          end
+        end
         y,z = a
         x.bar
         END
@@ -87,6 +87,7 @@ module Orbacle
         engine.index(proj.root)
 
         locations = engine.locations_for_definition_under_position(proj.path_of("file2.rb"), file2, Position.new(5, 12))
+        expect(locations.size).to eq(1)
         expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(2, 12)))
       end
 
@@ -96,6 +97,9 @@ module Orbacle
           def self.bar
           end
         end
+        class Baz
+          def self.bar; end
+        end
         Foo.bar
         END
         proj = TestProject.new.add_file("file1.rb", file1)
@@ -103,7 +107,8 @@ module Orbacle
         engine = Engine.new(logger)
         engine.index(proj.root)
 
-        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(4, 14))
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(7, 14))
+        expect(locations.size).to eq(1)
         expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(2, 12)))
       end
 
@@ -117,6 +122,10 @@ module Orbacle
           def bar
           end
         end
+        class Other
+          def bar
+          end
+        end
         x = something ? Foo1.new : Foo2.new
         x.bar
         END
@@ -125,7 +134,8 @@ module Orbacle
         engine = Engine.new(logger)
         engine.index(proj.root)
 
-        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(9, 12))
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(13, 12))
+        expect(locations.size).to eq(2)
         expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(2, 12)))
         expect(locations[1].position_range).to eq(PositionRange.new(Position.new(5, 10), Position.new(6, 12)))
       end
@@ -155,6 +165,23 @@ module Orbacle
 
         locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(1, 12))
         expect(locations).to eq([])
+      end
+
+      specify "get any methods when no accurate result" do
+        file1 = <<-END
+        class Foo
+          def bar
+          end
+        end
+        x.bar
+        END
+        proj = TestProject.new.add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(4, 12))
+        expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(2, 12)))
       end
 
       specify "no result" do
