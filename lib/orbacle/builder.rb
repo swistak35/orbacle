@@ -512,7 +512,7 @@ module Orbacle
       block_message_name = block_message_block_pass.children.last.children.last
       normal_arg_exprs = arg_exprs[0..-2]
       send_ast_type = csend ? :csend : :send
-      send_ast = Parser::AST::Node.new(send_ast_type, [obj_expr, message_name.to_sym, *normal_arg_exprs])
+      send_ast = Parser::AST::Node.new(send_ast_type, [obj_expr, message_name, *normal_arg_exprs])
       arg_ast = Parser::AST::Node.new(:args, [Parser::AST::Node.new(:arg, [:__orbacle__x])])
       block_body_ast = Parser::AST::Node.new(:send, [Parser::AST::Node.new(:lvar, [:__orbacle__x]), block_message_name])
       block_ast = Parser::AST::Node.new(:block, [send_ast, arg_ast, block_body_ast])
@@ -528,7 +528,7 @@ module Orbacle
 
     def handle_send(ast, context, csend)
       obj_expr = ast.children[0]
-      message_name = ast.children[1].to_s
+      message_name = ast.children[1]
       arg_exprs = ast.children[2..-1]
 
       return transform_symbol_shorthand(obj_expr, message_name, arg_exprs, csend, context) if transform_symbol_shorthand_applies?(arg_exprs)
@@ -544,10 +544,10 @@ module Orbacle
 
       final_context, call_arg_nodes, block_node = prepare_argument_nodes(obj_context, arg_exprs)
 
-      return handle_changing_visibility(context, message_name.to_sym, arg_exprs) if obj_expr.nil? && ["public", "protected", "private"].include?(message_name)
-      return handle_custom_attr_reader_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_reader"
-      return handle_custom_attr_writer_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_writer"
-      return handle_custom_attr_accessor_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == "attr_accessor"
+      return handle_changing_visibility(context, message_name, arg_exprs) if obj_expr.nil? && [:public, :protected, :private].include?(message_name)
+      return handle_custom_attr_reader_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == :attr_reader
+      return handle_custom_attr_writer_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == :attr_writer
+      return handle_custom_attr_accessor_send(context, arg_exprs, ast) if obj_expr.nil? && message_name == :attr_accessor
 
       call_obj_node = add_vertex(Node.new(:call_obj, {}))
       @graph.add_edge(obj_node, call_obj_node)
@@ -592,7 +592,7 @@ module Orbacle
         return Result.new(final_node, context.with_visibility(new_visibility))
       elsif context.analyzed_klass_id
         methods_to_change_visibility = arg_exprs.map do |arg_expr|
-          [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0].to_s : nil
+          [:sym, :str].include?(arg_expr.type) ? arg_expr.children[0] : nil
         end.compact
         methods_to_change_visibility.each do |name|
           @tree.change_method_visibility(context.analyzed_klass_id, name, new_visibility)
@@ -643,7 +643,7 @@ module Orbacle
       metod = @tree.add_method(
         id_generator.call,
         context.analyzed_klass_id,
-        ivar_name,
+        :"#{ivar_name}",
         location,
         context.analyzed_klass.method_visibility,
         GlobalTree::ArgumentsTree.new([], [], nil))
@@ -659,7 +659,7 @@ module Orbacle
       metod = @tree.add_method(
         id_generator.call,
         context.analyzed_klass_id,
-        "#{ivar_name}=",
+        :"#{ivar_name}=",
         location,
         context.analyzed_klass.method_visibility,
         GlobalTree::ArgumentsTree.new([GlobalTree::ArgumentsTree::Regular.new(arg_name)], [], nil))
@@ -729,7 +729,7 @@ module Orbacle
       metod = @tree.add_method(
         id_generator.call,
         context.analyzed_klass_id,
-        method_name.to_s,
+        method_name,
         build_location_from_ast(context, ast),
         context.analyzed_klass.method_visibility,
         arguments_tree)
@@ -872,7 +872,7 @@ module Orbacle
       metod = @tree.add_method(
         id_generator.call,
         place_of_definition_id,
-        method_name.to_s,
+        method_name,
         build_location_from_ast(context, ast),
         context.analyzed_klass.method_visibility,
         arguments_tree)

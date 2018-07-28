@@ -104,7 +104,7 @@ module Orbacle
         END
 
         message_result = FindDefinitionUnderPosition::MessageResult.new(
-          "bar",
+          :bar,
           PositionRange.new(Position.new(0, 12), Position.new(0, 14)))
         expect(find_definition_under_position(file, 0, 11)).to eq(nil)
         expect(find_definition_under_position(file, 0, 12)).to eq(message_result)

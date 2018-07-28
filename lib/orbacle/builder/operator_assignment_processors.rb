@@ -70,7 +70,7 @@ module Orbacle
       def complete_assignment(partial_assignment_ast, full_rhs_ast)
         if partial_assignment_ast.type == :send
           send_obj_ast, accessor_method_name, _ = partial_assignment_ast.children
-          partial_assignment_ast.updated(nil, [send_obj_ast, "#{accessor_method_name}=", full_rhs_ast])
+          partial_assignment_ast.updated(nil, [send_obj_ast, :"#{accessor_method_name}=", full_rhs_ast])
         elsif [:lvasgn, :ivasgn, :cvasgn, :casgn, :gvasgn].include?(partial_assignment_ast.type)
           partial_assignment_ast.append(full_rhs_ast)
         end

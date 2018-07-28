@@ -412,7 +412,7 @@ module Orbacle
       @state.type_of(message_send.send_obj).each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, message_send)
-        elsif possible_type.instance_of?(ProcType) && message_send.message_send == "call"
+        elsif possible_type.instance_of?(ProcType) && message_send.message_send == :call
           handle_proc_call(possible_type, message_send)
         elsif possible_type.is_a?(ClassType)
           handle_class_send(possible_type.name, message_send)
@@ -431,7 +431,7 @@ module Orbacle
     end
 
     def handle_constructor_send(class_name, message_send)
-      found_method = @state.find_deep_instance_method_from_class_name(class_name, "initialize")
+      found_method = @state.find_deep_instance_method_from_class_name(class_name, :initialize)
       if found_method.nil?
         connect_constructor_to_node(class_name, message_send.send_result)
       else
@@ -661,19 +661,19 @@ module Orbacle
     def primitive_mapping
       {
         "Array" => {
-          "map" => method(:send_primitive_array_map),
-          "each" => method(:send_primitive_array_each),
+          :map => method(:send_primitive_array_map),
+          :each => method(:send_primitive_array_each),
         },
         "Object" => {
-          "class" => method(:send_primitive_object_class),
-          "clone" => method(:send_primitive_object_freeze),
-          "dup" => method(:send_primitive_object_freeze),
-          "freeze" => method(:send_primitive_object_freeze),
-          "itself" => method(:send_primitive_object_freeze),
-          "taint" => method(:send_primitive_object_freeze),
-          "trust" => method(:send_primitive_object_freeze),
-          "untaint" => method(:send_primitive_object_freeze),
-          "untrust" => method(:send_primitive_object_freeze),
+          :class => method(:send_primitive_object_class),
+          :clone => method(:send_primitive_object_freeze),
+          :dup => method(:send_primitive_object_freeze),
+          :freeze => method(:send_primitive_object_freeze),
+          :itself => method(:send_primitive_object_freeze),
+          :taint => method(:send_primitive_object_freeze),
+          :trust => method(:send_primitive_object_freeze),
+          :untaint => method(:send_primitive_object_freeze),
+          :untrust => method(:send_primitive_object_freeze),
         },
       }
     end
@@ -681,7 +681,7 @@ module Orbacle
     def primitive_class_mapping
       {
         "Object" => {
-          "class" => method(:send_class_primitive_object_class),
+          :class => method(:send_class_primitive_object_class),
         },
       }
     end
@@ -703,7 +703,7 @@ module Orbacle
     end
 
     def constructor_send?(type, message_name)
-      type.is_a?(ClassType) && message_name == "new"
+      type.is_a?(ClassType) && message_name == :new
     end
 
     def handle_primitive(class_name, message_send)

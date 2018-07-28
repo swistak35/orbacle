@@ -59,7 +59,7 @@ module Orbacle
 
     def on_send(ast)
       if ast.loc.selector && build_position_range_from_parser_range(ast.loc.selector).include_position?(@searched_position)
-        message_name = ast.children.fetch(1).to_s
+        message_name = ast.children.fetch(1)
         selector_position_range = build_position_range_from_parser_range(ast.loc.selector)
         @result = MessageResult.new(message_name, selector_position_range)
       else

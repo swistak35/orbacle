@@ -24,31 +24,31 @@ module Orbacle
         GlobalTree::Constant.new("Object", Scope.empty, nil, klass.id))
 
       # BasicObject
-      template_just_bool(klass, "==")
-      template_just_bool(klass, "!")
-      template_just_bool(klass, "!=")
-      template_just_bool(klass, "equal?")
-      template_just_int(klass, "object_id")
-      template_just_int(klass, "__id__")
+      template_just_bool(klass, :"==")
+      template_just_bool(klass, :"!")
+      template_just_bool(klass, :"!=")
+      template_just_bool(klass, :equal?)
+      template_just_int(klass, :object_id)
+      template_just_int(klass, :__id__)
 
       # Object
-      template_just_bool(klass, "!~")
-      template_maybe_int(klass, "<=>")
-      template_just_bool(klass, "===")
-      template_just_nil(klass, "display")
-      template_just_bool(klass, "eql?")
-      template_just_bool(klass, "frozen?")
-      template_just_bool(klass, "instance_of?")
-      template_just_bool(klass, "instance_variable_defined?")
-      template_just_bool(klass, "is_a?")
-      template_just_str(klass, "inspect")
-      template_just_bool(klass, "kind_of?")
-      template_just_bool(klass, "nil?")
-      template_just_bool(klass, "respond_to?")
-      template_just_bool(klass, "respond_to_missing?")
-      template_just_bool(klass, "tainted?")
-      template_just_bool(klass, "untrusted?")
-      template_just_str(klass, "to_s")
+      template_just_bool(klass, :"!~")
+      template_maybe_int(klass, :"<=>")
+      template_just_bool(klass, :"===")
+      template_just_nil(klass, :display)
+      template_just_bool(klass, :eql?)
+      template_just_bool(klass, :frozen?)
+      template_just_bool(klass, :instance_of?)
+      template_just_bool(klass, :instance_variable_defined?)
+      template_just_bool(klass, :is_a?)
+      template_just_str(klass, :inspect)
+      template_just_bool(klass, :kind_of?)
+      template_just_bool(klass, :nil?)
+      template_just_bool(klass, :respond_to?)
+      template_just_bool(klass, :respond_to_missing?)
+      template_just_bool(klass, :tainted?)
+      template_just_bool(klass, :untrusted?)
+      template_just_str(klass, :to_s)
     end
 
     def add_integer_klass
@@ -56,10 +56,10 @@ module Orbacle
       @tree.add_constant(
         GlobalTree::Constant.new("Integer", Scope.empty, nil, klass.id))
 
-      template_just_int(klass, "succ")
-      template_just_int(klass, "+")
-      template_just_int(klass, "-")
-      template_just_int(klass, "*")
+      template_just_int(klass, :succ)
+      template_just_int(klass, :"+")
+      template_just_int(klass, :"-")
+      template_just_int(klass, :"*")
     end
 
     def add_dir_klass
@@ -68,7 +68,7 @@ module Orbacle
         GlobalTree::Constant.new("Dir", Scope.empty, nil, klass.id))
       eigenclass = @tree.get_eigenclass_of_definition(klass.id)
 
-      template_just_array_of_str(eigenclass, "glob")
+      template_just_array_of_str(eigenclass, :glob)
     end
 
     def add_file_klass
@@ -77,7 +77,7 @@ module Orbacle
         GlobalTree::Constant.new("File", Scope.empty, nil, klass.id))
       eigenclass = @tree.get_eigenclass_of_definition(klass.id)
 
-      template_just_str(eigenclass, "read")
+      template_just_str(eigenclass, :read)
     end
 
     def template_just_int(klass, name)
