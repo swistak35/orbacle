@@ -164,7 +164,7 @@ module Orbacle
     def add_mod
       mod = Mod.new(id_generator.call)
       @modules_by_id[mod.id] = mod
-      return mod
+      mod
     end
 
     def get_class(class_id)

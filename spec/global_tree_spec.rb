@@ -283,5 +283,39 @@ module Orbacle
         expect(state.get_class(42)).to eq(nil)
       end
     end
+
+    describe "#add_mod" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_mod
+
+        expect(result.id).to eq(1)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_mod
+
+        expect(state.get_module(result.id)).to eq(result)
+      end
+    end
+
+    describe "#get_module" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_mod
+
+        expect(state.get_module(result.id)).to eq(result)
+      end
+
+      specify "returns nil if no module" do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.get_module(42)).to eq(nil)
+      end
+    end
   end
 end
