@@ -62,7 +62,11 @@ module Orbacle
 
       specify "method result" do
         file1 = <<-END
-        \n\n\n\n
+        42
+        42
+        42
+        42
+        y,z = a
         x.bar
         END
         file2 = <<-END
@@ -80,7 +84,7 @@ module Orbacle
         engine = Engine.new(logger)
         engine.index(proj.root)
 
-        locations = engine.locations_for_definition_under_position(proj.path_of("file2.rb"), file1, Position.new(5, 12))
+        locations = engine.locations_for_definition_under_position(proj.path_of("file2.rb"), file2, Position.new(5, 12))
         expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(2, 12)))
       end
 

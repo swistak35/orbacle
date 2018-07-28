@@ -42,7 +42,7 @@ module Orbacle
     def get_type_of_caller_from_message_send(file_path, position_range)
       message_send = @worklist
         .message_sends
-        .find {|ms| ms.location && ms.location.uri == file_path && ms.location.position_range.include_position?(position_range.start) }
+        .find {|ms| ms.location && ms.location.uri.eql?(file_path) && ms.location.position_range.include_position?(position_range.start) }
       @state.type_of(message_send.send_obj)
     end
 
@@ -53,7 +53,7 @@ module Orbacle
       when ClassType
         @state.get_class_methods_from_class_name(type.name, method_name)
       when UnionType
-        type.types_set.flat_map {|t| get_methods_definitions_for_type(t, method_name) }.uniq
+        type.types_set.flat_map {|t| get_methods_definitions_for_type(t, method_name) }
       else
         []
       end
