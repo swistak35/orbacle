@@ -245,8 +245,8 @@ module Orbacle
     def handle_unwrap_hash_keys(node, sources)
       raise if sources.size != 1
       source = sources.first
-      if type_of(source).is_a?(GenericType)
-        type_of(source).parameters.at(0)
+      if @state.type_of(source).is_a?(GenericType)
+        @state.type_of(source).parameters.at(0)
       else
         BottomType.new
       end
@@ -255,32 +255,32 @@ module Orbacle
     def handle_unwrap_hash_values(node, sources)
       raise if sources.size != 1
       source = sources.first
-      if type_of(source).is_a?(GenericType)
-        type_of(source).parameters.at(1)
+      if @state.type_of(source).is_a?(GenericType)
+        @state.type_of(source).parameters.at(1)
       else
         BottomType.new
       end
     end
 
     def handle_group(node, sources)
-      sources_types = sources.map {|source_node| type_of(source_node) }
+      sources_types = sources.map {|source_node| @state.type_of(source_node) }
       build_union(sources_types)
     end
 
     def handle_pass1(node, sources)
       raise if sources.size != 1
       source = sources.first
-      type_of(source)
+      @state.type_of(source)
     end
 
     def handle_hash(_node, sources)
       hash_keys_node = sources.find {|s| s.type == :hash_keys }
       hash_values_node = sources.find {|s| s.type == :hash_values }
-      GenericType.new("Hash", [type_of(hash_keys_node), type_of(hash_values_node)])
+      GenericType.new("Hash", [@state.type_of(hash_keys_node), @state.type_of(hash_values_node)])
     end
 
     def handle_range(node, sources)
-      sources_types = sources.map {|source_node| type_of(source_node) }
+      sources_types = sources.map {|source_node| @state.type_of(source_node) }
       GenericType.new("Range", [build_union(sources_types)])
     end
 
@@ -317,7 +317,7 @@ module Orbacle
       types_inside_arrays = []
       sources
         .each do |s|
-          type_of(s).each_possible_type do |t|
+          @state.type_of(s).each_possible_type do |t|
             if t.name == "Array"
               types_inside_arrays << t.parameters.first
             end
@@ -337,12 +337,12 @@ module Orbacle
     end
 
     def handle_wrap_array(_node, sources)
-      GenericType.new("Array", [build_union(sources.map {|s| type_of(s) })])
+      GenericType.new("Array", [build_union(sources.map {|s| @state.type_of(s) })])
     end
 
     def handle_pass_lte1(_node, sources)
       raise if sources.size > 1
-      type_of(sources.first)
+      @state.type_of(sources.first)
     end
 
     def build_union(sources_types)
@@ -370,7 +370,7 @@ module Orbacle
         const_definition_node = @graph.constants[ref_result.full_name]
         @graph.add_edge(const_definition_node, node)
         @worklist.enqueue_node(const_definition_node)
-        type_of(const_definition_node)
+        @state.type_of(const_definition_node)
       elsif ref_result
         ClassType.new(ref_result.full_name)
       else
@@ -380,7 +380,7 @@ module Orbacle
 
     def handle_extract_class(node, sources)
       res = sources.map do |source|
-        extract_class(type_of(sources.first))
+        extract_class(@state.type_of(sources.first))
       end
       build_union(res)
     end
@@ -400,16 +400,16 @@ module Orbacle
     end
 
     def satisfied_message_send?(message_send)
-      defined_type?(type_of(message_send.send_obj)) &&
-        message_send.send_args.all? {|a| defined_type?(type_of(a)) }
+      defined_type?(@state.type_of(message_send.send_obj)) &&
+        message_send.send_args.all? {|a| defined_type?(@state.type_of(a)) }
     end
 
     def satisfied_super_send?(super_send)
-      super_send.send_args.all? {|a| defined_type?(type_of(a)) }
+      super_send.send_args.all? {|a| defined_type?(@state.type_of(a)) }
     end
 
     def handle_message_send(message_send)
-      type_of(message_send.send_obj).each_possible_type do |possible_type|
+      @state.type_of(message_send.send_obj).each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, possible_type.name, message_send)
         elsif possible_type.instance_of?(ProcType) && message_send.message_send == "call"
@@ -488,7 +488,7 @@ module Orbacle
           regular_args = send_args
           connect_regular_args(found_method_argtree.args, found_method_nodes, regular_args)
         else
-          type_of(send_args.last).each_possible_type do |type|
+          @state.type_of(send_args.last).each_possible_type do |type|
             if type.name == "Hash"
               regular_args = send_args[0..-2]
               kwarg_arg = send_args.last
@@ -530,7 +530,7 @@ module Orbacle
       when Worklist::BlockLambda
         [block.lambda_id]
       when Worklist::BlockNode
-        type_of(block.node).enum_for(:each_possible_type).map do |possible_type|
+        @state.type_of(block.node).enum_for(:each_possible_type).map do |possible_type|
           if possible_type.instance_of?(ProcType)
             possible_type.lambda_id
           end
@@ -811,10 +811,6 @@ module Orbacle
       definition_id = node.params.fetch(:id)
       const = @state.find_constant_for_definition(definition_id)
       const ? ClassType.new(const.full_name) : BottomType.new
-    end
-
-    def type_of(node)
-      @state.type_of(node)
     end
   end
 end
