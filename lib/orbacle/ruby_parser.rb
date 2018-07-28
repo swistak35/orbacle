@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'parser/current'
+require 'parser/ruby25'
 
 module Orbacle
   class RubyParser
@@ -9,7 +9,8 @@ module Orbacle
     EncodingError = Class.new(Error)
 
     def parse(content)
-      Parser::CurrentRuby.parse(content)
+      parser = Parser::Ruby25
+      parser.parse(content)
     rescue Parser::SyntaxError
       raise SyntaxError
     rescue ::EncodingError

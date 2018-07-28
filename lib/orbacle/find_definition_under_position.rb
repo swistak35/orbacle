@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'parser'
+
 module Orbacle
   class FindDefinitionUnderPosition < Parser::AST::Processor
     include AstUtils

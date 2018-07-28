@@ -107,7 +107,7 @@ module Orbacle
       id_generator = UuidIdGenerator.new
       tree = GlobalTree.new(id_generator)
       service = Builder.new(graph, worklist, tree, id_generator)
-      result = service.process_file(Parser::CurrentRuby.parse(file), nil)
+      result = service.process_file(RubyParser.new.parse(file), nil)
       OpenStruct.new(
         final_node: result.node,
         tree: tree)

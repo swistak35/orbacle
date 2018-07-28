@@ -60,8 +60,6 @@ module Orbacle
   BIG_VALUE = 0b111111100100000010110010110011101010000101010100001100100110001
 end
 
-require 'parser/current'
-
 require 'orbacle/ast_utils'
 require 'orbacle/bottom_type'
 require 'orbacle/builder/context'

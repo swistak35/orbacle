@@ -310,7 +310,7 @@ module Orbacle
       id_generator = UuidIdGenerator.new
       state = GlobalTree.new(id_generator)
       DefineBuiltins.new(graph, state, id_generator).()
-      result = Builder.new(graph, worklist, state, id_generator).process_file(Parser::CurrentRuby.parse(snippet), nil)
+      result = Builder.new(graph, worklist, state, id_generator).process_file(RubyParser.new.parse(snippet), nil)
       stats_recorder = Indexer::StatsRecorder.new
       TypingService.new(Logger.new(nil), stats_recorder).(graph, worklist, state)
       state.type_of(result.node)

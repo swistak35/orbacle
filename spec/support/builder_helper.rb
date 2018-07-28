@@ -7,7 +7,7 @@ module BuilderHelper
     id_generator = Orbacle::UuidIdGenerator.new
     tree = Orbacle::GlobalTree.new(id_generator)
     service = Orbacle::Builder.new(graph, worklist, tree, id_generator)
-    result = service.process_file(Parser::CurrentRuby.parse(file), nil)
+    result = service.process_file(Orbacle::RubyParser.new.parse(file), nil)
     OpenStruct.new(
       graph: graph,
       final_lenv: result.context.lenv,
