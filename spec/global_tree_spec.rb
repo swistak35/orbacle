@@ -341,5 +341,60 @@ module Orbacle
         expect(state.get_definition(42)).to eq(nil)
       end
     end
+
+    describe "#get_parent_of" do
+      specify "there's class and constant" do
+        state = GlobalTree.new(id_generator)
+        some_module_ref = ConstRef.from_full_name("SomeScope", Nesting.empty)
+        scope = Scope.empty.increase_by_ref(some_module_ref)
+        state.add_constant(GlobalTree::Constant.new("ParentClass", scope, nil, nil))
+        klass = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty.increase_nesting_const(some_module_ref)))
+        state.add_constant(GlobalTree::Constant.new("SomeClass", scope, nil, klass.id))
+
+        expect(state.get_parent_of("SomeScope::SomeClass")).to eq("SomeScope::ParentClass")
+      end
+
+      specify "no const" do
+        state = GlobalTree.new(id_generator)
+        klass = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
+
+        expect(state.get_parent_of("SomeClass")).to eq("ParentClass")
+      end
+
+      specify "Object case" do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.get_parent_of("Object")).to eq(nil)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.get_parent_of("Foo")).to eq("Object")
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        state.add_constant(GlobalTree::Constant.new("Foo", Scope.empty, nil, nil))
+
+        expect(state.get_parent_of("Foo")).to eq("Object")
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        state.add_constant(GlobalTree::Constant.new("Foo", Scope.empty, nil, 42))
+
+        expect(state.get_parent_of("Foo")).to eq("Object")
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        klass = state.add_klass(nil)
+        state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
+
+        expect(state.get_parent_of("SomeClass")).to eq("Object")
+      end
+    end
   end
 end

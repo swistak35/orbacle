@@ -220,7 +220,7 @@ module Orbacle
     ### Other
 
     def get_parent_of(class_name)
-      return nil if class_name == "Object"
+      return nil if class_name.eql?("Object")
 
       const = find_constant_by_name(class_name)
       return "Object" if const.nil?
