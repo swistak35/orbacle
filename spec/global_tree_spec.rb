@@ -317,5 +317,29 @@ module Orbacle
         expect(state.get_module(42)).to eq(nil)
       end
     end
+
+    describe "#get_definition" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_mod
+
+        expect(state.get_definition(result.id)).to eq(result)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_klass(nil)
+
+        expect(state.get_definition(result.id)).to eq(result)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.get_definition(42)).to eq(nil)
+      end
+    end
   end
 end
