@@ -21,6 +21,7 @@ module Orbacle
           .add_file("file1.rb", file1)
           .add_file("file2.rb", file2)
 
+        expect(Dir).to receive(:glob).and_return([proj.path_of("file1.rb"), proj.path_of("file2.rb")])
         engine = Engine.new(logger)
         engine.index(proj.root)
 
