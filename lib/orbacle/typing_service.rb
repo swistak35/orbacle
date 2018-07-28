@@ -411,7 +411,7 @@ module Orbacle
     def handle_message_send(message_send)
       @state.type_of(message_send.send_obj).each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
-          handle_constructor_send(possible_type.name, possible_type.name, message_send)
+          handle_constructor_send(possible_type.name, message_send)
         elsif possible_type.instance_of?(ProcType) && message_send.message_send == "call"
           handle_proc_call(possible_type, message_send)
         elsif possible_type.is_a?(ClassType)
@@ -430,15 +430,10 @@ module Orbacle
       @worklist.enqueue_node(message_send.send_result)
     end
 
-    def handle_constructor_send(original_class_name, class_name, message_send)
-      found_method = @state.find_instance_method_from_class_name(class_name, "initialize")
+    def handle_constructor_send(class_name, message_send)
+      found_method = @state.find_deep_instance_method_from_class_name(class_name, "initialize")
       if found_method.nil?
-        parent_name = @state.get_parent_of(class_name)
-        if parent_name
-          handle_constructor_send(original_class_name, parent_name, message_send)
-        else
-          connect_constructor_to_node(original_class_name, message_send.send_result)
-        end
+        connect_constructor_to_node(class_name, message_send.send_result)
       else
         handle_custom_message_send(found_method, message_send)
         connect_constructor_to_node(class_name, message_send.send_result)

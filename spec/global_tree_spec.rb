@@ -463,5 +463,28 @@ module Orbacle
         expect(state.type_of("foo")).to eq(BottomType.new)
       end
     end
+
+    describe "#find_deep_instance_method_from_class_name" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        parent_class = state.add_class(nil)
+        state.add_constant(GlobalTree::Constant.new("ParentClass", Scope.empty, nil, parent_class.id))
+        method_in_parent = state.add_method(42, parent_class.id, "some_method", nil, :public, nil)
+        some_class = state.add_class(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, some_class.id))
+
+        expect(state.find_deep_instance_method_from_class_name("SomeClass", "some_method")).to eq(method_in_parent)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        some_class = state.add_class(nil)
+        state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, some_class.id))
+
+        expect(state.find_deep_instance_method_from_class_name("SomeClass", "some_method")).to eq(nil)
+      end
+    end
   end
 end

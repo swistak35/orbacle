@@ -264,6 +264,18 @@ module Orbacle
       end
     end
 
+    def find_deep_instance_method_from_class_name(class_name, method_name)
+      found_method = find_instance_method_from_class_name(class_name, method_name)
+      if found_method.nil?
+        parent_name = get_parent_of(class_name)
+        if parent_name
+          find_deep_instance_method_from_class_name(parent_name, method_name)
+        end
+      else
+        found_method
+      end
+    end
+
     ### Types
 
     def type_of(node)
