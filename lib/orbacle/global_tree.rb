@@ -96,6 +96,7 @@ module Orbacle
       @metods = Hash.new {|h,k| h[k] = Hash.new {|h2, k2| h2[k2] = [] } }
       @metods_by_id = {}
       @lambdas_by_id = {}
+      @type_mapping = Hash.new(BottomType.new)
     end
 
     ### Methods
@@ -257,6 +258,16 @@ module Orbacle
       @constants.find do |constant|
         constant.definition_id == definition_id
       end
+    end
+
+    ### Types
+
+    def type_of(node)
+      @type_mapping[node]
+    end
+
+    def set_type_of(node, new_type)
+      @type_mapping[node] = new_type
     end
 
     private

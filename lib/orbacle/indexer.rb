@@ -112,10 +112,10 @@ module Orbacle
       files = Dir.glob("#{project_root_path}/**/*.rb")
       id_generator = IntegerIdGenerator.new
       worklist = Worklist.new
-      tree = GlobalTree.new(id_generator)
+      state = GlobalTree.new(id_generator)
       graph = Graph.new
-      DefineBuiltins.new(graph, tree, id_generator).()
-      @parser = Builder.new(graph, worklist, tree, id_generator)
+      DefineBuiltins.new(graph, state, id_generator).()
+      @parser = Builder.new(graph, worklist, state, id_generator)
 
       queue_contents = Queue.new
       queue_asts = Queue.new
@@ -134,14 +134,15 @@ module Orbacle
 
       logger.info "Typing..."
       typing_service = TypingService.new(logger, @stats)
-      typing_result = @stats.measure(:typing) { typing_service.(graph, worklist, tree) }
+      @stats.measure(:typing) { typing_service.(graph, worklist, state) }
 
-      @stats.set_value(:typed_nodes_all, typing_result.size)
-      @stats.set_value(:typed_nodes_not_bottom, typing_result.count {|k,v| !v.bottom? })
-      @stats.set_value(:typed_nodes_call_result, typing_result.count {|k,v| k.type == :call_result })
-      @stats.set_value(:typed_nodes_call_result_not_bottom, typing_result.count {|k,v| k.type == :call_result && !v.bottom? })
+      type_mapping = state.instance_variable_get(:@type_mapping)
+      @stats.set_value(:typed_nodes_all, type_mapping.size)
+      @stats.set_value(:typed_nodes_not_bottom, type_mapping.count {|k,v| !v.bottom? })
+      @stats.set_value(:typed_nodes_call_result, type_mapping.count {|k,v| k.type == :call_result })
+      @stats.set_value(:typed_nodes_call_result_not_bottom, type_mapping.count {|k,v| k.type == :call_result && !v.bottom? })
 
-      return tree, typing_result, graph, worklist
+      return state, graph, worklist
     end
 
     private

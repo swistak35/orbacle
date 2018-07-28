@@ -2284,14 +2284,14 @@ module Orbacle
       worklist = Worklist.new
       graph = Graph.new
       id_generator = UuidIdGenerator.new
-      tree = GlobalTree.new(id_generator)
+      state = GlobalTree.new(id_generator)
       logger = Logger.new(nil)
       parser = RubyParser.new()
-      DefineBuiltins.new(graph, tree, id_generator).()
-      result = Builder.new(graph, worklist, tree, id_generator).process_file(parser.parse(snippet), nil)
+      DefineBuiltins.new(graph, state, id_generator).()
+      result = Builder.new(graph, worklist, state, id_generator).process_file(parser.parse(snippet), nil)
       stats_recorder = Indexer::StatsRecorder.new
-      typing_result = TypingService.new(logger, stats_recorder).(graph, worklist, tree)
-      typing_result[result.node]
+      TypingService.new(logger, stats_recorder).(graph, worklist, state)
+      state.type_of(result.node)
     end
 
     def nominal(*args)

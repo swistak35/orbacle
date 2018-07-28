@@ -308,12 +308,12 @@ module Orbacle
       worklist = Worklist.new
       graph = Graph.new
       id_generator = UuidIdGenerator.new
-      tree = GlobalTree.new(id_generator)
-      DefineBuiltins.new(graph, tree, id_generator).()
-      result = Builder.new(graph, worklist, tree, id_generator).process_file(Parser::CurrentRuby.parse(snippet), nil)
+      state = GlobalTree.new(id_generator)
+      DefineBuiltins.new(graph, state, id_generator).()
+      result = Builder.new(graph, worklist, state, id_generator).process_file(Parser::CurrentRuby.parse(snippet), nil)
       stats_recorder = Indexer::StatsRecorder.new
-      typing_result = TypingService.new(Logger.new(nil), stats_recorder).(graph, worklist, tree)
-      typing_result[result.node]
+      TypingService.new(Logger.new(nil), stats_recorder).(graph, worklist, state)
+      state.type_of(result.node)
     end
 
     def nominal(*args)

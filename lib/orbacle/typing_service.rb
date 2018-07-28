@@ -15,12 +15,10 @@ module Orbacle
       @stats = stats
     end
 
-    def call(graph, worklist, tree)
+    def call(graph, worklist, state)
       @worklist = worklist
       @graph = graph
-      @tree = tree
-
-      @result = Hash.new(BottomType.new)
+      @state = state
 
       stats.set_value(:initial_nodes, @graph.vertices.size)
       stats.set_value(:initial_message_sends, @worklist.message_sends.size)
@@ -32,14 +30,14 @@ module Orbacle
             node = @worklist.pop_node
             @worklist.count_node(node)
             if !@worklist.limit_exceeded?(node)
-              current_result = @result[node]
+              current_result = @state.type_of(node)
               new_result = compute_result(node, @graph.parent_vertices(node))
               raise ArgumentError.new(node) if new_result.nil?
-              @result[node] = new_result
+              @state.set_type_of(node, new_result)
               stats.inc(:processed_nodes)
               logger.debug("Processed nodes: #{stats.counter(:processed_nodes)} remaining nodes #{@worklist.nodes.size} msends #{@worklist.handled_message_sends.size} / #{@worklist.message_sends.size}") if stats.counter(:processed_nodes) % 1000 == 0
 
-              if current_result != @result[node]
+              if current_result != @state.type_of(node)
                 @graph.adjacent_vertices(node).each do |adjacent_node|
                   @worklist.enqueue_node(adjacent_node)
                 end
@@ -80,8 +78,6 @@ module Orbacle
           end
         end
       end
-
-      return @result
     end
 
     private
@@ -249,8 +245,8 @@ module Orbacle
     def handle_unwrap_hash_keys(node, sources)
       raise if sources.size != 1
       source = sources.first
-      if @result[source].is_a?(GenericType)
-        @result[source].parameters.at(0)
+      if type_of(source).is_a?(GenericType)
+        type_of(source).parameters.at(0)
       else
         BottomType.new
       end
@@ -259,32 +255,32 @@ module Orbacle
     def handle_unwrap_hash_values(node, sources)
       raise if sources.size != 1
       source = sources.first
-      if @result[source].is_a?(GenericType)
-        @result[source].parameters.at(1)
+      if type_of(source).is_a?(GenericType)
+        type_of(source).parameters.at(1)
       else
         BottomType.new
       end
     end
 
     def handle_group(node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }
+      sources_types = sources.map {|source_node| type_of(source_node) }
       build_union(sources_types)
     end
 
     def handle_pass1(node, sources)
       raise if sources.size != 1
       source = sources.first
-      @result[source]
+      type_of(source)
     end
 
     def handle_hash(_node, sources)
       hash_keys_node = sources.find {|s| s.type == :hash_keys }
       hash_values_node = sources.find {|s| s.type == :hash_values }
-      GenericType.new("Hash", [@result[hash_keys_node], @result[hash_values_node]])
+      GenericType.new("Hash", [type_of(hash_keys_node), type_of(hash_values_node)])
     end
 
     def handle_range(node, sources)
-      sources_types = sources.map {|source_node| @result[source_node] }
+      sources_types = sources.map {|source_node| type_of(source_node) }
       GenericType.new("Range", [build_union(sources_types)])
     end
 
@@ -321,7 +317,7 @@ module Orbacle
       types_inside_arrays = []
       sources
         .each do |s|
-          @result[s].each_possible_type do |t|
+          type_of(s).each_possible_type do |t|
             if t.name == "Array"
               types_inside_arrays << t.parameters.first
             end
@@ -341,12 +337,12 @@ module Orbacle
     end
 
     def handle_wrap_array(_node, sources)
-      GenericType.new("Array", [build_union(sources.map {|s| @result[s] })])
+      GenericType.new("Array", [build_union(sources.map {|s| type_of(s) })])
     end
 
     def handle_pass_lte1(_node, sources)
       raise if sources.size > 1
-      @result[sources.first]
+      type_of(sources.first)
     end
 
     def build_union(sources_types)
@@ -369,12 +365,12 @@ module Orbacle
 
     def handle_const(node, sources)
       const_ref = node.params.fetch(:const_ref)
-      ref_result = @tree.solve_reference(const_ref)
+      ref_result = @state.solve_reference(const_ref)
       if ref_result && @graph.constants[ref_result.full_name]
         const_definition_node = @graph.constants[ref_result.full_name]
         @graph.add_edge(const_definition_node, node)
         @worklist.enqueue_node(const_definition_node)
-        @result[const_definition_node]
+        type_of(const_definition_node)
       elsif ref_result
         ClassType.new(ref_result.full_name)
       else
@@ -384,7 +380,7 @@ module Orbacle
 
     def handle_extract_class(node, sources)
       res = sources.map do |source|
-        extract_class(@result[sources.first])
+        extract_class(type_of(sources.first))
       end
       build_union(res)
     end
@@ -404,16 +400,16 @@ module Orbacle
     end
 
     def satisfied_message_send?(message_send)
-      defined_type?(@result[message_send.send_obj]) &&
-        message_send.send_args.all? {|a| defined_type?(@result[a]) }
+      defined_type?(type_of(message_send.send_obj)) &&
+        message_send.send_args.all? {|a| defined_type?(type_of(a)) }
     end
 
     def satisfied_super_send?(super_send)
-      super_send.send_args.all? {|a| defined_type?(@result[a]) }
+      super_send.send_args.all? {|a| defined_type?(type_of(a)) }
     end
 
     def handle_message_send(message_send)
-      @result[message_send.send_obj].each_possible_type do |possible_type|
+      type_of(message_send.send_obj).each_possible_type do |possible_type|
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, possible_type.name, message_send)
         elsif possible_type.instance_of?(ProcType) && message_send.message_send == "call"
@@ -427,7 +423,7 @@ module Orbacle
     end
 
     def handle_proc_call(lambda_type, message_send)
-      found_lambda = @tree.get_lambda(lambda_type.lambda_id)
+      found_lambda = @state.get_lambda(lambda_type.lambda_id)
       found_lambda_nodes = @graph.get_lambda_nodes(found_lambda.id)
       connect_actual_args_to_formal_args(found_lambda.args, found_lambda_nodes.args, message_send.send_args)
       @graph.add_edge(found_lambda_nodes.result, message_send.send_result)
@@ -435,9 +431,9 @@ module Orbacle
     end
 
     def handle_constructor_send(original_class_name, class_name, message_send)
-      found_method = @tree.find_instance_method_from_class_name(class_name, "initialize")
+      found_method = @state.find_instance_method_from_class_name(class_name, "initialize")
       if found_method.nil?
-        parent_name = @tree.get_parent_of(class_name)
+        parent_name = @state.get_parent_of(class_name)
         if parent_name
           handle_constructor_send(original_class_name, parent_name, message_send)
         else
@@ -457,9 +453,9 @@ module Orbacle
     end
 
     def handle_instance_nonprimitive_send(class_name, message_send)
-      found_method = @tree.find_instance_method_from_class_name(class_name, message_send.message_send)
+      found_method = @state.find_instance_method_from_class_name(class_name, message_send.message_send)
       if found_method.nil?
-        parent_name = @tree.get_parent_of(class_name)
+        parent_name = @state.get_parent_of(class_name)
         if parent_name
           handle_instance_send(parent_name, message_send)
         else
@@ -472,9 +468,9 @@ module Orbacle
     end
 
     def handle_class_nonprimitive_send(class_name, message_send)
-      found_method = @tree.find_class_method_from_class_name(class_name, message_send.message_send)
+      found_method = @state.find_class_method_from_class_name(class_name, message_send.message_send)
       if found_method.nil?
-        parent_name = @tree.get_parent_of(class_name)
+        parent_name = @state.get_parent_of(class_name)
         if parent_name
           handle_class_send(parent_name, message_send)
         else
@@ -492,7 +488,7 @@ module Orbacle
           regular_args = send_args
           connect_regular_args(found_method_argtree.args, found_method_nodes, regular_args)
         else
-          @result[send_args.last].each_possible_type do |type|
+          type_of(send_args.last).each_possible_type do |type|
             if type.name == "Hash"
               regular_args = send_args[0..-2]
               kwarg_arg = send_args.last
@@ -513,7 +509,7 @@ module Orbacle
       connect_actual_args_to_formal_args(found_method.args, found_method_nodes.args, message_send.send_args)
 
       found_method_nodes.zsupers.each do |zsuper_call|
-        super_method = @tree.find_super_method(found_method.id)
+        super_method = @state.find_super_method(found_method.id)
         next if super_method.nil?
 
         super_method_nodes = @graph.get_metod_nodes(super_method.id)
@@ -534,7 +530,7 @@ module Orbacle
       when Worklist::BlockLambda
         [block.lambda_id]
       when Worklist::BlockNode
-        @result[block.node].enum_for(:each_possible_type).map do |possible_type|
+        type_of(block.node).enum_for(:each_possible_type).map do |possible_type|
           if possible_type.instance_of?(ProcType)
             possible_type.lambda_id
           end
@@ -549,7 +545,7 @@ module Orbacle
       yields_nodes.each do |yield_nodes|
         lambda_ids = lambda_ids_of_block(block_node)
         lambda_ids.each do |lambda_id|
-          block_lambda = @tree.get_lambda(lambda_id)
+          block_lambda = @state.get_lambda(lambda_id)
           block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
           connect_actual_args_to_formal_args(block_lambda.args, block_lambda_nodes.args, yield_nodes.send_args)
 
@@ -651,7 +647,7 @@ module Orbacle
 
     def handle_super_send(super_send)
       return if super_send.method_id.nil?
-      super_method = @tree.find_super_method(super_send.method_id)
+      super_method = @state.find_super_method(super_send.method_id)
       return if super_method.nil?
 
       handle_custom_message_send(super_method, super_send)
@@ -813,8 +809,12 @@ module Orbacle
 
     def handle_definition_by_id(node, sources)
       definition_id = node.params.fetch(:id)
-      const = @tree.find_constant_for_definition(definition_id)
+      const = @state.find_constant_for_definition(definition_id)
       const ? ClassType.new(const.full_name) : BottomType.new
+    end
+
+    def type_of(node)
+      @state.type_of(node)
     end
   end
 end
