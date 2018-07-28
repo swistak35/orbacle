@@ -101,7 +101,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         _constant = state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
         metod = state.add_method(42, klass.id, "some_method", nil, :public, nil)
 
@@ -122,7 +122,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         _constant = state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
         metod = state.add_method(42, klass.id, "some_method", nil, :public, nil)
 
@@ -133,7 +133,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         _constant = state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
         metod1 = state.add_method(42, klass.id, "some_method", nil, :public, nil)
         _metod2 = state.add_method(43, klass.id, "some_method", nil, :public, nil)
@@ -155,7 +155,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         _constant = state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
         eigenclass = state.get_eigenclass_of_definition(klass.id)
         metod = state.add_method(42, eigenclass.id, "some_method", nil, :public, nil)
@@ -177,7 +177,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         _constant = state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
         eigenclass = state.get_eigenclass_of_definition(klass.id)
         metod1 = state.add_method(42, eigenclass.id, "some_method", nil, :public, nil)
@@ -204,9 +204,9 @@ module Orbacle
     describe "#find_super_method" do
       specify do
         state = GlobalTree.new(id_generator)
-        parent_class = state.add_klass(nil)
+        parent_class = state.add_class(nil)
         parent_constant = state.add_constant(GlobalTree::Constant.new("ParentClass", Scope.empty, nil, parent_class.id))
-        some_class = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        some_class = state.add_class(ConstRef.from_full_name("ParentClass", Nesting.empty))
         parent_method = state.add_method(42, parent_class.id, "some_method", nil, :public, nil)
         some_method = state.add_method(43, some_class.id, "some_method", nil, :public, nil)
 
@@ -226,7 +226,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        some_class = state.add_klass(nil)
+        some_class = state.add_class(nil)
         some_method = state.add_method(43, some_class.id, "some_method", nil, :public, nil)
 
         result = state.find_super_method(43)
@@ -236,7 +236,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        some_class = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        some_class = state.add_class(ConstRef.from_full_name("ParentClass", Nesting.empty))
         some_method = state.add_method(43, some_class.id, "some_method", nil, :public, nil)
 
         result = state.find_super_method(43)
@@ -268,12 +268,12 @@ module Orbacle
       end
     end
 
-    describe "#add_klass" do
+    describe "#add_class" do
       specify do
         state = GlobalTree.new(id_generator)
 
         parent_ref = ConstRef.from_full_name("Foo", Nesting.empty)
-        result = state.add_klass(parent_ref)
+        result = state.add_class(parent_ref)
 
         expect(result.id).to eq(1)
         expect(result.parent_ref).to eq(parent_ref)
@@ -282,7 +282,7 @@ module Orbacle
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_klass(nil)
+        result = state.add_class(nil)
 
         expect(state.get_class(result.id)).to eq(result)
       end
@@ -292,7 +292,7 @@ module Orbacle
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_klass(nil)
+        result = state.add_class(nil)
 
         expect(state.get_class(result.id)).to eq(result)
       end
@@ -350,7 +350,7 @@ module Orbacle
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_klass(nil)
+        result = state.add_class(nil)
 
         expect(state.get_definition(result.id)).to eq(result)
       end
@@ -365,7 +365,7 @@ module Orbacle
     describe "#get_eigenclass_of_definition" do
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         eigenclass = state.get_eigenclass_of_definition(klass.id)
 
         expect(klass.id).to eq(1)
@@ -375,7 +375,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         eigenclass1 = state.get_eigenclass_of_definition(klass.id)
         eigenclass2 = state.get_eigenclass_of_definition(klass.id)
 
@@ -389,7 +389,7 @@ module Orbacle
         some_module_ref = ConstRef.from_full_name("SomeScope", Nesting.empty)
         scope = Scope.empty.increase_by_ref(some_module_ref)
         state.add_constant(GlobalTree::Constant.new("ParentClass", scope, nil, nil))
-        klass = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty.increase_nesting_const(some_module_ref)))
+        klass = state.add_class(ConstRef.from_full_name("ParentClass", Nesting.empty.increase_nesting_const(some_module_ref)))
         state.add_constant(GlobalTree::Constant.new("SomeClass", scope, nil, klass.id))
 
         expect(state.get_parent_of("SomeScope::SomeClass")).to eq("SomeScope::ParentClass")
@@ -397,7 +397,7 @@ module Orbacle
 
       specify "no const" do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(ConstRef.from_full_name("ParentClass", Nesting.empty))
+        klass = state.add_class(ConstRef.from_full_name("ParentClass", Nesting.empty))
         state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
 
         expect(state.get_parent_of("SomeClass")).to eq("ParentClass")
@@ -431,7 +431,7 @@ module Orbacle
 
       specify do
         state = GlobalTree.new(id_generator)
-        klass = state.add_klass(nil)
+        klass = state.add_class(nil)
         state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass.id))
 
         expect(state.get_parent_of("SomeClass")).to eq("Object")

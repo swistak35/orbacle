@@ -160,7 +160,7 @@ module Orbacle
 
     ### Definitions
 
-    def add_klass(parent_ref)
+    def add_class(parent_ref)
       klass = Klass.new(id_generator.call, parent_ref)
       @classes_by_id[klass.id] = klass
       klass
@@ -189,7 +189,7 @@ module Orbacle
       if definition.eigenclass_id
         get_class(definition.eigenclass_id)
       else
-        eigenclass = add_klass(nil)
+        eigenclass = add_class(nil)
         definition.eigenclass_id = eigenclass.id
         eigenclass
       end
