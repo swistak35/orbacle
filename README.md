@@ -8,11 +8,40 @@ Language server using engine allowing for smart jump-to-definitions, understandi
 
 Doing as MSc thesis for [Institute of Computer Science, University of Wrocław](http://ii.uni.wroc.pl).
 
-
-
 ## Objectives
 
-Create a language server for ruby, which can be used across different code editors, like Vim, Emacs or Atom. Focus on understanding of the code in order to provide best functionalities of "go-to definition", and later others like "show implementations", autocompletion and refactorings like "rename" etc. The idea is to infer information about variables (i.e. their "types"), without requiring developer to write any annotations, just like IDEs do that - through static analysis.
+Create a language server for ruby, which can be used across different code editors, like Vim, Emacs or Atom. Focus on understanding of the code in order to provide best functionalities of "go-to definition", autocompletion and refactorings. The idea is to infer information about variables (i.e. their "types"), **without requiring developer to write any annotations**, just like IDEs do that - through static analysis.
+
+## Current status
+
+Currently language server supports:
+* hover request - information about "type" of an expression
+* jump to definition - jump to definition of constant or method
+
+## Setup
+
+### Prerequisite indexing
+
+1. Install `orbacle` gem.
+2. Run `orbacle -d <your_project_directory> index`
+
+It will show you how long does it take to index your project, i.e. how long do you have to wait after editor start to have language server functional underneath.
+
+### Vim
+
+Using `vim-plug`:
+
+```
+Plug 'autozimu/LanguageClient-neovim', { 'branch': 'next', 'do': 'bash install.sh' }
+
+let g:LanguageClient_serverCommands = {
+  \ 'ruby': ['orbaclerun', 'file-server'],
+  \ }
+nnoremap <localleader>lj :call LanguageClient_textDocument_definition()<CR>
+nnoremap T :call LanguageClient_textDocument_hover()<CR>
+" timeout has to be bigger than time needed to index your project
+let g:LanguageClient_waitOutputTimeout = 240
+```
 
 ## Contributing
 
