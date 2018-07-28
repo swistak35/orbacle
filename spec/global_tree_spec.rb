@@ -342,6 +342,27 @@ module Orbacle
       end
     end
 
+    describe "#get_eigenclass_of_definition" do
+      specify do
+        state = GlobalTree.new(id_generator)
+        klass = state.add_klass(nil)
+        eigenclass = state.get_eigenclass_of_definition(klass.id)
+
+        expect(klass.id).to eq(1)
+        expect(eigenclass.id).to eq(2)
+        expect(klass.eigenclass_id).to eq(eigenclass.id)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        klass = state.add_klass(nil)
+        eigenclass1 = state.get_eigenclass_of_definition(klass.id)
+        eigenclass2 = state.get_eigenclass_of_definition(klass.id)
+
+        expect(eigenclass1).to eq(eigenclass2)
+      end
+    end
+
     describe "#get_parent_of" do
       specify "there's class and constant" do
         state = GlobalTree.new(id_generator)

@@ -183,11 +183,11 @@ module Orbacle
     def get_eigenclass_of_definition(definition_id)
       definition = get_definition(definition_id)
       if definition.eigenclass_id
-        return get_class(definition.eigenclass_id)
+        get_class(definition.eigenclass_id)
       else
         eigenclass = add_klass(nil)
         definition.eigenclass_id = eigenclass.id
-        return eigenclass
+        eigenclass
       end
     end
 
