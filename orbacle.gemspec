@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = 'orbacle@swistak35.com'
 
   spec.summary       = "Static analysis for Ruby"
-  spec.description   = "A simple hello world gem"
+  spec.description   = "Language server using engine allowing for smart jump-to-definitions, understanding metaprogramming definitions, refactoring and more."
   spec.homepage      = 'https://github.com/swistak35/orbacle'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features|script)/}) }
