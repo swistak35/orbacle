@@ -258,6 +258,14 @@ module Orbacle
         expect(method2.visibility).to eq(:private)
         expect(method3.visibility).to eq(:public)
       end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        expect do
+          state.change_method_visibility("78", "some_method", :private)
+        end.not_to raise_error
+      end
     end
 
     describe "#add_klass" do
