@@ -202,7 +202,7 @@ module Orbacle
     include OperatorAssignmentProcessors
 
     def handle_lvasgn(ast, context)
-      var_name = ast.children[0].to_s
+      var_name = ast.children[0]
       expr = ast.children[1]
 
       node_lvasgn = add_vertex(Node.new(:lvasgn, { var_name: var_name }, build_location_from_ast(context, ast)))
@@ -392,7 +392,7 @@ module Orbacle
     end
 
     def handle_lvar(ast, context)
-      var_name = ast.children[0].to_s
+      var_name = ast.children[0]
 
       node_lvar = add_vertex(Node.new(:lvar, { var_name: var_name }, build_location_from_ast(context, ast)))
 
@@ -654,7 +654,7 @@ module Orbacle
     def define_attr_writer_method(context, ivar_name, location)
       ivar_definition_node = @graph.get_ivar_definition_node(context.scope, :"@#{ivar_name}")
 
-      arg_name = "_attr_writer"
+      arg_name = :_attr_writer
       arg_node = add_vertex(Node.new(:formal_arg, { var_name: arg_name }))
       metod = @tree.add_method(
         id_generator.call,
@@ -1280,7 +1280,7 @@ module Orbacle
       nodes = {}
 
       final_context = formal_arguments.reduce(context) do |current_context, arg_ast|
-        arg_name = arg_ast.children[0]&.to_s
+        arg_name = arg_ast.children[0]
         maybe_arg_default_expr = arg_ast.children[1]
         location = build_location_from_ast(current_context, arg_ast)
 
@@ -1332,7 +1332,7 @@ module Orbacle
       args = []
 
       final_context = arg_asts.reduce(context) do |current_context, arg_ast|
-        arg_name = arg_ast.children[0]&.to_s
+        arg_name = arg_ast.children[0]
 
         case arg_ast.type
         when :arg

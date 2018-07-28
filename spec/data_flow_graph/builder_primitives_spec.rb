@@ -146,13 +146,13 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:dstr))
       expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "bar" }),
-        node(:lvar, { var_name: "bar" }))
+        node(:lvasgn, { var_name: :bar }),
+        node(:lvar, { var_name: :bar }))
       expect(result.graph).to include_edge(
         node(:str, { value: "foo" }),
         node(:dstr))
       expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
+        node(:lvar, { var_name: :bar }),
         node(:dstr))
       expect(result.graph).to include_edge(
         node(:str, { value: "baz" }),
@@ -172,7 +172,7 @@ module Orbacle
         node(:str, { value: "foo" }),
         node(:xstr))
       expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
+        node(:lvar, { var_name: :bar }),
         node(:xstr))
     end
 
@@ -196,13 +196,13 @@ module Orbacle
 
       expect(result.final_node).to eq(node(:dsym))
       expect(result.graph).to include_edge(
-        node(:lvasgn, { var_name: "bar" }),
-        node(:lvar, { var_name: "bar" }))
+        node(:lvasgn, { var_name: :bar }),
+        node(:lvar, { var_name: :bar }))
       expect(result.graph).to include_edge(
         node(:str, { value: "foo" }),
         node(:dsym))
       expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
+        node(:lvar, { var_name: :bar }),
         node(:dsym))
       expect(result.graph).to include_edge(
         node(:str, { value: "baz" }),
@@ -248,7 +248,7 @@ module Orbacle
         node(:str, { value: "foo" }),
         node(:regexp, { regopt: [] }))
       expect(result.graph).to include_edge(
-        node(:lvar, { var_name: "bar" }),
+        node(:lvar, { var_name: :bar }),
         node(:regexp, { regopt: [] }))
     end
   end

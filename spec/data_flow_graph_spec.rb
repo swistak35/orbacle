@@ -118,14 +118,14 @@ module Orbacle
         expect(result.final_node).to eq(node(:hash))
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "other" }),
+          node(:lvar, { var_name: :other }),
           node(:unwrap_hash_keys))
         expect(result.graph).to include_edge(
           node(:unwrap_hash_keys),
           node(:hash_keys))
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "other" }),
+          node(:lvar, { var_name: :other }),
           node(:unwrap_hash_values))
         expect(result.graph).to include_edge(
           node(:unwrap_hash_values),
@@ -273,16 +273,16 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:lvasgn, { var_name: "y" }))
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: :y }))
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
-          node(:lvasgn, { var_name: "x" }))
+          node(:lvasgn, { var_name: :x }))
         expect(result.graph).to include_edge(
           node(:int, { value: 17 }),
-          node(:lvasgn, { var_name: "y" }))
+          node(:lvasgn, { var_name: :y }))
 
-        expect(result.final_lenv["x"]).to match_array(node(:lvasgn, { var_name: "x" }))
-        expect(result.final_lenv["y"]).to match_array(node(:lvasgn, { var_name: "y" }))
+        expect(result.final_lenv[:x]).to match_array(node(:lvasgn, { var_name: :x }))
+        expect(result.final_lenv[:y]).to match_array(node(:lvasgn, { var_name: :y }))
       end
 
       specify "local variable assignment using that lvar" do
@@ -292,8 +292,8 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:lvasgn, { var_name: "y" }))
-        expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: :y }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :y }))
       end
 
       specify "local variable usage" do
@@ -304,10 +304,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:lvar, { var_name: "x" }))
+        expect(result.final_node).to eq(node(:lvar, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:lvasgn, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
       end
 
       specify "local variables defined in class are not present in method body" do
@@ -338,7 +338,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "x" }),
+          node(:lvar, { var_name: :x }),
           node(:call_obj))
 
         message_send = result.message_sends.last
@@ -358,7 +358,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "x" }),
+          node(:lvar, { var_name: :x }),
           node(:call_obj))
         expect(result.graph).to include_edge(
           node(:int, { value: 2 }),
@@ -416,7 +416,7 @@ module Orbacle
           node(:int, { value: 2 }),
           node(:call_arg))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "arr" }),
+          node(:lvar, { var_name: :arr }),
           node(:call_splatarg))
 
         message_send = result.message_sends.last
@@ -471,7 +471,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         message_send = result.message_sends.last
-        expect(message_send.block).to eq(Worklist::BlockNode.new(node(:lvar, { var_name: "x" })))
+        expect(message_send.block).to eq(Worklist::BlockNode.new(node(:lvar, { var_name: :x })))
       end
 
       specify "on self" do
@@ -525,8 +525,8 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "__orbacle__x" }),
-          node(:lvar, { var_name: "__orbacle__x" }))
+          node(:formal_arg, { var_name: :__orbacle__x }),
+          node(:lvar, { var_name: :__orbacle__x }))
       end
     end
 
@@ -539,13 +539,13 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:formal_arg, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
 
         message_send = result.message_sends.last
         block_lambda = result.graph.get_lambda_nodes(message_send.block.lambda_id)
         expect(block_lambda.args).to eq({
-          "x" => node(:formal_arg, { var_name: "x" })
+          :x => node(:formal_arg, { var_name: :x })
         })
       end
 
@@ -557,17 +557,17 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:formal_arg, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "y" }),
-          node(:lvar, { var_name: "y" }))
+          node(:formal_arg, { var_name: :y }),
+          node(:lvar, { var_name: :y }))
 
         message_send = result.message_sends.last
         block_lambda = result.graph.get_lambda_nodes(message_send.block.lambda_id)
         expect(block_lambda.args).to eq({
-          "x" => node(:formal_arg, { var_name: "x" }),
-          "y" => node(:formal_arg, { var_name: "y" }),
+          x: node(:formal_arg, { var_name: :x }),
+          y: node(:formal_arg, { var_name: :y }),
         })
       end
 
@@ -578,10 +578,10 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :y }))
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "y" }),
-          node(:lvar, { var_name: "y" }))
+          node(:formal_arg, { var_name: :y }),
+          node(:lvar, { var_name: :y }))
       end
 
       specify "deconstructed array argument into 2 lvars" do
@@ -591,15 +591,15 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :y }))
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "y" }),
-          node(:lvar, { var_name: "y" }))
+          node(:formal_arg, { var_name: :y }),
+          node(:lvar, { var_name: :y }))
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "x" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:formal_arg, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
       end
 
       specify "deconstructed array argument into deconstructed array argument" do
@@ -609,7 +609,7 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "y" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :y }))
       end
     end
 
@@ -638,10 +638,10 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:formal_arg, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "x" }),
+          node(:lvar, { var_name: :x }),
           node(:method_result))
       end
 
@@ -656,10 +656,10 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
-          node(:formal_optarg, { var_name: "x" }))
+          node(:formal_optarg, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:formal_optarg, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:formal_optarg, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
       end
 
       specify "method definition with keyword arguments" do
@@ -672,10 +672,10 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_kwarg, { var_name: "bar" }),
-          node(:lvar, { var_name: "bar" }))
+          node(:formal_kwarg, { var_name: :bar }),
+          node(:lvar, { var_name: :bar }))
         expect(result.graph).to include_node(
-          node(:formal_kwarg, { var_name: "baz" }))
+          node(:formal_kwarg, { var_name: :baz }))
       end
 
       specify "method definition with optional keyword arguments" do
@@ -689,10 +689,10 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
-          node(:formal_kwoptarg, { var_name: "bar" }))
+          node(:formal_kwoptarg, { var_name: :bar }))
         expect(result.graph).to include_edge(
-          node(:formal_kwoptarg, { var_name: "bar" }),
-          node(:lvar, { var_name: "bar" }))
+          node(:formal_kwoptarg, { var_name: :bar }),
+          node(:lvar, { var_name: :bar }))
       end
 
       specify "method definition with keyword args splat" do
@@ -704,7 +704,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_node(
-          node(:formal_kwrestarg, { var_name: "kwargs" }))
+          node(:formal_kwrestarg, { var_name: :kwargs }))
       end
 
       specify "method definition with unnamed keyword args splat" do
@@ -728,12 +728,12 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
+        expect(result.graph).to include_node(node(:formal_arg, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:formal_restarg, { var_name: "rest" }),
-          node(:lvar, { var_name: "rest" }))
+          node(:formal_restarg, { var_name: :rest }),
+          node(:lvar, { var_name: :rest }))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "rest" }),
+          node(:lvar, { var_name: :rest }),
           node(:method_result))
       end
 
@@ -746,11 +746,11 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:formal_arg, { var_name: "x" }))
-        expect(result.graph).to include_node(node(:formal_arg, { var_name: "y" }))
+        expect(result.graph).to include_node(node(:formal_arg, { var_name: :x }))
+        expect(result.graph).to include_node(node(:formal_arg, { var_name: :y }))
         expect(result.graph).to include_edge(
-          node(:formal_restarg, { var_name: "rest" }),
-          node(:lvar, { var_name: "rest" }))
+          node(:formal_restarg, { var_name: :rest }),
+          node(:lvar, { var_name: :rest }))
       end
 
       specify "method definition with unnamed splat argument" do
@@ -775,7 +775,7 @@ module Orbacle
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
           GlobalTree::ArgumentsTree::Nested.new([
-            GlobalTree::ArgumentsTree::Regular.new("x"),
+            GlobalTree::ArgumentsTree::Regular.new(:x),
           ]),
         ])
       end
@@ -793,8 +793,8 @@ module Orbacle
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
           GlobalTree::ArgumentsTree::Nested.new([
-            GlobalTree::ArgumentsTree::Regular.new("x"),
-            GlobalTree::ArgumentsTree::Regular.new("y"),
+            GlobalTree::ArgumentsTree::Regular.new(:x),
+            GlobalTree::ArgumentsTree::Regular.new(:y),
           ]),
         ])
       end
@@ -810,8 +810,8 @@ module Orbacle
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
           GlobalTree::ArgumentsTree::Nested.new([
-            GlobalTree::ArgumentsTree::Regular.new("x"),
-            GlobalTree::ArgumentsTree::Splat.new("y"),
+            GlobalTree::ArgumentsTree::Regular.new(:x),
+            GlobalTree::ArgumentsTree::Splat.new(:y),
           ]),
         ])
       end
@@ -827,9 +827,9 @@ module Orbacle
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
           GlobalTree::ArgumentsTree::Nested.new([
-            GlobalTree::ArgumentsTree::Regular.new("x"),
+            GlobalTree::ArgumentsTree::Regular.new(:x),
             GlobalTree::ArgumentsTree::Nested.new([
-              GlobalTree::ArgumentsTree::Regular.new("y"),
+              GlobalTree::ArgumentsTree::Regular.new(:y),
             ]),
           ]),
         ])
@@ -846,12 +846,12 @@ module Orbacle
         args_tree = find_kernel_method(result, "foo").args
         expect(args_tree.args).to eq([
           GlobalTree::ArgumentsTree::Nested.new([
-            GlobalTree::ArgumentsTree::Regular.new("x"),
-            GlobalTree::ArgumentsTree::Regular.new("y"),
+            GlobalTree::ArgumentsTree::Regular.new(:x),
+            GlobalTree::ArgumentsTree::Regular.new(:y),
           ]),
           GlobalTree::ArgumentsTree::Nested.new([
-            GlobalTree::ArgumentsTree::Regular.new("z"),
-            GlobalTree::ArgumentsTree::Regular.new("w"),
+            GlobalTree::ArgumentsTree::Regular.new(:z),
+            GlobalTree::ArgumentsTree::Regular.new(:w),
           ]),
         ])
       end
@@ -866,8 +866,8 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:formal_blockarg, { var_name: "block" }),
-          node(:lvar, { var_name: "block" }))
+          node(:formal_blockarg, { var_name: :block }),
+          node(:lvar, { var_name: :block }))
       end
     end
 
@@ -1320,8 +1320,8 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:lvasgn, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
       end
 
       specify "control flow `or` operator" do
@@ -1439,11 +1439,11 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "x" }),
-          node(:lvar, { var_name: "x" }))
+          node(:lvasgn, { var_name: :x }),
+          node(:lvar, { var_name: :x }))
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "y" }),
-          node(:lvar, { var_name: "y" }))
+          node(:lvasgn, { var_name: :y }),
+          node(:lvar, { var_name: :y }))
       end
 
       specify "using correct lenvs" do
@@ -1458,18 +1458,18 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_lenv["x"]).to match_array([
-          node(:lvasgn, { var_name: "x" }),
-          node(:lvasgn, { var_name: "x" }),
+        expect(result.final_lenv[:x]).to match_array([
+          node(:lvasgn, { var_name: :x }),
+          node(:lvasgn, { var_name: :x }),
         ])
 
         int_42 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 42 }
         lvasgn_to_42 = result.graph.adjacent_vertices(int_42).first
-        expect(result.graph.adjacent_vertices(lvasgn_to_42)).to include(node(:lvar, { var_name: "x" }))
+        expect(result.graph.adjacent_vertices(lvasgn_to_42)).to include(node(:lvar, { var_name: :x }))
 
         int_17 = result.graph.vertices.find {|v| v.type == :int && v.params[:value] == 17 }
         lvasgn_to_17 = result.graph.adjacent_vertices(int_17).first
-        expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: "x" }))
+        expect(result.graph.adjacent_vertices(lvasgn_to_17)).to include(node(:lvar, { var_name: :x }))
       end
     end
 
@@ -1500,21 +1500,21 @@ module Orbacle
         expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: "x" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: :x })])
 
         msend1 = result.message_sends[1]
         expect(msend1.message_send).to eq(:[])
         expect(result.graph.parent_vertices(msend1.send_obj)).to eq([node(:array)])
         expect(msend1.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:lvasgn, { var_name: "y" })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:lvasgn, { var_name: :y })])
 
         expect(result.final_node).to eq(node(:array))
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "x" }),
+          node(:lvasgn, { var_name: :x }),
           node(:array))
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "y" }),
+          node(:lvasgn, { var_name: :y }),
           node(:array))
       end
 
@@ -1530,7 +1530,7 @@ module Orbacle
         expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: "x" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: :x })])
 
         msend1 = result.message_sends[1]
         expect(msend1.message_send).to eq(:[])
@@ -1544,7 +1544,7 @@ module Orbacle
         expect(result.graph.parent_vertices(msend2.send_obj)).to eq([msend1.send_result])
         expect(msend2.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend2.send_args[0])).to eq([node(:int, { value: 0 })])
-        expect(result.graph.adjacent_vertices(msend2.send_result)).to eq([node(:lvasgn, { var_name: "y" })])
+        expect(result.graph.adjacent_vertices(msend2.send_result)).to eq([node(:lvasgn, { var_name: :y })])
 
         #msend3 is msend1 again
 
@@ -1553,11 +1553,11 @@ module Orbacle
         expect(result.graph.parent_vertices(msend4.send_obj)).to eq([msend1.send_result])
         expect(msend4.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend4.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend4.send_result)).to eq([node(:lvasgn, { var_name: "z" })])
+        expect(result.graph.adjacent_vertices(msend4.send_result)).to eq([node(:lvasgn, { var_name: :z })])
 
         expect(result.final_node).to eq(node(:array))
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "x" }),
+          node(:lvasgn, { var_name: :x }),
           node(:array))
         expect(result.graph).to include_edge(
           node(:array),
@@ -1997,13 +1997,13 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvasgn, { var_name: "e" }),
-          node(:lvar, { var_name: "e" }))
+          node(:lvasgn, { var_name: :e }),
+          node(:lvar, { var_name: :e }))
         expect(result.graph).to include_edge(
           node(:int, { value: 78 }),
           node(:rescue))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "e" }),
+          node(:lvar, { var_name: :e }),
           node(:rescue))
         expect(result.final_node).to eq(node(:rescue))
       end
@@ -2025,7 +2025,7 @@ module Orbacle
           node(:int, { value: 42 }),
           node(:rescue))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "e" }),
+          node(:lvar, { var_name: :e }),
           node(:rescue))
 
         begin_result = node(:str, { value: "foo" })
@@ -2053,7 +2053,7 @@ module Orbacle
           node(:array))
         expect(result.graph).to include_edge(
           node(:unwrap_error_array),
-          node(:lvasgn, { var_name: "e" }))
+          node(:lvasgn, { var_name: :e }))
       end
 
       specify "rescue specific error" do
@@ -2078,7 +2078,7 @@ module Orbacle
           node(:array))
         expect(result.graph).to include_edge(
           node(:unwrap_error_array),
-          node(:lvasgn, { var_name: "e" }))
+          node(:lvasgn, { var_name: :e }))
       end
 
       specify "retry keyword" do
@@ -2155,14 +2155,14 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: :a }))
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq(:+)
-        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:lvar, { var_name: "a" })])
+        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:lvar, { var_name: :a })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: "a" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:lvasgn, { var_name: :a })])
       end
 
       specify "for ivar, usage of +=" do
@@ -2270,17 +2270,17 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: :a }))
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "a" }),
+          node(:lvar, { var_name: :a }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:or),
-          node(:lvasgn, { var_name: "a" }))
+          node(:lvasgn, { var_name: :a }))
       end
 
       specify "for ivar, usage of ||=" do
@@ -2394,17 +2394,17 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.final_node).to eq(node(:lvasgn, { var_name: "a" }))
+        expect(result.final_node).to eq(node(:lvasgn, { var_name: :a }))
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "a" }),
+          node(:lvar, { var_name: :a }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:and),
-          node(:lvasgn, { var_name: "a" }))
+          node(:lvasgn, { var_name: :a }))
       end
 
       specify "for ivar, usage of &&=" do
@@ -2601,7 +2601,7 @@ module Orbacle
         result = generate_cfg(file)
 
         expect(result.graph).to include_edge(
-          node(:formal_arg, { var_name: "_attr_writer" }),
+          node(:formal_arg, { var_name: :_attr_writer }),
           node(:ivar_definition))
         expect(result.graph).to include_edge(
           node(:ivar_definition),
@@ -2617,9 +2617,9 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "foo" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :foo }))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "foo" }),
+          node(:lvar, { var_name: :foo }),
           node(:block_result))
       end
 
@@ -2631,7 +2631,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
+          node(:lvar, { var_name: :y }),
           node(:block_result))
       end
 
@@ -2642,9 +2642,9 @@ module Orbacle
 
         result = generate_cfg(snippet)
 
-        expect(result.graph).to include_node(node(:lvar, { var_name: "kwargs" }))
+        expect(result.graph).to include_node(node(:lvar, { var_name: :kwargs }))
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "kwargs" }),
+          node(:lvar, { var_name: :kwargs }),
           node(:block_result))
       end
 
@@ -2656,7 +2656,7 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:lvar, { var_name: "y" }),
+          node(:lvar, { var_name: :y }),
           node(:block_result))
       end
 
