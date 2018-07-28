@@ -451,7 +451,7 @@ module Orbacle
     end
 
     def handle_cvasgn(ast, context)
-      cvar_name = ast.children[0].to_s
+      cvar_name = ast.children[0]
       expr = ast.children[1]
 
       node_cvasgn = add_vertex(Node.new(:cvasgn, { var_name: cvar_name }, build_location_from_ast(context, ast)))
@@ -471,7 +471,7 @@ module Orbacle
     end
 
     def handle_cvar(ast, context)
-      cvar_name = ast.children.first.to_s
+      cvar_name = ast.children.first
 
       cvar_definition_node = @graph.get_cvar_definition_node(context.scope, cvar_name)
 

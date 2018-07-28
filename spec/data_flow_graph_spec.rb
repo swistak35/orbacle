@@ -1081,7 +1081,7 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:cvar_definition),
-          node(:cvar, { var_name: "@@baz" }))
+          node(:cvar, { var_name: :@@baz }))
       end
 
       specify "assignment of class variable" do
@@ -1095,9 +1095,9 @@ module Orbacle
 
         expect(result.graph).to include_edge(
           node(:int, { value: 42 }),
-          node(:cvasgn, { var_name: "@@baz" }))
+          node(:cvasgn, { var_name: :@@baz }))
         expect(result.graph).to include_edge(
-          node(:cvasgn, { var_name: "@@baz" }),
+          node(:cvasgn, { var_name: :@@baz }),
           node(:cvar_definition))
       end
     end
@@ -1613,20 +1613,20 @@ module Orbacle
         expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:array)])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 0 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@x" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: :@@x })])
 
         msend1 = result.message_sends[1]
         expect(msend1.message_send).to eq(:[])
         expect(result.graph.parent_vertices(msend1.send_obj)).to eq([node(:array)])
         expect(msend1.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend1.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:cvasgn, { var_name: "@@y" })])
+        expect(result.graph.adjacent_vertices(msend1.send_result)).to eq([node(:cvasgn, { var_name: :@@y })])
 
         expect(result.graph).to include_edge(
-          node(:cvasgn, { var_name: "@@x" }),
+          node(:cvasgn, { var_name: :@@x }),
           node(:array))
         expect(result.graph).to include_edge(
-          node(:cvasgn, { var_name: "@@y" }),
+          node(:cvasgn, { var_name: :@@y }),
           node(:array))
       end
 
@@ -2193,10 +2193,10 @@ module Orbacle
 
         msend0 = result.message_sends.first
         expect(msend0.message_send).to eq(:+)
-        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:cvar, { var_name: "@@a" })])
+        expect(result.graph.parent_vertices(msend0.send_obj)).to eq([node(:cvar, { var_name: :@@a })])
         expect(msend0.send_args.size).to eq(1)
         expect(result.graph.parent_vertices(msend0.send_args[0])).to eq([node(:int, { value: 1 })])
-        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: "@@a" })])
+        expect(result.graph.adjacent_vertices(msend0.send_result)).to eq([node(:cvasgn, { var_name: :@@a })])
       end
 
       specify "for send, usage of +=" do
@@ -2313,14 +2313,14 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:cvar, { var_name: "@@a" }),
+          node(:cvar, { var_name: :@@a }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:or))
         expect(result.graph).to include_edge(
           node(:or),
-          node(:cvasgn, { var_name: "@@a" }))
+          node(:cvasgn, { var_name: :@@a }))
       end
 
       specify "for send, usage of ||=" do
@@ -2437,14 +2437,14 @@ module Orbacle
         result = generate_cfg(snippet)
 
         expect(result.graph).to include_edge(
-          node(:cvar, { var_name: "@@a" }),
+          node(:cvar, { var_name: :@@a }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:int, { value: 1 }),
           node(:and))
         expect(result.graph).to include_edge(
           node(:and),
-          node(:cvasgn, { var_name: "@@a" }))
+          node(:cvasgn, { var_name: :@@a }))
       end
 
       specify "for send, usage of &&=" do
