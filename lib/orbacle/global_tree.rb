@@ -93,7 +93,7 @@ module Orbacle
       @constants = ConstantsTree.new
       @classes_by_id = {}
       @modules_by_id = {}
-      @metods = Hash.new {|h,k| h[k] = Hash.new {|h2, k2| h2[k2] = [] } }
+      @methods_by_class_id = Hash.new {|h,k| h[k] = Hash.new {|h2, k2| h2[k2] = [] } }
       @methods_by_id = {}
       @lambdas_by_id = {}
       @type_mapping = Hash.new(BottomType.new)
@@ -103,7 +103,7 @@ module Orbacle
 
     def add_method(id, place_of_definition_id, name, location, visibility, args)
       metod = Method.new(id, place_of_definition_id, name, location, visibility, args)
-      @metods[metod.place_of_definition_id][metod.name] << metod
+      @methods_by_class_id[metod.place_of_definition_id][metod.name] << metod
       @methods_by_id[metod.id] = metod
       return metod
     end
@@ -117,7 +117,7 @@ module Orbacle
     end
 
     def get_instance_methods_from_class_id(class_id, method_name)
-      @metods[class_id][method_name]
+      @methods_by_class_id[class_id][method_name]
     end
 
     def get_instance_methods_from_class_name(class_name, method_name)
