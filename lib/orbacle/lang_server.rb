@@ -35,7 +35,7 @@ module Orbacle
       log_errors do
         file_path = request.text_document.uri.path
         file_content = File.read(file_path)
-        locations = engine.locations_for_definition_under_position(file_content, Position.new(request.position.line, request.position.character))
+        locations = engine.locations_for_definition_under_position(file_path, file_content, Position.new(request.position.line, request.position.character))
         if locations
           Lsp::ResponseMessage.successful(locations.map(&method(:location_to_lsp_location)))
         else
