@@ -23,7 +23,7 @@ Currently language server supports:
 ### Prerequisite indexing
 
 1. Install `orbacle` gem.
-2. Run `orbacle -d <your_project_directory> index`
+2. Run `orbaclerun -d <your_project_directory> index`
 
 It will show you how long does it take to index your project, i.e. how long do you have to wait after editor start to have language server functional underneath.
 
