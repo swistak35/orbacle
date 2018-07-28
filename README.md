@@ -47,6 +47,10 @@ let g:LanguageClient_waitOutputTimeout = 240
 
 Currently I do not accept contributions, as this is part of MSc thesis. However features ideas and bug reports are accepted.
 
+## Support
+
+If you have found a bug, feel free to create an issue. However, because of the fact that I'm focusing now more on the features required to MSc, support for other developers are lower priority for me.
+
 ## Bibliography
 
 * [Tern](http://marijnhaverbeke.nl/blog/tern.html)
