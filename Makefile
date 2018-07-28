@@ -29,7 +29,6 @@ mutant:
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#set_type_of"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#type_of"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_eigenclass_of_definition"
-	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Engine#get_type_information"
 
 test: test-unit test-performance
 
