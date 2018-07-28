@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'spec_helper'
 
 module Orbacle
@@ -238,11 +236,11 @@ module Orbacle
     describe "#change_method_visibility" do
       specify do
         state = GlobalTree.new(id_generator)
-        method1 = state.add_method(42, 77, "some_method", nil, :public, nil)
-        method2 = state.add_method(43, 78, "some_method", nil, :public, nil)
-        method3 = state.add_method(44, 78, "other_method", nil, :public, nil)
+        method1 = state.add_method(42, "77", "some_method", nil, :public, nil)
+        method2 = state.add_method(43, "78", "some_method", nil, :public, nil)
+        method3 = state.add_method(44, "78", "other_method", nil, :public, nil)
 
-        state.change_method_visibility(78, "some_method", :private)
+        state.change_method_visibility("78", "some_method", :private)
 
         expect(method1.visibility).to eq(:public)
         expect(method2.visibility).to eq(:private)
