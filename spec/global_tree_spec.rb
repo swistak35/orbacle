@@ -304,11 +304,11 @@ module Orbacle
       end
     end
 
-    describe "#add_mod" do
+    describe "#add_module" do
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_mod
+        result = state.add_module
 
         expect(result.id).to eq(1)
       end
@@ -316,7 +316,7 @@ module Orbacle
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_mod
+        result = state.add_module
 
         expect(state.get_module(result.id)).to eq(result)
       end
@@ -326,7 +326,7 @@ module Orbacle
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_mod
+        result = state.add_module
 
         expect(state.get_module(result.id)).to eq(result)
       end
@@ -342,7 +342,7 @@ module Orbacle
       specify do
         state = GlobalTree.new(id_generator)
 
-        result = state.add_mod
+        result = state.add_module
 
         expect(state.get_definition(result.id)).to eq(result)
       end

@@ -822,7 +822,7 @@ module Orbacle
 
       module_name_ref = ConstRef.from_ast(module_name_ast, context.nesting)
 
-      mod = @tree.add_mod
+      mod = @tree.add_module
       @tree.add_constant(
         GlobalTree::Constant.new(
           module_name_ref.name, context.scope.increase_by_ref(module_name_ref).decrease, build_location_from_ast(context, ast), mod.id))
@@ -911,7 +911,7 @@ module Orbacle
 
         return Result.new(Node.new(:nil, {}), context)
       elsif expr_is_module_definition?(expr)
-        mod = @tree.add_mod
+        mod = @tree.add_module
         @tree.add_constant(
           GlobalTree::Constant.new(
             const_name_ref.name, context.scope.increase_by_ref(const_name_ref).decrease, build_location_from_ast(context, ast), mod.id))
