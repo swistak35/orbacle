@@ -28,6 +28,7 @@ module Orbacle
       if build_position_range_from_ast(ast).include_position?(@searched_position)
         @result = ConstantResult.new(ConstRef.from_ast(ast, @current_nesting))
       end
+      return ast
     end
 
     def on_class(ast)
@@ -36,6 +37,7 @@ module Orbacle
       with_new_nesting(@current_nesting.increase_nesting_const(klass_name_ref)) do
         super
       end
+      return ast
     end
 
     def on_module(ast)
@@ -44,16 +46,18 @@ module Orbacle
       with_new_nesting(@current_nesting.increase_nesting_const(module_name_ref)) do
         super
       end
+      return ast
     end
 
     def on_send(ast)
-      if build_position_range_from_parser_range(ast.loc.selector).include_position?(@searched_position)
+      if ast.loc.selector && build_position_range_from_parser_range(ast.loc.selector).include_position?(@searched_position)
         message_name = ast.children.fetch(1).to_s
         selector_position_range = build_position_range_from_parser_range(ast.loc.selector)
         @result = MessageResult.new(message_name, selector_position_range)
       else
         super
       end
+      return ast
     end
 
     def with_new_nesting(new_nesting)

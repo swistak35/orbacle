@@ -112,6 +112,16 @@ module Orbacle
         expect(find_definition_under_position(file, 0, 14)).to eq(message_result)
         expect(find_definition_under_position(file, 0, 15)).to eq(nil)
       end
+
+      specify do
+        file = <<-END
+        foo.(42, "foo")
+        END
+
+        expect do
+          find_definition_under_position(file, 0, 11)
+        end.not_to raise_error
+      end
     end
 
     def find_definition_under_position(file, line, column)
