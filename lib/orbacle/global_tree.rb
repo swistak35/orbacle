@@ -158,7 +158,7 @@ module Orbacle
     def add_klass(parent_ref)
       klass = Klass.new(id_generator.call, parent_ref)
       @classes_by_id[klass.id] = klass
-      return klass
+      klass
     end
 
     def add_mod

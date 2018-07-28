@@ -247,5 +247,41 @@ module Orbacle
         expect(method3.visibility).to eq(:public)
       end
     end
+
+    describe "#add_klass" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        parent_ref = ConstRef.from_full_name("Foo", Nesting.empty)
+        result = state.add_klass(parent_ref)
+
+        expect(result.id).to eq(1)
+        expect(result.parent_ref).to eq(parent_ref)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_klass(nil)
+
+        expect(state.get_class(result.id)).to eq(result)
+      end
+    end
+
+    describe "#get_class" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.add_klass(nil)
+
+        expect(state.get_class(result.id)).to eq(result)
+      end
+
+      specify "returns nil if no lambda" do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.get_class(42)).to eq(nil)
+      end
+    end
   end
 end
