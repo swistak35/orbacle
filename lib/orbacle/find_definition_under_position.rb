@@ -62,6 +62,10 @@ module Orbacle
         message_name = ast.children.fetch(1)
         selector_position_range = build_position_range_from_parser_range(ast.loc.selector)
         @result = MessageResult.new(message_name, selector_position_range)
+      elsif ast.loc.dot && build_position_range_from_parser_range(ast.loc.dot).include_position?(@searched_position)
+        message_name = ast.children.fetch(1)
+        dot_position_range = build_position_range_from_parser_range(ast.loc.dot)
+        @result = MessageResult.new(message_name, dot_position_range)
       else
         super
       end

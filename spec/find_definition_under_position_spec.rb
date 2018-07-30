@@ -8,7 +8,7 @@ module Orbacle
       file = <<-END
       class Foo
         def bar
-          Baz.new
+          Baz
         end
       end
       END
@@ -29,7 +29,7 @@ module Orbacle
       file = <<-END
       module Foo
         def bar
-          Baz.new
+          Baz
         end
       end
       END
@@ -52,7 +52,7 @@ module Orbacle
       end
       class Bar
         def bar
-          Baz.new
+          Baz
         end
       end
       END
@@ -73,7 +73,7 @@ module Orbacle
       file = <<-END
       class Foo
         def bar
-          ::Bar::Baz.new
+          ::Bar::Baz
         end
       end
       END
@@ -98,29 +98,44 @@ module Orbacle
     end
 
     describe "definition of message send"  do
-      specify do
+      specify "by selector" do
         file = <<-END
-        foo.bar(42, "foo")
+        $xy.bar(42, "foo")
         END
 
         message_result = FindDefinitionUnderPosition::MessageResult.new(
           :bar,
           PositionRange.new(Position.new(0, 12), Position.new(0, 14)))
-        expect(find_definition_under_position(file, 0, 11)).to eq(nil)
+        expect(find_definition_under_position(file, 0, 10)).to eq(nil)
+        expect(find_definition_under_position(file, 0, 11)).not_to eq(nil)
         expect(find_definition_under_position(file, 0, 12)).to eq(message_result)
         expect(find_definition_under_position(file, 0, 13)).to eq(message_result)
         expect(find_definition_under_position(file, 0, 14)).to eq(message_result)
         expect(find_definition_under_position(file, 0, 15)).to eq(nil)
       end
 
-      specify do
+      specify "by dot" do
         file = <<-END
-        foo.(42, "foo")
+        $xy.(42, "foo")
         END
 
-        expect do
-          find_definition_under_position(file, 0, 11)
-        end.not_to raise_error
+        message_result = FindDefinitionUnderPosition::MessageResult.new(
+          :call,
+          PositionRange.new(Position.new(0, 11), Position.new(0, 11)))
+        expect(find_definition_under_position(file, 0, 10)).to eq(nil)
+        expect(find_definition_under_position(file, 0, 11)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 12)).to eq(nil)
+      end
+
+      specify "nested" do
+        file = <<-END
+        foo(bar)
+        END
+
+        message_result = FindDefinitionUnderPosition::MessageResult.new(
+          :bar,
+          PositionRange.new(Position.new(0, 12), Position.new(0, 14)))
+        expect(find_definition_under_position(file, 0, 13)).to eq(message_result)
       end
     end
 
