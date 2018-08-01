@@ -16,6 +16,10 @@ Currently language server supports:
 * hover request - information about "type" of an expression
 * jump to definition - jump to definition of constant or method
 
+
+![vokoscreen-2018-08-01_21-38-46](https://user-images.githubusercontent.com/332289/43544509-6b240d06-95d3-11e8-81e8-fe03b2c1cf6f.gif)
+
+
 ## Setup
 
 ### Prerequisite indexing
