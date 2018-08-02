@@ -282,6 +282,20 @@ module Orbacle
       end
     end
 
+    def get_deep_class_methods_from_class_name(class_name, method_name)
+      found_methods = get_class_methods_from_class_name(class_name, method_name)
+      if found_methods.empty?
+        parent_name = get_parent_of(class_name)
+        if parent_name
+          get_deep_class_methods_from_class_name(parent_name, method_name)
+        else
+          []
+        end
+      else
+        found_methods
+      end
+    end
+
     ### Types
 
     def type_of(node)
