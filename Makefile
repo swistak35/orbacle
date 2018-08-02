@@ -31,6 +31,7 @@ mutant:
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_eigenclass_of_definition"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_methods"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#find_deep_instance_method_from_class_name"
+	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree#get_deep_instance_methods_from_class_name"
 
 test: test-unit test-performance
 

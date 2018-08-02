@@ -50,7 +50,7 @@ module Orbacle
     def get_methods_definitions_for_type(type, method_name)
       case type
       when NominalType
-        @state.get_instance_methods_from_class_name(type.name, method_name)
+        @state.get_deep_instance_methods_from_class_name(type.name, method_name)
       when ClassType
         @state.get_class_methods_from_class_name(type.name, method_name)
       when UnionType

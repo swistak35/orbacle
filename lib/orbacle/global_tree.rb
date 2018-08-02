@@ -265,14 +265,20 @@ module Orbacle
     end
 
     def find_deep_instance_method_from_class_name(class_name, method_name)
-      found_method = find_instance_method_from_class_name(class_name, method_name)
-      if found_method.nil?
+      get_deep_instance_methods_from_class_name(class_name, method_name).first
+    end
+
+    def get_deep_instance_methods_from_class_name(class_name, method_name)
+      found_methods = get_instance_methods_from_class_name(class_name, method_name)
+      if found_methods.empty?
         parent_name = get_parent_of(class_name)
         if parent_name
-          find_deep_instance_method_from_class_name(parent_name, method_name)
+          get_deep_instance_methods_from_class_name(parent_name, method_name)
+        else
+          []
         end
       else
-        found_method
+        found_methods
       end
     end
 
