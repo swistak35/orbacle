@@ -45,10 +45,6 @@ module Orbacle
 
     attr_reader :levels
 
-    def to_primitive
-      levels.map {|level| level.full_name }
-    end
-
     def increase_nesting_const(const_ref)
       Nesting.new(levels + [ConstLevel.new(const_ref)])
     end
