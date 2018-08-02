@@ -177,6 +177,75 @@ module Orbacle
       end
     end
 
+    describe "definition of super" do
+      specify "zsuper" do
+        file = <<-END
+        class Foo
+          def bar
+            super
+          end
+        end
+        END
+
+        expected_nesting = Nesting
+          .empty
+          .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar)
+        expect(find_definition_under_position(file, 2, 11)).to eq(nil)
+        expect(find_definition_under_position(file, 2, 12)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 13)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 14)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 15)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 16)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 17)).to eq(nil)
+      end
+
+      specify "super" do
+        file = <<-END
+        class Foo
+          def bar
+            super(42)
+          end
+        end
+        END
+
+        expected_nesting = Nesting
+          .empty
+          .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar)
+        expect(find_definition_under_position(file, 2, 11)).to eq(nil)
+        expect(find_definition_under_position(file, 2, 12)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 13)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 14)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 15)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 16)).to eq(super_result)
+        expect(find_definition_under_position(file, 2, 17)).to eq(nil)
+      end
+
+      specify "twisted backtracing method case" do
+        file = <<-END
+        class Foo
+          def bar
+            def baz
+              super
+            end
+
+            super
+          end
+        end
+        END
+
+        expected_nesting = Nesting
+          .empty
+          .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :baz)
+        expect(find_definition_under_position(file, 3, 17)).to eq(super_result)
+
+        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar)
+        expect(find_definition_under_position(file, 6, 15)).to eq(super_result)
+      end
+    end
+
     specify "check that error would be raised if wrong ast returned" do
       finder = FindDefinitionUnderPosition.new(RubyParser.new)
       expect(finder).to receive(:on_const).and_return(Parser::AST::Node.new(:const, [:something, :else]))
