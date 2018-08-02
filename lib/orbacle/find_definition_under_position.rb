@@ -60,8 +60,17 @@ module Orbacle
     def on_send(ast)
       if ast.loc.selector && build_position_range_from_parser_range(ast.loc.selector).include_position?(@searched_position)
         message_name = ast.children.fetch(1)
-        selector_position_range = build_position_range_from_parser_range(ast.loc.selector)
-        @result = MessageResult.new(message_name, selector_position_range)
+        if message_name.equal?(:[])
+          selector_position_range = build_position_range_from_parser_range(ast.loc.selector)
+          if selector_position_range.on_edges?(@searched_position)
+            @result = MessageResult.new(message_name, selector_position_range)
+          else
+            super
+          end
+        else
+          selector_position_range = build_position_range_from_parser_range(ast.loc.selector)
+          @result = MessageResult.new(message_name, selector_position_range)
+        end
       elsif ast.loc.dot && build_position_range_from_parser_range(ast.loc.dot).include_position?(@searched_position)
         message_name = ast.children.fetch(1)
         dot_position_range = build_position_range_from_parser_range(ast.loc.dot)

@@ -137,6 +137,44 @@ module Orbacle
           PositionRange.new(Position.new(0, 12), Position.new(0, 14)))
         expect(find_definition_under_position(file, 0, 13)).to eq(message_result)
       end
+
+      specify "operator [] with dot" do
+        file = <<-END
+        $xy.[](foo)
+        END
+
+        message_dot_result = FindDefinitionUnderPosition::MessageResult.new(
+          :[],
+          PositionRange.new(Position.new(0, 11), Position.new(0, 11)))
+        expect(find_definition_under_position(file, 0, 11)).to eq(message_dot_result)
+
+        message_result = FindDefinitionUnderPosition::MessageResult.new(
+          :[],
+          PositionRange.new(Position.new(0, 12), Position.new(0, 13)))
+        expect(find_definition_under_position(file, 0, 12)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 13)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 14)).to eq(nil)
+      end
+
+      specify "operator []" do
+        file = <<-END
+        $xy[foo]
+        END
+
+        foo_message_result = FindDefinitionUnderPosition::MessageResult.new(
+          :foo,
+          PositionRange.new(Position.new(0, 12), Position.new(0, 14)))
+        message_result = FindDefinitionUnderPosition::MessageResult.new(
+          :[],
+          PositionRange.new(Position.new(0, 11), Position.new(0, 15)))
+        expect(find_definition_under_position(file, 0, 10)).to eq(nil)
+        expect(find_definition_under_position(file, 0, 11)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 12)).to eq(foo_message_result)
+        expect(find_definition_under_position(file, 0, 13)).to eq(foo_message_result)
+        expect(find_definition_under_position(file, 0, 13)).to eq(foo_message_result)
+        expect(find_definition_under_position(file, 0, 15)).to eq(message_result)
+        expect(find_definition_under_position(file, 0, 16)).to eq(nil)
+      end
     end
 
     specify "check that error would be raised if wrong ast returned" do

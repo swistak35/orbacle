@@ -15,6 +15,18 @@ module Orbacle
       end
     end
 
+    def on_edges?(position)
+      on_left_edge?(position) || on_right_edge?(position)
+    end
+
+    def on_left_edge?(position)
+      position == self.start
+    end
+
+    def on_right_edge?(position)
+      position == self.end
+    end
+
     def end_line
       self.end.line
     end
