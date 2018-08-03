@@ -184,6 +184,83 @@ module Orbacle
         expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(2, 12)))
       end
 
+      specify "super result - gets one from the right file" do
+        file1 = <<-END
+        class Some1
+          def bar; end
+        end
+        class Some2
+          def bar; super(42); end
+        end
+        END
+        file2 = <<-END
+        class Parent
+          def bar; end
+        end
+        class Something < Parent
+          def bar; super(42); end
+        end
+        END
+        proj = TestProject.new
+          .add_file("file1.rb", file1)
+          .add_file("file2.rb", file2)
+
+        expect(Dir).to receive(:glob).and_return([proj.path_of("file1.rb"), proj.path_of("file2.rb")])
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+
+        locations = engine.locations_for_definition_under_position(proj.path_of("file2.rb"), file2, Position.new(4, 22))
+        expect(locations.size).to eq(1)
+        expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(1, 21)))
+      end
+
+      specify "super result - checks only for super sends" do
+        file1 = <<-END
+        class Parent
+          def bar; end
+        end
+        class Something < Parent
+          def bar; foobar(super(42)) end
+        end
+        END
+        proj = TestProject.new
+          .add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(4, 29))
+        expect(locations.size).to eq(1)
+        expect(locations[0].position_range).to eq(PositionRange.new(Position.new(1, 10), Position.new(1, 21)))
+      end
+
+      specify "super result - can't find super method" do
+        file1 = <<-END
+        class Something < Parent
+          def bar; super(42); end
+        end
+        END
+        proj = TestProject.new
+          .add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(1, 22))
+        expect(locations).to eq([])
+      end
+
+      specify "super result - can't find super send" do
+        proj = TestProject.new
+          .add_file("file1.rb", "super(42)")
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), "\nsuper(42)", Position.new(1, 3))
+        expect(locations).to eq([])
+      end
+
       specify "no result" do
         file1 = <<-END
         42
