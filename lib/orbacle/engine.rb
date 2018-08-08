@@ -35,12 +35,9 @@ module Orbacle
         methods_definitions = @state.get_methods(result.name) if methods_definitions.empty?
         methods_definitions.map(&:location).compact
       when FindDefinitionUnderPosition::SuperResult
-        super_send = @worklist
-          .message_sends
-          .select {|ms| ms.location.uri.eql?(file_path) && ms.location.position_range.include_position?(result.keyword_position_range.start) }
-          .first
-        return [] if super_send.nil?
-        super_method = @state.find_super_method(super_send.method_id)
+        method_surrounding_super = @state.find_method_including_position(file_path, result.keyword_position_range.start)
+        return [] if method_surrounding_super.nil?
+        super_method = @state.find_super_method(method_surrounding_super.id)
         return [] if super_method.nil?
         [super_method.location]
       else

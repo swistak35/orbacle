@@ -8,7 +8,7 @@ module Orbacle
 
     ConstantResult = Struct.new(:const_ref)
     MessageResult = Struct.new(:name, :position_range)
-    SuperResult = Struct.new(:nesting, :method_name, :keyword_position_range)
+    SuperResult = Struct.new(:keyword_position_range)
 
     def initialize(parser)
       @parser = parser
@@ -85,7 +85,7 @@ module Orbacle
     def on_super(ast)
       keyword_position_range = build_position_range_from_parser_range(ast.loc.keyword)
       if keyword_position_range.include_position?(@searched_position)
-        @result = SuperResult.new(@current_nesting, @current_method, keyword_position_range)
+        @result = SuperResult.new(keyword_position_range)
       else
         super
       end
@@ -95,15 +95,7 @@ module Orbacle
     def on_zsuper(ast)
       keyword_position_range = build_position_range_from_parser_range(ast.loc.keyword)
       if keyword_position_range.include_position?(@searched_position)
-        @result = SuperResult.new(@current_nesting, @current_method, keyword_position_range)
-      end
-      nil
-    end
-
-    def on_def(ast)
-      method_name = ast.children.fetch(0)
-      with_analyzed_method(method_name) do
-        super
+        @result = SuperResult.new(keyword_position_range)
       end
       nil
     end
@@ -113,13 +105,6 @@ module Orbacle
       @current_nesting = new_nesting
       yield
       @current_nesting = previous_nesting
-    end
-
-    def with_analyzed_method(new_method)
-      previous_method = @current_method
-      @current_method = new_method
-      yield
-      @current_method = previous_method
     end
   end
 end

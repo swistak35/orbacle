@@ -533,5 +533,41 @@ module Orbacle
         expect(state.get_deep_class_methods_from_class_name("SomeClass", "some_method")).to eq([])
       end
     end
+
+    describe "#find_method_including_position" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        location1 = Location.new("/file1.rb", PositionRange.new(Position.new(0, 0), Position.new(2, 0)), 20)
+        method1 = state.add_method(42, 78, "some_method", location1, :public, nil)
+        location2 = Location.new("/file1.rb", PositionRange.new(Position.new(3, 0), Position.new(5, 0)), 20)
+        method2 = state.add_method(43, 78, "some_method", location2, :public, nil)
+        method3 = state.add_method(44, 78, "some_method", nil, :public, nil)
+
+        expect(state.find_method_including_position("/file1.rb", Position.new(4, 1))).to eq(method2)
+      end
+
+      specify "takes file path into consideration" do
+        state = GlobalTree.new(id_generator)
+
+        location1 = Location.new("/file1.rb", PositionRange.new(Position.new(0, 0), Position.new(2, 0)), 10)
+        method1 = state.add_method(42, 78, "some_method", location1, :public, nil)
+        location2 = Location.new("/file2.rb", PositionRange.new(Position.new(0, 0), Position.new(2, 0)), 20)
+        method2 = state.add_method(43, 78, "some_method", location2, :public, nil)
+
+        expect(state.find_method_including_position("/file2.rb", Position.new(1, 1))).to eq(method2)
+      end
+
+      specify "takes span into consideration" do
+        state = GlobalTree.new(id_generator)
+
+        location1 = Location.new("/file1.rb", PositionRange.new(Position.new(0, 0), Position.new(4, 0)), 20)
+        method1 = state.add_method(42, 78, "some_method", location1, :public, nil)
+        location2 = Location.new("/file1.rb", PositionRange.new(Position.new(0, 0), Position.new(2, 0)), 10)
+        method2 = state.add_method(43, 78, "some_method", location2, :public, nil)
+
+        expect(state.find_method_including_position("/file1.rb", Position.new(1, 1))).to eq(method2)
+      end
+    end
   end
 end

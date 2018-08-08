@@ -158,6 +158,16 @@ module Orbacle
       end
     end
 
+    def find_method_including_position(file_path, position)
+      @methods_by_id
+        .values
+        .select {|m| m.location &&
+                 m.location.uri.eql?(file_path) &&
+                 m.location.position_range.include_position?(position) }
+        .sort_by {|m| m.location.span }
+        .first
+    end
+
     ### Definitions
 
     def add_class(parent_ref)

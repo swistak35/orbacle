@@ -190,8 +190,7 @@ module Orbacle
         expected_nesting = Nesting
           .empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
-        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar,
-                                                                    PositionRange.new(Position.new(2, 12), Position.new(2, 16)))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(PositionRange.new(Position.new(2, 12), Position.new(2, 16)))
         expect(find_definition_under_position(file, 2, 11)).to eq(nil)
         expect(find_definition_under_position(file, 2, 12)).to eq(super_result)
         expect(find_definition_under_position(file, 2, 13)).to eq(super_result)
@@ -213,8 +212,7 @@ module Orbacle
         expected_nesting = Nesting
           .empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
-        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar,
-                                                                    PositionRange.new(Position.new(2, 12), Position.new(2, 16)))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(PositionRange.new(Position.new(2, 12), Position.new(2, 16)))
         expect(find_definition_under_position(file, 2, 11)).to eq(nil)
         expect(find_definition_under_position(file, 2, 12)).to eq(super_result)
         expect(find_definition_under_position(file, 2, 13)).to eq(super_result)
@@ -240,12 +238,10 @@ module Orbacle
         expected_nesting = Nesting
           .empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
-        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :baz,
-                                                                    PositionRange.new(Position.new(3, 14), Position.new(3, 18)))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(PositionRange.new(Position.new(3, 14), Position.new(3, 18)))
         expect(find_definition_under_position(file, 3, 17)).to eq(super_result)
 
-        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar,
-                                                                    PositionRange.new(Position.new(6, 12), Position.new(6, 16)))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(PositionRange.new(Position.new(6, 12), Position.new(6, 16)))
         expect(find_definition_under_position(file, 6, 15)).to eq(super_result)
       end
 
@@ -261,8 +257,7 @@ module Orbacle
         expected_nesting = Nesting
           .empty
           .increase_nesting_const(ConstRef.from_full_name("Foo", Nesting.empty))
-        super_result = FindDefinitionUnderPosition::SuperResult.new(expected_nesting, :bar,
-                                                                    PositionRange.new(Position.new(2, 18), Position.new(2, 22)))
+        super_result = FindDefinitionUnderPosition::SuperResult.new(PositionRange.new(Position.new(2, 18), Position.new(2, 22)))
         expect(find_definition_under_position(file, 2, 20)).to eq(super_result)
       end
     end
