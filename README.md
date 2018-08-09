@@ -13,8 +13,21 @@ Create a language server for ruby, which can be used across different code edito
 ## Current status
 
 Currently language server supports:
-* hover request - information about "type" of an expression
-* jump to definition - jump to definition of constant or method
+
+### Hover request
+
+Information about "type" of an expression
+
+
+### Jump to definition
+
+Works in following cases:
+* used on constant -> jump to constant definition
+* used on method call -> jump to definition of that method
+* used on `super` keyword -> jump to the definition of method from the parent class (doesn't respect `include` / `prepend` yet)
+
+
+### V i d e o
 
 
 ![vokoscreen-2018-08-01_21-38-46](https://user-images.githubusercontent.com/332289/43544509-6b240d06-95d3-11e8-81e8-fe03b2c1cf6f.gif)
