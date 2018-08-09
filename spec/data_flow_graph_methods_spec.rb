@@ -593,6 +593,18 @@ module Orbacle
         foo = find_class(result, "Foo")
         expect(foo.parent_ref).to eq(ConstRef.from_full_name("Bar", Nesting.empty))
       end
+
+      specify do
+        file = <<-END
+        class Foo < self
+        end
+        END
+
+        result = compute_graph(file)
+
+        foo = find_class(result, "Foo")
+        expect(foo.parent_ref).to eq(nil)
+      end
     end
 
     specify do
