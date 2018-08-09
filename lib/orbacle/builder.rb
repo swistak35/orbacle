@@ -800,7 +800,7 @@ module Orbacle
       end
 
       klass = @tree.add_class(parent_name_ref)
-      klass_constant = @tree.add_constant(
+      @tree.add_constant(
         GlobalTree::Constant.new(klass_name_ref.name, context.scope.increase_by_ref(klass_name_ref).decrease, build_location_from_ast(context, ast), klass.id))
 
       new_context = context

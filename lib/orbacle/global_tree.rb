@@ -105,7 +105,7 @@ module Orbacle
       metod = Method.new(id, place_of_definition_id, name, location, visibility, args)
       @methods_by_class_id[metod.place_of_definition_id][metod.name] << metod
       @methods_by_id[metod.id] = metod
-      return metod
+      metod
     end
 
     def find_instance_method_from_class_name(class_name, method_name)
@@ -209,7 +209,7 @@ module Orbacle
 
     def add_constant(constant)
       @constants.add_element(constant.scope, constant.name, constant)
-      return constant
+      constant
     end
 
     def solve_reference(const_ref)
@@ -270,7 +270,7 @@ module Orbacle
 
     def find_constant_for_definition(definition_id)
       @constants.find do |constant|
-        constant.definition_id == definition_id
+        constant.definition_id.equal?(definition_id)
       end
     end
 

@@ -569,5 +569,55 @@ module Orbacle
         expect(state.find_method_including_position("/file1.rb", Position.new(1, 1))).to eq(method2)
       end
     end
+
+    describe "#find_module_by_name" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        some_module = state.add_module
+        state.add_constant(GlobalTree::Constant.new("SomeModule", Scope.empty, nil, some_module.id))
+
+        expect(state.find_module_by_name("SomeModule")).to eq(some_module)
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        expect(state.find_module_by_name("SomeModule")).to eq(nil)
+      end
+    end
+
+    describe "add_method" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        args = GlobalTree::ArgumentsTree.new
+        added_method = state.add_method(42, 78, "some_method", nil, :public, args)
+
+        expect(added_method.id).to eq(42)
+        expect(added_method.args).to eq(args)
+      end
+    end
+
+    describe "#find_constant_for_definition" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        const1 = state.add_constant(GlobalTree::Constant.new("SomeModule", Scope.empty, nil, 41))
+        const2 = state.add_constant(GlobalTree::Constant.new("SomeModule", Scope.empty, nil, 42))
+
+        expect(state.find_constant_for_definition(42)).to eq(const2)
+      end
+    end
+
+    describe "#solve_reference2" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        const = state.add_constant(GlobalTree::Constant.new("Foo", Scope.empty, nil, 41))
+
+        expect(state.solve_reference2(ConstRef.from_full_name("Foo", Nesting.empty))).to eq([const])
+      end
+    end
   end
 end
