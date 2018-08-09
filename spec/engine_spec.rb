@@ -236,6 +236,9 @@ module Orbacle
 
       specify "super result - can't find super method" do
         file1 = <<-END
+        class Other
+          def bar; end
+        end
         class Something < Parent
           def bar; super(42); end
         end
@@ -246,8 +249,10 @@ module Orbacle
         engine = Engine.new(logger)
         engine.index(proj.root)
 
-        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(1, 22))
-        expect(locations).to eq([])
+        locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(4, 22))
+        expect(locations.map(&:position_range)).to eq([
+          PositionRange.new(Position.new(1, 10), Position.new(1, 21)),
+        ])
       end
 
       specify "super result - can't find super send" do

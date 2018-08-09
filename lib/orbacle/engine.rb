@@ -28,22 +28,26 @@ module Orbacle
       case result
       when FindDefinitionUnderPosition::ConstantResult
         constants = @state.solve_reference2(result.const_ref)
-        constants.map(&:location)
+        definitions_locations(constants)
       when FindDefinitionUnderPosition::MessageResult
         caller_type = get_type_of_caller_from_message_send(file_path, result.position_range)
         methods_definitions = get_methods_definitions_for_type(caller_type, result.name)
         methods_definitions = @state.get_methods(result.name) if methods_definitions.empty?
-        methods_definitions.map(&:location).compact
+        definitions_locations(methods_definitions)
       when FindDefinitionUnderPosition::SuperResult
         method_surrounding_super = @state.find_method_including_position(file_path, result.keyword_position_range.start)
         return [] if method_surrounding_super.nil?
         super_method = @state.find_super_method(method_surrounding_super.id)
-        return [] if super_method.nil?
-        [super_method.location]
+        return definitions_locations(@state.get_methods(method_surrounding_super.name) - [method_surrounding_super]) if super_method.nil?
+        definitions_locations([super_method])
       end
     end
 
     private
+    def definitions_locations(collection)
+      collection.map(&:location).compact
+    end
+
     def get_type_of_caller_from_message_send(file_path, position_range)
       message_send = @worklist
         .message_sends
