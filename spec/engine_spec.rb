@@ -271,7 +271,7 @@ module Orbacle
         engine.index(proj.root)
 
         locations = engine.locations_for_definition_under_position(proj.path_of("file1.rb"), file1, Position.new(0, 10))
-        expect(locations).to eq([])
+        expect(locations).to eq(nil)
       end
     end
   end

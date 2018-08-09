@@ -40,8 +40,6 @@ module Orbacle
         super_method = @state.find_super_method(method_surrounding_super.id)
         return [] if super_method.nil?
         [super_method.location]
-      else
-        []
       end
     end
 

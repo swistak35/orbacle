@@ -73,6 +73,7 @@ module Orbacle
             Lsp::Position.new(2, 10)))
 
         expect(response.result).to eq(nil)
+        expect(response.error).to eq(LangServer::Errors::NoDefinitionFound)
       end
 
       specify "constant result" do

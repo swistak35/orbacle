@@ -7,6 +7,10 @@ module Orbacle
   class LangServer
     include Lsp::LanguageServer
 
+    module Errors
+      NoDefinitionFound = Lsp::ResponseError::Base.new(1101, "No definition found under cursor position", nil)
+    end
+
     def initialize(logger, engine)
       @logger = logger
       @engine = engine
@@ -39,7 +43,7 @@ module Orbacle
         if locations
           Lsp::ResponseMessage.successful(locations.map(&method(:location_to_lsp_location)))
         else
-          Lsp::ResponseMessage.successful(nil)
+          Lsp::ResponseMessage.new(nil, Errors::NoDefinitionFound)
         end
       end
     end
