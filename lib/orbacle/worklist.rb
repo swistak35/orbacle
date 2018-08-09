@@ -12,7 +12,7 @@ module Orbacle
     def initialize
       @message_sends = Set.new
       @nodes = FastContainers::PriorityQueue.new(:max)
-      @handled_message_sends = Set.new
+      @handled_message_sends = Hash.new {|h,k| h[k] = [] }
       @nodes_counter = {}
       @nodes_mapping = {}
     end
@@ -47,11 +47,15 @@ module Orbacle
     end
 
     def message_send_handled?(message_send)
-      handled_message_sends.include?(message_send)
+      !handled_message_sends[message_send].empty?
     end
 
-    def mark_message_send_as_handled(message_send)
-      handled_message_sends << message_send
+    def mark_message_send_as_handled(message_send, handled_type)
+      handled_message_sends[message_send] << handled_type
+    end
+
+    def message_send_handled_by_type?(message_send, handled_type)
+      handled_message_sends[message_send].include?(handled_type)
     end
   end
 end

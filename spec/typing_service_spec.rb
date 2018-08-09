@@ -1741,6 +1741,28 @@ module Orbacle
 
         expect(result).to eq(nominal("Integer"))
       end
+
+      specify "caller can have more than one possible type" do
+        snippet = <<-END
+        class Foo1
+          def bar(arg)
+            $x = arg
+            "result"
+          end
+        end
+        class Foo2
+          def bar(arg)
+            :result
+          end
+        end
+        $x = Foo1.new
+        $x.bar(Foo2.new)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(union([nominal("String"), nominal("Symbol")]))
+      end
     end
 
     describe "attr_reader/writer/accessor" do

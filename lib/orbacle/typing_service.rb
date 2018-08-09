@@ -48,14 +48,13 @@ module Orbacle
           @worklist.message_sends.each do |message_send|
             case message_send
             when Worklist::MessageSend
-              if satisfied_message_send?(message_send) && !@worklist.message_send_handled?(message_send)
+              if satisfied_message_send?(message_send)
                 handle_message_send(message_send)
-                @worklist.mark_message_send_as_handled(message_send)
               end
             when Worklist::SuperSend
               if satisfied_super_send?(message_send) && !@worklist.message_send_handled?(message_send)
                 handle_super_send(message_send)
-                @worklist.mark_message_send_as_handled(message_send)
+                @worklist.mark_message_send_as_handled(message_send, nil)
               end
             else raise "Not handled message send"
             end
@@ -65,14 +64,11 @@ module Orbacle
         @worklist.message_sends.each do |message_send|
           case message_send
           when Worklist::MessageSend
-            if !@worklist.message_send_handled?(message_send)
-              handle_message_send(message_send)
-              @worklist.mark_message_send_as_handled(message_send)
-            end
+            handle_message_send(message_send)
           when Worklist::SuperSend
             if !@worklist.message_send_handled?(message_send)
               handle_super_send(message_send)
-              @worklist.mark_message_send_as_handled(message_send)
+              @worklist.mark_message_send_as_handled(message_send, nil)
             end
           else raise "Not handled message send"
           end
@@ -410,6 +406,7 @@ module Orbacle
 
     def handle_message_send(message_send)
       @state.type_of(message_send.send_obj).each_possible_type do |possible_type|
+        next if @worklist.message_send_handled_by_type?(message_send, possible_type)
         if constructor_send?(possible_type, message_send.message_send)
           handle_constructor_send(possible_type.name, message_send)
         elsif possible_type.instance_of?(ProcType) && message_send.message_send == :call
@@ -419,6 +416,7 @@ module Orbacle
         else
           handle_instance_send(possible_type.name, message_send)
         end
+        @worklist.mark_message_send_as_handled(message_send, possible_type)
       end
     end
 
