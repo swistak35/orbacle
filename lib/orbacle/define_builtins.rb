@@ -13,6 +13,33 @@ module Orbacle
       add_dir_klass
       add_file_klass
       add_integer_klass
+
+      klass = @tree.add_class(nil)
+      @tree.add_constant(
+        GlobalTree::Constant.new("Array", Scope.empty, nil, klass.id))
+      metod = @tree.add_method(
+        generate_id,
+        klass.id,
+        :map,
+        nil,
+        :public,
+        GlobalTree::ArgumentsTree.new([], []))
+      caller_node = Node.new(:caller, {})
+      result_node = Node.new(:method_result, {})
+      yield_arg = Node.new(:call_arg, {})
+      yield_result = Node.new(:yield_result, {})
+      yields = [Graph::Yield.new([yield_arg], yield_result)]
+      unwrap_array = Node.new(:unwrap_array, {})
+      wrap_array = Node.new(:wrap_array, {})
+      all_nodes = [caller_node, result_node, yield_arg, yield_result, unwrap_array, wrap_array]
+      all_edges = [
+        [caller_node, unwrap_array],
+        [unwrap_array, yield_arg],
+        [yield_result, wrap_array],
+        [wrap_array, result_node],
+      ]
+      @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, yields, all_nodes, all_edges)
+      metod
     end
 
     private

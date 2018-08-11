@@ -140,6 +140,7 @@ module Orbacle
       when :formal_kwrestarg then handle_group(node, sources)
       when :formal_blockarg then handle_group(node, sources)
       when :block_result then handle_pass_lte1(node, sources)
+      when :caller then handle_group(node, sources)
 
       when :loop_operator then handle_bottom(node, sources)
 
@@ -433,7 +434,8 @@ module Orbacle
       if found_method.nil?
         connect_constructor_to_node(class_name, message_send.send_result)
       else
-        handle_custom_message_send(found_method, message_send)
+        found_method_nodes = @graph.get_metod_nodes(found_method.id)
+        handle_custom_message_send(found_method, message_send, found_method_nodes)
         connect_constructor_to_node(class_name, message_send.send_result)
       end
     end
@@ -455,8 +457,9 @@ module Orbacle
           # logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
         end
       else
-        handle_custom_message_send(found_method, message_send)
-        connect_method_result_to_node(found_method.id, message_send.send_result)
+        found_method_nodes = @graph.get_metod_nodes(found_method.id)
+        handle_custom_message_send(found_method, message_send, found_method_nodes)
+        connect_method_result_to_node(found_method_nodes, message_send.send_result)
       end
     end
 
@@ -470,8 +473,9 @@ module Orbacle
           # logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
         end
       else
-        handle_custom_message_send(found_method, message_send)
-        connect_method_result_to_node(found_method.id, message_send.send_result)
+        found_method_nodes = @graph.get_metod_nodes(found_method.id)
+        handle_custom_message_send(found_method, message_send, found_method_nodes)
+        connect_method_result_to_node(found_method_nodes, message_send.send_result)
       end
     end
 
@@ -497,8 +501,15 @@ module Orbacle
       end
     end
 
-    def handle_custom_message_send(found_method, message_send)
-      found_method_nodes = @graph.get_metod_nodes(found_method.id)
+    def handle_custom_message_send(found_method, message_send, found_method_nodes)
+      if found_method_nodes.caller_node
+        @graph.add_edge(message_send.send_obj, found_method_nodes.caller_node)
+        @worklist.enqueue_node(found_method_nodes.caller_node)
+      end
+
+      $found_method_nodes = found_method_nodes
+      $message_send = message_send
+
       connect_actual_args_to_formal_args(found_method.args, found_method_nodes.args, message_send.send_args)
 
       found_method_nodes.zsupers.each do |zsuper_call|
@@ -512,10 +523,10 @@ module Orbacle
         else
           connect_yields_to_block_lambda(@graph.get_metod_nodes(super_method.id).yields, zsuper_call.block)
         end
-        connect_method_result_to_node(super_method.id, zsuper_call.send_result)
+        connect_method_result_to_node(super_method_nodes, zsuper_call.send_result)
       end
 
-      connect_yields_to_block_lambda(@graph.get_metod_nodes(found_method.id).yields, message_send.block)
+      connect_yields_to_block_lambda(found_method_nodes.yields, message_send.block)
     end
 
     def lambda_ids_of_block(block)
@@ -643,13 +654,14 @@ module Orbacle
       super_method = @state.find_super_method(super_send.method_id)
       return if super_method.nil?
 
-      handle_custom_message_send(super_method, super_send)
+      super_method_nodes = @graph.get_metod_nodes(super_method.id)
+      handle_custom_message_send(super_method, super_send, super_method_nodes)
 
-      connect_method_result_to_node(super_method.id, super_send.send_result)
+      connect_method_result_to_node(super_method_nodes, super_send.send_result)
     end
 
-    def connect_method_result_to_node(method_id, node)
-      method_result_node = @graph.get_metod_nodes(method_id).result
+    def connect_method_result_to_node(method_nodes, node)
+      method_result_node = method_nodes.result
       if !@graph.has_edge?(method_result_node, node)
         @graph.add_edge(method_result_node, node)
         @worklist.enqueue_node(node)
@@ -659,7 +671,7 @@ module Orbacle
     def primitive_mapping
       {
         "Array" => {
-          :map => method(:send_primitive_array_map),
+          # :map => method(:send_primitive_array_map),
           :each => method(:send_primitive_array_each),
         },
         "Object" => {
@@ -728,29 +740,29 @@ module Orbacle
       @worklist.enqueue_node(message_send.send_result)
     end
 
-    def send_primitive_array_map(_class_name, message_send)
-      unwrapping_node = Node.new(:unwrap_array, {}, nil)
-      @graph.add_vertex(unwrapping_node)
-      @graph.add_edge(message_send.send_obj, unwrapping_node)
-      @worklist.enqueue_node(unwrapping_node)
+    # def send_primitive_array_map(_class_name, message_send)
+    #   unwrapping_node = Node.new(:unwrap_array, {}, nil)
+    #   @graph.add_vertex(unwrapping_node)
+    #   @graph.add_edge(message_send.send_obj, unwrapping_node)
+    #   @worklist.enqueue_node(unwrapping_node)
 
-      wrapping_node = Node.new(:wrap_array, {}, nil)
-      @graph.add_vertex(wrapping_node)
-      @graph.add_edge(wrapping_node, message_send.send_result)
-      @worklist.enqueue_node(message_send.send_result)
+    #   wrapping_node = Node.new(:wrap_array, {}, nil)
+    #   @graph.add_vertex(wrapping_node)
+    #   @graph.add_edge(wrapping_node, message_send.send_result)
+    #   @worklist.enqueue_node(message_send.send_result)
 
-      lambda_ids_of_block(message_send.block).each do |lambda_id|
-        block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
-        if !block_lambda_nodes.args.values.empty?
-          arg_node = block_lambda_nodes.args.values.first
-          @graph.add_edge(unwrapping_node, arg_node)
-          @worklist.enqueue_node(arg_node)
-        end
+    #   lambda_ids_of_block(message_send.block).each do |lambda_id|
+    #     block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
+    #     if !block_lambda_nodes.args.values.empty?
+    #       arg_node = block_lambda_nodes.args.values.first
+    #       @graph.add_edge(unwrapping_node, arg_node)
+    #       @worklist.enqueue_node(arg_node)
+    #     end
 
-        @graph.add_edge(block_lambda_nodes.result, wrapping_node)
-        @worklist.enqueue_node(wrapping_node)
-      end
-    end
+    #     @graph.add_edge(block_lambda_nodes.result, wrapping_node)
+    #     @worklist.enqueue_node(wrapping_node)
+    #   end
+    # end
 
     def send_primitive_array_each(_class_name, message_send)
       return unless Worklist::BlockLambda === message_send.block

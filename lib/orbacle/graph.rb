@@ -6,7 +6,7 @@ module Orbacle
   class Graph
     ZSuper = Struct.new(:send_result, :block)
     Yield = Struct.new(:send_args, :send_result)
-    Metod = Struct.new(:args, :result, :yields, :zsupers)
+    Metod = Struct.new(:args, :result, :yields, :zsupers, :caller_node)
     MetodGraph = Struct.new(:args, :result, :yields, :caller_node, :all_nodes, :all_edges)
     Lambda = Struct.new(:args, :result)
 
@@ -105,18 +105,23 @@ module Orbacle
       if metod.instance_of?(Metod)
         metod
       else
-        mapping = metod.all_nodes.zip(metod.all_nodes.map(&:clone)).to_h
-        new_arguments_nodes = arguments_nodes.each_with_object({}) do |(k, v), h|
+        new_nodes = metod.all_nodes.map(&:clone)
+        mapping = metod.all_nodes.zip(new_nodes).to_h
+        new_nodes.each(&method(:add_vertex))
+        metod.all_edges.each do |v1, v2|
+          add_edge(mapping.fetch(v1), mapping.fetch(v2))
+        end
+        new_arguments_nodes = metod.args.each_with_object({}) do |(k, v), h|
           h[k] = mapping.fetch(v)
         end
         new_yields = metod.yields.map {|y| Yield.new(y.send_args.map {|a| mapping.fetch(a) }, mapping.fetch(y.send_result)) }
-        Metod.new(new_arguments_nodes, mapping.fetch(metod.result), new_yields, [])
+        Metod.new(new_arguments_nodes, mapping.fetch(metod.result), new_yields, [], mapping.fetch(metod.caller_node))
       end
     end
 
     def store_metod_nodes(metod_id, arguments_nodes)
       raise if !arguments_nodes.is_a?(Hash)
-      metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result, {})), [], [])
+      metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result, {})), [], [], nil)
     end
 
     def store_metod_subgraph(metod_id, arguments_nodes, caller_node, result_node, yields, all_nodes, all_edges)

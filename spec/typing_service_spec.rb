@@ -2302,7 +2302,7 @@ module Orbacle
       end
     end
 
-    def type_snippet(snippet)
+    def full_type_snippet(snippet)
       worklist = Worklist.new
       graph = Graph.new
       id_generator = UuidIdGenerator.new
@@ -2313,6 +2313,11 @@ module Orbacle
       result = Builder.new(graph, worklist, state, id_generator).process_file(parser.parse(snippet), nil)
       stats_recorder = Indexer::StatsRecorder.new
       TypingService.new(logger, stats_recorder).(graph, worklist, state)
+      return state, graph, result
+    end
+
+    def type_snippet(snippet)
+      state, _graph, result = full_type_snippet(snippet)
       state.type_of(result.node)
     end
 
