@@ -7,6 +7,7 @@ module Orbacle
     ZSuper = Struct.new(:send_result, :block)
     Yield = Struct.new(:send_args, :send_result)
     Metod = Struct.new(:args, :result, :yields, :zsupers)
+    MetodGraph = Struct.new(:args, :result, :yields, :caller_node, :all_nodes, :all_edges)
     Lambda = Struct.new(:args, :result)
 
     def initialize
@@ -99,17 +100,28 @@ module Orbacle
       return cvariables[scope.absolute_str][ivar_name]
     end
 
-    def get_metod_nodes(metod_id)
-      return metods[metod_id]
+    def get_metod_nodes(method_id)
+      metod = metods[method_id]
+      if metod.instance_of?(Metod)
+        metod
+      else
+        mapping = metod.all_nodes.zip(metod.all_nodes.map(&:clone)).to_h
+        new_arguments_nodes = arguments_nodes.each_with_object({}) do |(k, v), h|
+          h[k] = mapping.fetch(v)
+        end
+        new_yields = metod.yields.map {|y| Yield.new(y.send_args.map {|a| mapping.fetch(a) }, mapping.fetch(y.send_result)) }
+        Metod.new(new_arguments_nodes, mapping.fetch(metod.result), new_yields, [])
+      end
     end
 
     def store_metod_nodes(metod_id, arguments_nodes)
       raise if !arguments_nodes.is_a?(Hash)
-      metods[metod_id] ||= Metod.new(
-        arguments_nodes,
-        add_vertex(Node.new(:method_result, {})),
-        [],
-        [])
+      metods[metod_id] ||= Metod.new(arguments_nodes, add_vertex(Node.new(:method_result, {})), [], [])
+    end
+
+    def store_metod_subgraph(metod_id, arguments_nodes, caller_node, result_node, yields, all_nodes, all_edges)
+      raise if !arguments_nodes.is_a?(Hash)
+      metods[metod_id] ||= MetodGraph.new(arguments_nodes, result_node, yields, caller_node, all_nodes, all_edges)
     end
 
     def get_lambda_nodes(lambda_id)
