@@ -154,8 +154,6 @@ module Orbacle
         handle_case(ast, context)
       when :yield
         handle_yield(ast, context)
-      when :block_pass
-        handle_block_pass(ast, context)
 
       when :while then handle_while(ast, context)
       when :until then handle_while(ast, context)
