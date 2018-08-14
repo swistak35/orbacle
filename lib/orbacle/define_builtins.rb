@@ -86,6 +86,7 @@ module Orbacle
       @tree.add_constant(GlobalTree::Constant.new("Array", Scope.empty, nil, klass.id))
 
       add_array_map(klass)
+      add_array_each(klass)
     end
 
     def add_array_map(klass)
@@ -103,6 +104,23 @@ module Orbacle
         [unwrap_array, yield_arg],
         [yield_result, wrap_array],
         [wrap_array, result_node],
+      ]
+      @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, yields, all_nodes, all_edges)
+    end
+
+    def add_array_each(klass)
+      metod = add_method(klass.id, :each, :public, GlobalTree::ArgumentsTree.new([], []))
+      caller_node = Node.new(:caller, {})
+      result_node = Node.new(:method_result, {})
+      yield_arg = Node.new(:call_arg, {})
+      yield_result = Node.new(:yield_result, {})
+      yields = [Graph::Yield.new([yield_arg], yield_result)]
+      unwrap_array = Node.new(:unwrap_array, {})
+      all_nodes = [caller_node, result_node, yield_arg, yield_result, unwrap_array]
+      all_edges = [
+        [caller_node, unwrap_array],
+        [unwrap_array, yield_arg],
+        [caller_node, result_node],
       ]
       @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, yields, all_nodes, all_edges)
     end

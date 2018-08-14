@@ -644,41 +644,6 @@ module Orbacle
       end
     end
 
-    describe "custom built-ins Array" do
-      specify "Array#each without a block" do
-        snippet = <<-END
-        x = [1,2]
-        x.each {|y| y.to_s }
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("Integer")]))
-      end
-
-      specify "Array#each" do
-        snippet = <<-END
-        x = [1,2]
-        x.each {|y| y.to_s }
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("Integer")]))
-      end
-
-      specify "Array#each - block without arg" do
-        snippet = <<-END
-        x = [1,2]
-        x.each { 42.0 }
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("Integer")]))
-      end
-    end
-
     describe "custom built-ins Object" do
       specify "class on nominal self" do
         snippet = <<-END

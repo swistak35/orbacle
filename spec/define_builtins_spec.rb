@@ -360,6 +360,51 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
+
+      specify "#each without a block" do
+        snippet = <<-END
+        x = [1,2]
+        x.each
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#each with simple block" do
+        snippet = <<-END
+        x = [1,2]
+        x.each {|y| $x = y }
+        $x
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(nominal("Integer"))
+      end
+
+      specify "#each - block without arg" do
+        snippet = <<-END
+        x = [1,2]
+        x.each { 42.0 }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#each - works when some argument passed" do
+        snippet = <<-END
+        x = [1,2]
+        x.each(42) {|x| x }
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
     end
 
     def type_snippet(snippet)

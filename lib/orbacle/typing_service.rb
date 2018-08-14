@@ -670,10 +670,6 @@ module Orbacle
 
     def primitive_mapping
       {
-        "Array" => {
-          # :map => method(:send_primitive_array_map),
-          :each => method(:send_primitive_array_each),
-        },
         "Object" => {
           :class => method(:send_primitive_object_class),
           :clone => method(:send_primitive_object_freeze),
@@ -737,48 +733,6 @@ module Orbacle
       @graph.add_edge(message_send.send_obj, node)
       @worklist.enqueue_node(node)
       @graph.add_edge(node, message_send.send_result)
-      @worklist.enqueue_node(message_send.send_result)
-    end
-
-    # def send_primitive_array_map(_class_name, message_send)
-    #   unwrapping_node = Node.new(:unwrap_array, {}, nil)
-    #   @graph.add_vertex(unwrapping_node)
-    #   @graph.add_edge(message_send.send_obj, unwrapping_node)
-    #   @worklist.enqueue_node(unwrapping_node)
-
-    #   wrapping_node = Node.new(:wrap_array, {}, nil)
-    #   @graph.add_vertex(wrapping_node)
-    #   @graph.add_edge(wrapping_node, message_send.send_result)
-    #   @worklist.enqueue_node(message_send.send_result)
-
-    #   lambda_ids_of_block(message_send.block).each do |lambda_id|
-    #     block_lambda_nodes = @graph.get_lambda_nodes(lambda_id)
-    #     if !block_lambda_nodes.args.values.empty?
-    #       arg_node = block_lambda_nodes.args.values.first
-    #       @graph.add_edge(unwrapping_node, arg_node)
-    #       @worklist.enqueue_node(arg_node)
-    #     end
-
-    #     @graph.add_edge(block_lambda_nodes.result, wrapping_node)
-    #     @worklist.enqueue_node(wrapping_node)
-    #   end
-    # end
-
-    def send_primitive_array_each(_class_name, message_send)
-      return unless Worklist::BlockLambda === message_send.block
-
-      unwrapping_node = Node.new(:unwrap_array, {}, nil)
-      @graph.add_vertex(unwrapping_node)
-      @graph.add_edge(message_send.send_obj, unwrapping_node)
-      @worklist.enqueue_node(unwrapping_node)
-      block_lambda_nodes = @graph.get_lambda_nodes(message_send.block.lambda_id)
-      if !block_lambda_nodes.args.values.empty?
-        arg_node = block_lambda_nodes.args.values.first
-        @graph.add_edge(unwrapping_node, arg_node)
-        @worklist.enqueue_node(arg_node)
-      end
-
-      @graph.add_edge(message_send.send_obj, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
     end
 
