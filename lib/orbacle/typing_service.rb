@@ -666,7 +666,6 @@ module Orbacle
     def primitive_mapping
       {
         "Object" => {
-          :class => method(:send_primitive_object_class),
         },
       }
     end
@@ -674,7 +673,6 @@ module Orbacle
     def primitive_class_mapping
       {
         "Object" => {
-          :class => method(:send_class_primitive_object_class),
         },
       }
     end
@@ -720,31 +718,6 @@ module Orbacle
       @graph.add_edge(message_send.send_obj, node)
       @worklist.enqueue_node(node)
       @graph.add_edge(node, message_send.send_result)
-      @worklist.enqueue_node(message_send.send_result)
-    end
-
-    def send_primitive_object_freeze(_class_name, message_send)
-      @graph.add_edge(message_send.send_obj, message_send.send_result)
-      @worklist.enqueue_node(message_send.send_result)
-    end
-
-    def send_primitive_object_class(_class_name, message_send)
-      extract_class_node = Node.new(:extract_class, {}, nil)
-      @graph.add_vertex(extract_class_node)
-      @graph.add_edge(message_send.send_obj, extract_class_node)
-      @worklist.enqueue_node(extract_class_node)
-
-      @graph.add_edge(extract_class_node, message_send.send_result)
-      @worklist.enqueue_node(message_send.send_result)
-    end
-
-    def send_class_primitive_object_class(_class_name, message_send)
-      extract_class_node = Node.new(:extract_class, {}, nil)
-      @graph.add_vertex(extract_class_node)
-      @graph.add_edge(message_send.send_obj, extract_class_node)
-      @worklist.enqueue_node(extract_class_node)
-
-      @graph.add_edge(extract_class_node, message_send.send_result)
       @worklist.enqueue_node(message_send.send_result)
     end
 

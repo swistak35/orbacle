@@ -315,6 +315,30 @@ module Orbacle
 
         expect(result).to eq(generic("Array", [nominal("Integer")]))
       end
+
+      specify "#class" do
+        snippet = <<-END
+        class Foo
+        end
+        Foo.new.class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Foo"))
+      end
+
+      specify "::class" do
+        snippet = <<-END
+        class Foo
+        end
+        Foo.class
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Class"))
+      end
     end
 
     describe "Integer" do

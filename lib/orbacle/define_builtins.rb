@@ -23,6 +23,7 @@ module Orbacle
       klass = @tree.add_class(nil)
       @tree.add_constant(
         GlobalTree::Constant.new("Object", Scope.empty, nil, klass.id))
+      eigenclass = @tree.get_eigenclass_of_definition(klass.id)
 
       # BasicObject
       template_just_bool(klass, :"==")
@@ -37,6 +38,7 @@ module Orbacle
       template_maybe_int(klass, :"<=>")
       template_just_bool(klass, :"===")
       template_caller_id(klass, :clone)
+      addm_object_class(klass)
       template_just_nil(klass, :display)
       template_caller_id(klass, :dup)
       template_just_bool(klass, :eql?)
@@ -58,6 +60,8 @@ module Orbacle
       template_caller_id(klass, :untrust)
       template_just_bool(klass, :untrusted?)
       template_just_str(klass, :to_s)
+
+      addm_object_class(eigenclass)
     end
 
     def add_integer_klass
@@ -180,6 +184,19 @@ module Orbacle
       all_nodes = [caller_node, result_node]
       all_edges = [
         [caller_node, result_node]
+      ]
+      @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, [], all_nodes, all_edges)
+    end
+
+    def addm_object_class(klass)
+      metod = add_method(klass.id, :class, :public, GlobalTree::ArgumentsTree.new([], []))
+      caller_node = Node.new(:caller, {})
+      extract_class_node = Node.new(:extract_class, {})
+      result_node = Node.new(:method_result, {})
+      all_nodes = [caller_node, extract_class_node, result_node]
+      all_edges = [
+        [caller_node, extract_class_node],
+        [extract_class_node, result_node]
       ]
       @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, [], all_nodes, all_edges)
     end
