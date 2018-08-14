@@ -507,9 +507,6 @@ module Orbacle
         @worklist.enqueue_node(found_method_nodes.caller_node)
       end
 
-      $found_method_nodes = found_method_nodes
-      $message_send = message_send
-
       connect_actual_args_to_formal_args(found_method.args, found_method_nodes.args, message_send.send_args)
 
       found_method_nodes.zsupers.each do |zsuper_call|
@@ -672,7 +669,6 @@ module Orbacle
       {
         "Object" => {
           :class => method(:send_primitive_object_class),
-          :clone => method(:send_primitive_object_freeze),
           :dup => method(:send_primitive_object_freeze),
           :freeze => method(:send_primitive_object_freeze),
           :itself => method(:send_primitive_object_freeze),

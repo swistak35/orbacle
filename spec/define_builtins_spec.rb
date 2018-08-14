@@ -96,6 +96,16 @@ module Orbacle
         expect(result).to eq(union([nominal("Nil"), nominal("Integer")]))
       end
 
+      specify "#clone" do
+        snippet = <<-END
+        [1,2,3].clone(freeze: false)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
       specify "display" do
         snippet = <<-END
         Object.new.display

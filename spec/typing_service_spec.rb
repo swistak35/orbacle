@@ -718,16 +718,6 @@ module Orbacle
         expect(result).to eq(bottom)
       end
 
-      specify "clone is id" do
-        snippet = <<-END
-        [1,2,3].clone
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("Integer")]))
-      end
-
       specify "dup is id" do
         snippet = <<-END
         [1,2,3].dup

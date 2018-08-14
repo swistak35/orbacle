@@ -36,6 +36,7 @@ module Orbacle
       template_just_bool(klass, :"!~")
       template_maybe_int(klass, :"<=>")
       template_just_bool(klass, :"===")
+      template_caller_id(klass, :clone)
       template_just_nil(klass, :display)
       template_just_bool(klass, :eql?)
       template_just_bool(klass, :frozen?)
@@ -163,6 +164,17 @@ module Orbacle
       array_node = Node.new(:array, {})
       @graph.add_edge(str_node, array_node)
       @graph.add_edge(array_node, @graph.get_metod_nodes(metod.id).result)
+    end
+
+    def template_caller_id(klass, name)
+      metod = add_method(klass.id, name, :public, GlobalTree::ArgumentsTree.new([], []))
+      caller_node = Node.new(:caller, {})
+      result_node = Node.new(:method_result, {})
+      all_nodes = [caller_node, result_node]
+      all_edges = [
+        [caller_node, result_node]
+      ]
+      @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, [], all_nodes, all_edges)
     end
 
     def template_args(klass, name)
