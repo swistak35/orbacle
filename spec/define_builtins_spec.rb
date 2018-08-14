@@ -245,6 +245,76 @@ module Orbacle
 
         expect(result).to eq(nominal("Boolean"))
       end
+
+      specify "#dup" do
+        snippet = <<-END
+        [1,2,3].dup
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#freeze" do
+        snippet = <<-END
+        [1,2,3].freeze
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#itself" do
+        snippet = <<-END
+        [1,2,3].itself
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#taint" do
+        snippet = <<-END
+        [1,2,3].taint
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#trust" do
+        snippet = <<-END
+        [1,2,3].trust
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#untaint" do
+        snippet = <<-END
+        [1,2,3].untaint
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
+
+      specify "#untrust" do
+        snippet = <<-END
+        [1,2,3].untrust
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(generic("Array", [nominal("Integer")]))
+      end
     end
 
     describe "Integer" do
