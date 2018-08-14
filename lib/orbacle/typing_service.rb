@@ -446,15 +446,8 @@ module Orbacle
     end
 
     def handle_instance_send(class_name, message_send)
-      found_method = @state.find_instance_method_from_class_name(class_name, message_send.message_send)
-      if found_method.nil?
-        parent_name = @state.get_parent_of(class_name)
-        if parent_name
-          handle_instance_send(parent_name, message_send)
-        else
-          # logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
-        end
-      else
+      found_method = @state.find_deep_instance_method_from_class_name(class_name, message_send.message_send)
+      if found_method
         found_method_nodes = @graph.get_metod_nodes(found_method.id)
         handle_custom_message_send(found_method, message_send, found_method_nodes)
         connect_method_result_to_node(found_method_nodes, message_send.send_result)
@@ -462,15 +455,8 @@ module Orbacle
     end
 
     def handle_class_send(class_name, message_send)
-      found_method = @state.find_class_method_from_class_name(class_name, message_send.message_send)
-      if found_method.nil?
-        parent_name = @state.get_parent_of(class_name)
-        if parent_name
-          handle_class_send(parent_name, message_send)
-        else
-          # logger.debug("Method #{message_send.message_send} not found in #{class_name} (location: #{message_send.location})\n")
-        end
-      else
+      found_method = @state.find_deep_class_method_from_class_name(class_name, message_send.message_send)
+      if found_method
         found_method_nodes = @graph.get_metod_nodes(found_method.id)
         handle_custom_message_send(found_method, message_send, found_method_nodes)
         connect_method_result_to_node(found_method_nodes, message_send.send_result)

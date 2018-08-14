@@ -292,6 +292,10 @@ module Orbacle
       end
     end
 
+    def find_deep_class_method_from_class_name(class_name, method_name)
+      get_deep_class_methods_from_class_name(class_name, method_name).first
+    end
+
     def get_deep_class_methods_from_class_name(class_name, method_name)
       found_methods = get_class_methods_from_class_name(class_name, method_name)
       if found_methods.empty?
