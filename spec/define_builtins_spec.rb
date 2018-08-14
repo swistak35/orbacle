@@ -328,6 +328,18 @@ module Orbacle
         expect(result).to eq(klass("Foo"))
       end
 
+      specify "#class works if arguments passed" do
+        snippet = <<-END
+        class Foo
+        end
+        Foo.new.class(42)
+        END
+
+        result = type_snippet(snippet)
+
+        expect(result).to eq(klass("Foo"))
+      end
+
       specify "::class" do
         snippet = <<-END
         class Foo
