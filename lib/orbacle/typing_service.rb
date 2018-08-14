@@ -211,7 +211,6 @@ module Orbacle
       build_union([
         handle_group(node, sources),
         NominalType.new("Boolean"),
-        NominalType.new("Nil"),
       ])
     end
 
@@ -219,7 +218,6 @@ module Orbacle
       build_union([
         handle_group(node, sources),
         NominalType.new("Boolean"),
-        NominalType.new("Nil"),
       ])
     end
 

@@ -622,15 +622,14 @@ module Orbacle
     end
 
     describe "and/or" do
-      specify "MISBEHAVIOUR - simple and" do
+      specify "simple and" do
         snippet = <<-END
         (42 and 42.0)
         END
 
         result = type_snippet(snippet)
 
-        # expect(result).to eq(union([nominal("Float"), nominal("Boolean"), nominal("Nil")]))
-        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("Nil")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean")]))
       end
 
       specify "simple or" do
@@ -640,7 +639,7 @@ module Orbacle
 
         result = type_snippet(snippet)
 
-        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean"), nominal("Nil")]))
+        expect(result).to eq(union([nominal("Integer"), nominal("Float"), nominal("Boolean")]))
       end
     end
 
