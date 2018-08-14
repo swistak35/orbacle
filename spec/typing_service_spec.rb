@@ -645,51 +645,6 @@ module Orbacle
     end
 
     describe "custom built-ins Array" do
-      specify "Array#map without a block" do
-        snippet = <<-END
-        x = [1,2]
-        x.map
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(bottom)
-      end
-
-      specify "Array#map with simple block" do
-        snippet = <<-END
-        x = [1,2]
-        x.map {|y| y }
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("Integer")]))
-      end
-
-      specify "Array#map - passing block by blockarg" do
-        snippet = <<-END
-        x = [1,2]
-        y = ->(y) { y.to_s }
-        x.map(&y)
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("String")]))
-      end
-
-      specify "Array#map - block without arg" do
-        snippet = <<-END
-        x = [1,2]
-        x.map { 42.0 }
-        END
-
-        result = type_snippet(snippet)
-
-        expect(result).to eq(generic("Array", [nominal("Float")]))
-      end
-
       specify "Array#each without a block" do
         snippet = <<-END
         x = [1,2]

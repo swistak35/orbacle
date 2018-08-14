@@ -13,33 +13,7 @@ module Orbacle
       add_dir_klass
       add_file_klass
       add_integer_klass
-
-      klass = @tree.add_class(nil)
-      @tree.add_constant(
-        GlobalTree::Constant.new("Array", Scope.empty, nil, klass.id))
-      metod = @tree.add_method(
-        generate_id,
-        klass.id,
-        :map,
-        nil,
-        :public,
-        GlobalTree::ArgumentsTree.new([], []))
-      caller_node = Node.new(:caller, {})
-      result_node = Node.new(:method_result, {})
-      yield_arg = Node.new(:call_arg, {})
-      yield_result = Node.new(:yield_result, {})
-      yields = [Graph::Yield.new([yield_arg], yield_result)]
-      unwrap_array = Node.new(:unwrap_array, {})
-      wrap_array = Node.new(:wrap_array, {})
-      all_nodes = [caller_node, result_node, yield_arg, yield_result, unwrap_array, wrap_array]
-      all_edges = [
-        [caller_node, unwrap_array],
-        [unwrap_array, yield_arg],
-        [yield_result, wrap_array],
-        [wrap_array, result_node],
-      ]
-      @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, yields, all_nodes, all_edges)
-      metod
+      add_array_klass
     end
 
     private
@@ -107,6 +81,32 @@ module Orbacle
       template_just_str(eigenclass, :read)
     end
 
+    def add_array_klass
+      klass = @tree.add_class(nil)
+      @tree.add_constant(GlobalTree::Constant.new("Array", Scope.empty, nil, klass.id))
+
+      add_array_map(klass)
+    end
+
+    def add_array_map(klass)
+      metod = add_method(klass.id, :map, :public, GlobalTree::ArgumentsTree.new([], []))
+      caller_node = Node.new(:caller, {})
+      result_node = Node.new(:method_result, {})
+      yield_arg = Node.new(:call_arg, {})
+      yield_result = Node.new(:yield_result, {})
+      yields = [Graph::Yield.new([yield_arg], yield_result)]
+      unwrap_array = Node.new(:unwrap_array, {})
+      wrap_array = Node.new(:wrap_array, {})
+      all_nodes = [caller_node, result_node, yield_arg, yield_result, unwrap_array, wrap_array]
+      all_edges = [
+        [caller_node, unwrap_array],
+        [unwrap_array, yield_arg],
+        [yield_result, wrap_array],
+        [wrap_array, result_node],
+      ]
+      @graph.store_metod_subgraph(metod.id, {}, caller_node, result_node, yields, all_nodes, all_edges)
+    end
+
     def template_just_int(klass, name)
       metod = template_args(klass, name)
       int_node = Node.new(:int, {})
@@ -148,15 +148,13 @@ module Orbacle
     end
 
     def template_args(klass, name)
-      metod = @tree.add_method(
-        generate_id,
-        klass.id,
-        name,
-        nil,
-        :public,
-        GlobalTree::ArgumentsTree.new([], []))
+      metod = add_method(klass.id, name, :public, GlobalTree::ArgumentsTree.new([], []))
       @graph.store_metod_nodes(metod.id, {})
       metod
+    end
+
+    def add_method(class_id, name, visibility, args)
+      @tree.add_method(generate_id, class_id, name, nil, visibility, args)
     end
 
     def generate_id
