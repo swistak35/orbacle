@@ -445,7 +445,7 @@ module Orbacle
       @worklist.enqueue_node(constructor_node)
     end
 
-    def handle_instance_nonprimitive_send(class_name, message_send)
+    def handle_instance_send(class_name, message_send)
       found_method = @state.find_instance_method_from_class_name(class_name, message_send.message_send)
       if found_method.nil?
         parent_name = @state.get_parent_of(class_name)
@@ -461,7 +461,7 @@ module Orbacle
       end
     end
 
-    def handle_class_nonprimitive_send(class_name, message_send)
+    def handle_class_send(class_name, message_send)
       found_method = @state.find_class_method_from_class_name(class_name, message_send.message_send)
       if found_method.nil?
         parent_name = @state.get_parent_of(class_name)
@@ -628,22 +628,6 @@ module Orbacle
       end
     end
 
-    def handle_instance_send(class_name, message_send)
-      if primitive_send?(class_name, message_send.message_send)
-        handle_primitive(class_name, message_send)
-      else
-        handle_instance_nonprimitive_send(class_name, message_send)
-      end
-    end
-
-    def handle_class_send(class_name, message_send)
-      if primitive_class_send?(class_name, message_send.message_send)
-        handle_class_primitive(class_name, message_send)
-      else
-        handle_class_nonprimitive_send(class_name, message_send)
-      end
-    end
-
     def handle_super_send(super_send)
       return if super_send.method_id.nil?
       super_method = @state.find_super_method(super_send.method_id)
@@ -663,48 +647,8 @@ module Orbacle
       end
     end
 
-    def primitive_mapping
-      {
-        "Object" => {
-        },
-      }
-    end
-
-    def primitive_class_mapping
-      {
-        "Object" => {
-        },
-      }
-    end
-
-    def primitive_send?(class_name, message_name)
-      if primitive_mapping[class_name] && primitive_mapping[class_name][message_name]
-        true
-      else
-        false
-      end
-    end
-
-    def primitive_class_send?(class_name, message_name)
-      if primitive_class_mapping[class_name] && primitive_class_mapping[class_name][message_name]
-        true
-      else
-        false
-      end
-    end
-
     def constructor_send?(type, message_name)
       type.is_a?(ClassType) && message_name == :new
-    end
-
-    def handle_primitive(class_name, message_send)
-      message_name = message_send.message_send
-      primitive_mapping[class_name][message_name].(class_name, message_send)
-    end
-
-    def handle_class_primitive(class_name, message_send)
-      message_name = message_send.message_send
-      primitive_class_mapping[class_name][message_name].(class_name, message_send)
     end
 
     def send_constructor(type, message_send)
