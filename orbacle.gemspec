@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   
   spec.add_dependency 'priority_queue_cxx'
-  spec.add_dependency 'lsp-protocol', '>= 0.0.3'
+  spec.add_dependency 'lsp-protocol', '= 0.0.5'
   spec.add_dependency 'parser', '~> 2.4.0.2'
   spec.add_dependency 'rubytree', '~> 0.9.7'
   spec.add_dependency 'rgl', '~> 0.5.3'
