@@ -641,5 +641,41 @@ module Orbacle
         expect(state.solve_reference2(ConstRef.from_full_name("Foo", Nesting.empty))).to eq([const])
       end
     end
+
+    describe "#get_all_instance_methods_from_class_name" do
+      specify do
+        state = GlobalTree.new(id_generator)
+
+        result = state.get_all_instance_methods_from_class_name("Foo")
+
+        expect(result).to eq([])
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        klass1 = state.add_class(nil)
+        state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass1.id))
+        metod1 = state.add_method(41, klass1.id, "one_method", nil, :public, nil)
+        metod2 = state.add_method(42, klass1.id, "one_method", nil, :public, nil)
+
+        klass2 = state.add_class(nil)
+        state.add_constant(GlobalTree::Constant.new("OtherClass", Scope.empty, nil, klass2.id))
+        metod3 = state.add_method(43, klass2.id, "some_method", nil, :public, nil)
+
+        result = state.get_all_instance_methods_from_class_name("SomeClass")
+
+        expect(result).to match_array([metod1, metod2])
+      end
+
+      specify do
+        state = GlobalTree.new(id_generator)
+        klass1 = state.add_class(nil)
+        state.add_constant(GlobalTree::Constant.new("SomeClass", Scope.empty, nil, klass1.id))
+
+        result = state.get_all_instance_methods_from_class_name("SomeClass")
+
+        expect(result).to eq([])
+      end
+    end
   end
 end

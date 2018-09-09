@@ -133,6 +133,12 @@ module Orbacle
       get_instance_methods_from_class_id(eigenclass.id, method_name)
     end
 
+    def get_all_instance_methods_from_class_name(class_name)
+      klass = find_class_by_name(class_name)
+      return [] if klass.nil?
+      @methods_by_class_id[klass.id].values.flatten
+    end
+
     def find_class_method_from_class_name(class_name, method_name)
       get_class_methods_from_class_name(class_name, method_name).first
     end
