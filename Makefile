@@ -8,7 +8,7 @@ mutant:
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::RubyParser"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::ConstantsTree"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::FindDefinitionUnderPosition"
-	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::LangServer"
+	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::LangServer" --ignore-subject "Orbacle::LangServer#handle_text_document_did_change"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::Engine"
 	@MUTANT_TESTING=true bundle exec mutant --include lib --require orbacle --use rspec "Orbacle::GlobalTree"
 

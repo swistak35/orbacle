@@ -120,5 +120,91 @@ module Orbacle
         end.to raise_error(StandardError)
       end
     end
+
+    describe "#handle_text_document_completion" do
+      specify "result" do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
+
+        file_content = double
+        expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
+
+        expect(engine).to receive(:completions_for_call_under_position)
+          .with(file_content, Position.new(2, 10))
+          .and_return(["foo1", "foo2"])
+
+        response = server.handle_text_document_completion(
+          Lsp::TextDocumentPositionParams.new(
+            Lsp::TextDocumentIdentifier.new(URI("file:///foo.rb")),
+            Lsp::Position.new(2, 10)))
+
+        expect(response.result).to eq([
+          Lsp::CompletionItem.new("foo1"),
+          Lsp::CompletionItem.new("foo2")
+        ])
+      end
+
+      specify "error raised" do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
+
+        file_content = double
+        expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
+
+        expect(engine).to receive(:completions_for_call_under_position)
+          .with(file_content, Position.new(2, 10))
+          .and_raise(StandardError)
+
+        expect(logger).to receive(:error).with(StandardError)
+        expect do
+          server.handle_text_document_completion(
+            Lsp::TextDocumentPositionParams.new(
+              Lsp::TextDocumentIdentifier.new(URI("file:///foo.rb")),
+              Lsp::Position.new(2, 10)))
+        end.to raise_error(StandardError)
+      end
+    end
+
+    describe "#handle_text_document_did_change" do
+      specify "result" do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
+
+        server.handle_text_document_did_change(
+          Lsp::DidChangeTextDocumentParams.new(
+            Lsp::VersionedTextDocumentIdentifier.new(URI("file:///foo.rb"), 42),
+            [Lsp::TextDocumentContentChangeEvent.new("some_new_content")]))
+
+        expect(File).not_to receive(:read)
+        expect(engine).to receive(:completions_for_call_under_position)
+          .with("some_new_content", Position.new(2, 10))
+          .and_return(["foo1", "foo2"])
+
+        server.handle_text_document_completion(
+          Lsp::TextDocumentPositionParams.new(
+            Lsp::TextDocumentIdentifier.new(URI("file:///foo.rb")),
+            Lsp::Position.new(2, 10)))
+      end
+
+      specify "error raised" do
+        engine = instance_double(Engine)
+        server = LangServer.new(logger, engine)
+
+        file_content = double
+        expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
+
+        expect(engine).to receive(:completions_for_call_under_position)
+          .with(file_content, Position.new(2, 10))
+          .and_raise(StandardError)
+
+        expect(logger).to receive(:error).with(StandardError)
+        expect do
+          server.handle_text_document_completion(
+            Lsp::TextDocumentPositionParams.new(
+              Lsp::TextDocumentIdentifier.new(URI("file:///foo.rb")),
+              Lsp::Position.new(2, 10)))
+        end.to raise_error(StandardError)
+      end
+    end
   end
 end

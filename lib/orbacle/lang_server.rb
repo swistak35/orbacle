@@ -14,6 +14,7 @@ module Orbacle
     def initialize(logger, engine)
       @logger = logger
       @engine = engine
+      @file_contents = {}
     end
 
     attr_reader :logger, :engine
@@ -48,6 +49,20 @@ module Orbacle
       end
     end
 
+    def handle_text_document_completion(request)
+      log_errors do
+        file_content = get_file_content(request.text_document.uri)
+        completions = engine.completions_for_call_under_position(file_content, Position.new(request.position.line, request.position.character))
+        Lsp::ResponseMessage.successful(completions.map {|c| Lsp::CompletionItem.new(c) })
+      end
+    end
+
+    def handle_text_document_did_change(request)
+      log_errors do
+        @file_contents[request.text_document.uri.path] = request.content_changes[0].text
+      end
+    end
+
     def log_errors
       begin
         yield
@@ -55,6 +70,10 @@ module Orbacle
         logger.error(e)
         raise
       end
+    end
+
+    def get_file_content(uri)
+      @file_contents[uri.path] || File.read(uri.path)
     end
 
     def location_to_lsp_location(location)
