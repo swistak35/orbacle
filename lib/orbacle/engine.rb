@@ -52,6 +52,8 @@ module Orbacle
           metod.name.to_s.start_with?(result.message_name.to_s)
         end
         starting_with.map(&:name).map(&:to_s)
+      else
+        []
       end
     end
 

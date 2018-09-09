@@ -52,7 +52,7 @@ module Orbacle
     def handle_text_document_completion(request)
       log_errors do
         file_content = get_file_content(request.text_document.uri)
-        completions = engine.completions_for_call_under_position(file_content, Position.new(request.position.line, request.position.character))
+        completions = engine.completions_for_call_under_position(file_content, Position.new(request.position.line, request.position.character - 1))
         Lsp::ResponseMessage.successful(completions.map {|c| Lsp::CompletionItem.new(c) })
       end
     end
