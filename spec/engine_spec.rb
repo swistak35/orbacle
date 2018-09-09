@@ -279,5 +279,29 @@ module Orbacle
         expect(locations).to eq(nil)
       end
     end
+
+    describe "#completions_for_call_under_position" do
+      specify do
+        file1 = <<-END
+        class Foo
+          def xxx
+            ba
+          end
+
+          def baz1
+          end
+
+          def baz2
+          end
+        end
+        END
+        proj = TestProject.new.add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+        completions = engine.completions_for_call_under_position(file1, Position.new(2, 13))
+        expect(completions).to match_array(["baz1", "baz2"])
+      end
+    end
   end
 end
