@@ -637,20 +637,6 @@ module Orbacle
       type.is_a?(ClassType) && message_name == :new
     end
 
-    def send_constructor(type, message_send)
-      already_handled = @graph.adjacent_vertices(message_send.send_obj).any? do |adjacent_node|
-        adjacent_node.type == :constructor
-      end
-      return if already_handled
-
-      node = Node.new(:constructor, { name: type.name }, nil)
-      @graph.add_vertex(node)
-      @graph.add_edge(message_send.send_obj, node)
-      @worklist.enqueue_node(node)
-      @graph.add_edge(node, message_send.send_result)
-      @worklist.enqueue_node(message_send.send_result)
-    end
-
     def handle_constructor(node, sources)
       name = node.params.fetch(:name)
       type_from_class_name(name)
