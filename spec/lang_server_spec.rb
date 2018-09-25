@@ -130,7 +130,7 @@ module Orbacle
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
         expect(engine).to receive(:completions_for_call_under_position)
-          .with(file_content, Position.new(2, 10))
+          .with(file_content, Position.new(2, 9))
           .and_return(["foo1", "foo2"])
 
         response = server.handle_text_document_completion(
@@ -152,7 +152,7 @@ module Orbacle
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
         expect(engine).to receive(:completions_for_call_under_position)
-          .with(file_content, Position.new(2, 10))
+          .with(file_content, Position.new(2, 9))
           .and_raise(StandardError)
 
         expect(logger).to receive(:error).with(StandardError)
@@ -177,7 +177,7 @@ module Orbacle
 
         expect(File).not_to receive(:read)
         expect(engine).to receive(:completions_for_call_under_position)
-          .with("some_new_content", Position.new(2, 10))
+          .with("some_new_content", Position.new(2, 9))
           .and_return(["foo1", "foo2"])
 
         server.handle_text_document_completion(
@@ -194,7 +194,7 @@ module Orbacle
         expect(File).to receive(:read).with("/foo.rb").and_return(file_content)
 
         expect(engine).to receive(:completions_for_call_under_position)
-          .with(file_content, Position.new(2, 10))
+          .with(file_content, Position.new(2, 9))
           .and_raise(StandardError)
 
         expect(logger).to receive(:error).with(StandardError)
