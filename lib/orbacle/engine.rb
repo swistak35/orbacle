@@ -47,11 +47,15 @@ module Orbacle
       result = FindCallUnderPosition.new(RubyParser.new).process_file(file_content, position)
       case result
       when FindCallUnderPosition::SelfResult
-        all_methods = @state.get_all_instance_methods_from_class_name(result.nesting.to_scope.to_const_name.to_string)
-        starting_with = all_methods.select do |metod|
-          metod.name.to_s.start_with?(result.message_name.to_s)
+        filtered_methods_from_class_name(result.nesting.to_scope.to_const_name.to_string, result.message_name)
+      when FindCallUnderPosition::IvarResult
+        ivar_node = @graph.get_ivar_definition_node(result.nesting.to_scope, result.ivar_name)
+        ivar_type = @state.type_of(ivar_node)
+        methods = []
+        ivar_type.each_possible_type do |type|
+          methods.concat(filtered_methods_from_class_name(type.name, result.message_name))
         end
-        starting_with.map(&:name).map(&:to_s)
+        methods
       else
         []
       end
@@ -91,6 +95,14 @@ module Orbacle
 
     def pretty_print_type(type)
       TypePrettyPrinter.new.(type)
+    end
+
+    def filtered_methods_from_class_name(class_name, message_name)
+      all_methods = @state.get_all_instance_methods_from_class_name(class_name)
+      starting_with = all_methods.select do |metod|
+        metod.name.to_s.start_with?(message_name.to_s)
+      end
+      starting_with.map(&:name).map(&:to_s)
     end
   end
 end

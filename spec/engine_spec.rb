@@ -305,6 +305,31 @@ module Orbacle
 
       specify do
         file1 = <<-END
+        class Bar
+          def baz1; end
+          def baz2; end
+          def zzz; end
+        end
+        class Foo
+          def yyy
+            @bar = Bar.new
+          end
+
+          def xxx
+            @bar.ba
+          end
+        end
+        END
+        proj = TestProject.new.add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+        completions = engine.completions_for_call_under_position(file1, Position.new(11, 18))
+        expect(completions).to match_array(["baz1", "baz2"])
+      end
+
+      specify do
+        file1 = <<-END
         42
         END
         proj = TestProject.new.add_file("file1.rb", file1)

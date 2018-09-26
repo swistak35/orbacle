@@ -7,6 +7,7 @@ module Orbacle
     include AstUtils
 
     SelfResult = Struct.new(:message_name, :nesting)
+    IvarResult = Struct.new(:message_name, :ivar_name, :nesting)
 
     def initialize(parser)
       @parser = parser
@@ -35,6 +36,8 @@ module Orbacle
           case ast.children[0].type
           when :self
             SelfResult.new(message_name, @current_nesting)
+          when :ivar
+            IvarResult.new(message_name, ast.children[0].children[0], @current_nesting)
           else
           end
         end
