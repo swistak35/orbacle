@@ -302,6 +302,18 @@ module Orbacle
         completions = engine.completions_for_call_under_position(file1, Position.new(2, 13))
         expect(completions).to match_array(["baz1", "baz2"])
       end
+
+      specify do
+        file1 = <<-END
+        42
+        END
+        proj = TestProject.new.add_file("file1.rb", file1)
+
+        engine = Engine.new(logger)
+        engine.index(proj.root)
+        completions = engine.completions_for_call_under_position(file1, Position.new(1, 9))
+        expect(completions).to match_array([])
+      end
     end
   end
 end
