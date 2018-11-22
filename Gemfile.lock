@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    orbacle (0.2.0)
+    orbacle (0.2.1)
       lsp-protocol (= 0.0.7)
       parser (~> 2.4.0.2)
       priority_queue_cxx

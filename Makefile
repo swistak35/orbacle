@@ -35,6 +35,6 @@ build:
 	@gem build orbacle.gemspec
 
 install: build
-	@gem install orbacle-0.2.0.gem
+	@gem install orbacle-0.2.1.gem
 
 full: setup build install

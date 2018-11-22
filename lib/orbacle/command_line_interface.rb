@@ -18,9 +18,22 @@ module Orbacle
       attr_reader :dir, :stats_file
 
       def define_options(parser)
-        parser.banner = 'Usage: ./orbacle [options]'
+        parser.banner = <<~EOF
+        Usage: orbaclerun [options] <command>
 
-        parser.on('-d DIR', '--dir', 'Directory in which project resides') do |dir|
+        Available commands:
+
+          index
+              test-run of the indexing on your project. You can use that command to check how long the project will be indexed and whether the indexing is successful.
+
+          file-server
+              starts the server working on standard IO. This is the command you want to setup in your editor with LSP plugin.
+
+        Options:
+
+        EOF
+
+        parser.on('-d DIR', '--dir', 'Directory in which your project resides') do |dir|
           @dir = dir
         end
 
