@@ -68,7 +68,7 @@ If you have found a bug, feel free to create an issue. However, because of the f
 
 ## Code status
 
-[![CircleCI](https://circleci.com/gh/swistak35/orbacle/tree/master.svg?style=svg)](https://circleci.com/gh/swistak35/orbacle/tree/master)
+[![CircleCI](https://circleci.com/gh/swistak35/orbacle/tree/master.svg?style=shield)](https://circleci.com/gh/swistak35/orbacle/tree/master)
 [![Gem Version](https://badge.fury.io/rb/orbacle.svg)](https://badge.fury.io/rb/orbacle)
 
 ## Bibliography
